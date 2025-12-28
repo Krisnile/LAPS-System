@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %} Image Processing {% endblock title %}
+{% block title %} Image Annotation {% endblock title %}
 
 {% block content %}
 <div class="content">
@@ -9,12 +9,12 @@
         <div class="col-12">
             <div class="card">
 <style>
-/* ===== Photoshop 风格样式 ===== */
+/* ===== Label Studio 风格 ===== */
 .ps-container {
-    height: 800px; /* 增加高度，拉长card */
+    height: 800px;
     display: flex;
     flex-direction: column;
-    background: #343a40; /* 统一深灰背景 */
+    background: #343a40;
     color: #fff;
     font-size: 14px;
     border-radius: 5px;
@@ -24,20 +24,21 @@
 /* 顶部菜单 */
 .ps-topbar {
     height: 36px;
-    background: #212529; /* 更深灰 */
+    background: #212529;
     display: flex;
     align-items: center;
     padding: 0 15px;
 }
-
 .ps-topbar span {
     margin-right: 20px;
     cursor: pointer;
     color: #adb5bd;
 }
-
 .ps-topbar span:hover {
     color: #fff;
+}
+.ps-topbar input[type=file] {
+    display: none;
 }
 
 /* 主区域 */
@@ -49,24 +50,22 @@
 /* 左侧工具栏 */
 .ps-toolbar {
     width: 48px;
-    background: #495057; /* 中灰 */
+    background: #495057;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 10px;
 }
-
 .ps-toolbar button {
     width: 32px;
     height: 32px;
     margin-bottom: 10px;
-    background: #6c757d; /* 按钮灰 */
+    background: #6c757d;
     border: none;
     color: #fff;
     cursor: pointer;
     border-radius: 3px;
 }
-
 .ps-toolbar button:hover {
     background: #5a6268;
 }
@@ -74,61 +73,68 @@
 /* 画布区 */
 .ps-canvas-area {
     flex: 1;
-    background: #495057; /* 中灰 */
+    background: #495057;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
-
 #image-canvas {
     background: #fff;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    width: 800px; /* 初始宽度 */
-    height: 400px; /* 初始高度 */
 }
 
 /* 右侧面板 */
 .ps-panels {
-    width: 300px; /* 进一步缩小宽度 */
-    background: #495057; /* 中灰 */
+    width: 300px;
+    background: #495057;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
-
 .panel {
-    background: #6c757d; /* 面板灰 */
+    background: #6c757d;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 3px;
 }
-
 .panel h6 {
     color: #fff;
     margin-bottom: 10px;
+}
+#annotation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+#annotation-list li {
+    padding: 3px 5px;
+    background: #495057;
+    margin-bottom: 3px;
+    border-radius: 3px;
 }
 
 /* 状态栏 */
 .ps-statusbar {
     height: 26px;
-    background: #212529; /* 深灰 */
+    background: #212529;
     padding-left: 10px;
     display: flex;
     align-items: center;
     color: #adb5bd;
+    justify-content: space-between;
 }
-
 </style>
 
 <div class="ps-container">
 
     <!-- 顶部菜单 -->
     <div class="ps-topbar">
-        <span onclick="document.getElementById('image').click()" style="cursor:pointer;">文件</span>
-        <span>编辑</span>
-        <span>图像</span>
-        <span>滤镜</span>
-        <span>视图</span>
-
-        <input type="file" id="image" accept="image/*" style="display:none;" onchange="loadImage(event)">
+        <span onclick="document.getElementById('image').click()">上传文件</span>
+        <span>任务类型</span>
+        <input type="file" id="image" accept="image/*" onchange="loadImage(event)">
     </div>
 
     <div class="ps-main">
@@ -136,37 +142,37 @@
         <!-- 左侧工具栏 -->
         <div class="ps-toolbar">
             <button onclick="setTool('select')" title="选择">⬚</button>
-            <button onclick="setTool('brush')" title="画笔">🖌</button>
-            <button onclick="setTool('eraser')" title="橡皮">🧽</button>
-            <button onclick="rotate()" title="旋转">⟳</button>
+            <button onclick="setTool('rectangle')" title="矩形标注">▭</button>
+            <button onclick="setTool('polygon')" title="多边形标注">🔷</button>
+            <button onclick="undo()" title="撤销">↶</button>
+            <button onclick="redo()" title="重做">↷</button>
         </div>
 
         <!-- 中央画布 -->
         <div class="ps-canvas-area">
-            <canvas id="image-canvas"></canvas>
+            <canvas id="image-canvas" width="800" height="600"></canvas>
         </div>
 
         <!-- 右侧面板 -->
         <div class="ps-panels">
             <div class="panel">
-                <h6>调整</h6>
-                <button class="btn btn-sm btn-secondary w-100 mb-1" onclick="toGray()">灰度</button>
-                <button class="btn btn-sm btn-secondary w-100 mb-1" onclick="invert()">反色</button>
-                <button class="btn btn-sm btn-secondary w-100 mb-1" onclick="blurImage()">模糊</button>
-                <button class="btn btn-sm btn-secondary w-100 mb-1" onclick="sharpenImage()">锐化</button>
-                <button class="btn btn-sm btn-secondary w-100 mb-1" onclick="edgeDetect()">边缘检测</button>
-                <button class="btn btn-sm btn-warning w-100" onclick="resetImage()">重置</button>
+                <h6>标签类别</h6>
+                <select id="label-select" class="form-control mb-2">
+                    <option value="cat">猫</option>
+                    <option value="dog">狗</option>
+                    <option value="car">汽车</option>
+                </select>
+                <button class="btn btn-sm btn-info w-100" onclick="addLabel()">设置类别</button>
             </div>
 
             <div class="panel">
-                <h6>分割</h6>
-                <input type="text" id="segment-prompt" class="form-control mb-2" placeholder="输入分割提示，如'猫'">
-                <button class="btn btn-sm btn-info w-100 mb-1" onclick="segmentImage()">提示分割</button>
+                <h6>标注列表</h6>
+                <ul id="annotation-list"></ul>
             </div>
 
             <div class="panel">
                 <h6>导出</h6>
-                <button class="btn btn-sm btn-success w-100" onclick="saveImage()">保存图像</button>
+                <button class="btn btn-sm btn-success w-100" onclick="exportAnnotations()">导出 JSON</button>
             </div>
         </div>
 
@@ -174,7 +180,8 @@
 
     <!-- 状态栏 -->
     <div class="ps-statusbar">
-        当前工具：<span id="tool-name">选择</span>
+        <span id="tool-name">选择</span>
+        <span id="mouse-coords">X:0 Y:0</span>
     </div>
 
 </div>
@@ -189,8 +196,12 @@
 let canvas = document.getElementById('image-canvas');
 let ctx = canvas.getContext('2d');
 let originalImage = new Image();
-let rotation = 0;
 let currentTool = 'select';
+let currentLabel = 'cat';
+let annotations = [];
+let currentPolygon = [];
+let undoStack = [];
+let redoStack = [];
 
 /* ===== 工具切换 ===== */
 function setTool(tool) {
@@ -202,20 +213,12 @@ function setTool(tool) {
 function loadImage(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function (evt) {
         originalImage.onload = function () {
-            // 计算缩放比例以适应容器
-            const container = document.querySelector('.ps-canvas-area');
-            const maxWidth = container.clientWidth - 20; // 进一步减少边距
-            const maxHeight = container.clientHeight - 20;
-
-            let scale = Math.min(maxWidth / originalImage.width, maxHeight / originalImage.height, 1);
-            canvas.width = originalImage.width * scale;
-            canvas.height = originalImage.height * scale;
-
-            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
             document.getElementById('tool-name').innerText = '图像已加载';
         };
         originalImage.src = evt.target.result;
@@ -223,152 +226,128 @@ function loadImage(event) {
     reader.readAsDataURL(file);
 }
 
-/* ===== 灰度 ===== */
-function toGray() {
-    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let d = imgData.data;
-    for (let i = 0; i < d.length; i += 4) {
-        let g = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
-        d[i] = d[i+1] = d[i+2] = g;
-    }
-    ctx.putImageData(imgData, 0, 0);
+/* ===== 设置标签类别 ===== */
+function addLabel() {
+    currentLabel = document.getElementById('label-select').value;
+    alert("当前标注类别: " + currentLabel);
 }
 
-/* ===== 模糊 ===== */
-function blurImage() {
-    ctx.filter = 'blur(2px)';
-    ctx.drawImage(canvas, 0, 0);
-    ctx.filter = 'none';
-}
+/* ===== 绘制标注 ===== */
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', drawMouseMove);
+canvas.addEventListener('mouseup', finishDraw);
 
-/* ===== 锐化 ===== */
-function sharpenImage() {
-    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let d = imgData.data;
-    let kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0]; // 锐化核
-    let side = Math.round(Math.sqrt(kernel.length));
-    let halfSide = Math.floor(side / 2);
-    let src = d.slice();
-    let sw = canvas.width;
-    let sh = canvas.height;
-
-    for (let y = 0; y < sh; y++) {
-        for (let x = 0; x < sw; x++) {
-            let r = 0, g = 0, b = 0;
-            for (let cy = 0; cy < side; cy++) {
-                for (let cx = 0; cx < side; cx++) {
-                    let scy = y + cy - halfSide;
-                    let scx = x + cx - halfSide;
-                    if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
-                        let srcOff = (scy * sw + scx) * 4;
-                        let wt = kernel[cy * side + cx];
-                        r += src[srcOff] * wt;
-                        g += src[srcOff + 1] * wt;
-                        b += src[srcOff + 2] * wt;
-                    }
-                }
-            }
-            let dstOff = (y * sw + x) * 4;
-            d[dstOff] = Math.min(Math.max(r, 0), 255);
-            d[dstOff + 1] = Math.min(Math.max(g, 0), 255);
-            d[dstOff + 2] = Math.min(Math.max(b, 0), 255);
+function startDraw(e){
+    if(currentTool === 'rectangle' || currentTool === 'polygon'){
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if(currentTool === 'rectangle'){
+            currentPolygon = [{x,y}];
+        } else if(currentTool === 'polygon'){
+            currentPolygon.push({x,y});
         }
+        updateCanvas();
     }
-    ctx.putImageData(imgData, 0, 0);
 }
 
-/* ===== 边缘检测 ===== */
-function edgeDetect() {
-    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let d = imgData.data;
-    let src = d.slice();
-    let sw = canvas.width;
-    let sh = canvas.height;
+function drawMouseMove(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    document.getElementById('mouse-coords').innerText = `X:${Math.round(x)} Y:${Math.round(y)}`;
+}
 
-    for (let y = 1; y < sh - 1; y++) {
-        for (let x = 1; x < sw - 1; x++) {
-            let dstOff = (y * sw + x) * 4;
-            let srcOff = dstOff;
-            let r = src[srcOff] * 4 - src[srcOff - 4] - src[srcOff + 4] - src[srcOff - sw * 4] - src[srcOff + sw * 4];
-            let g = src[srcOff + 1] * 4 - src[srcOff - 3] - src[srcOff + 5] - src[srcOff - sw * 4 + 1] - src[srcOff + sw * 4 + 1];
-            let b = src[srcOff + 2] * 4 - src[srcOff - 2] - src[srcOff + 6] - src[srcOff - sw * 4 + 2] - src[srcOff + sw * 4 + 2];
-            d[dstOff] = Math.min(Math.max(r, 0), 255);
-            d[dstOff + 1] = Math.min(Math.max(g, 0), 255);
-            d[dstOff + 2] = Math.min(Math.max(b, 0), 255);
+function finishDraw(e){
+    if(currentTool === 'rectangle' && currentPolygon.length===1){
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        currentPolygon.push({x,y});
+        annotations.push({type:'rectangle', coords:currentPolygon, label:currentLabel});
+        updateAnnotationList();
+        undoStack.push(JSON.stringify(annotations));
+        currentPolygon = [];
+        updateCanvas();
+    }
+}
+
+/* ===== 绘制多边形 ===== */
+function updateCanvas(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(originalImage,0,0);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'red';
+    ctx.fillStyle = 'rgba(255,0,0,0.3)';
+
+    annotations.forEach(ann=>{
+        if(ann.type==='rectangle'){
+            const x0=ann.coords[0].x, y0=ann.coords[0].y;
+            const x1=ann.coords[1].x, y1=ann.coords[1].y;
+            ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+            ctx.fillRect(x0,y0,x1-x0,y1-y0);
+        } else if(ann.type==='polygon'){
+            ctx.beginPath();
+            ann.coords.forEach((pt,i)=>{
+                if(i===0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
         }
+    });
+
+    if(currentTool==='polygon' && currentPolygon.length>0){
+        ctx.beginPath();
+        currentPolygon.forEach((pt,i)=>{
+            if(i===0) ctx.moveTo(pt.x,pt.y);
+            else ctx.lineTo(pt.x,pt.y);
+        });
+        ctx.stroke();
     }
-    ctx.putImageData(imgData, 0, 0);
 }
 
-/* ===== 提示分割 ===== */
-function segmentImage() {
-    const prompt = document.getElementById('segment-prompt').value;
-    if (!prompt) {
-        alert('请输入分割提示');
-        return;
-    }
-    canvas.toBlob(blob => {
-        let formData = new FormData();
-        formData.append('image', blob);
-        formData.append('prompt', prompt);
-
-        fetch("{% url 'segment_image' %}", {
-            method: "POST",
-            headers: { "X-CSRFToken": "{{ csrf_token }}" },
-            body: formData
-        }).then(res => res.blob())
-          .then(blob => {
-              let img = new Image();
-              img.onload = () => {
-                  ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  canvas.width = img.width;
-                  canvas.height = img.height;
-                  ctx.drawImage(img, 0, 0);
-              };
-              img.src = URL.createObjectURL(blob);
-          });
+/* ===== 标注列表更新 ===== */
+function updateAnnotationList(){
+    const list = document.getElementById('annotation-list');
+    list.innerHTML='';
+    annotations.forEach((ann,i)=>{
+        const li = document.createElement('li');
+        li.innerText=`${i+1}: ${ann.label} (${ann.type})`;
+        list.appendChild(li);
     });
 }
 
-/* ===== 旋转 ===== */
-function rotate() {
-    rotation = (rotation + 90) % 360;
-    let temp = document.createElement('canvas');
-    let tctx = temp.getContext('2d');
-
-    temp.width = canvas.height;
-    temp.height = canvas.width;
-
-    tctx.translate(temp.width / 2, temp.height / 2);
-    tctx.rotate(rotation * Math.PI / 180);
-    tctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
-
-    canvas.width = temp.width;
-    canvas.height = temp.height;
-    ctx.drawImage(temp, 0, 0);
+/* ===== 导出 JSON ===== */
+function exportAnnotations(){
+    const data = JSON.stringify(annotations,null,2);
+    const blob = new Blob([data], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'annotations.json';
+    a.click();
 }
 
-/* ===== 重置 ===== */
-function resetImage() {
-    rotation = 0;
-    canvas.width = originalImage.width;
-    canvas.height = originalImage.height;
-    ctx.drawImage(originalImage, 0, 0);
+/* ===== 撤销/重做 ===== */
+function undo(){
+    if(undoStack.length>0){
+        redoStack.push(JSON.stringify(annotations));
+        const prev = undoStack.pop();
+        annotations = JSON.parse(prev);
+        updateAnnotationList();
+        updateCanvas();
+    }
 }
 
-/* ===== 保存 ===== */
-function saveImage() {
-    canvas.toBlob(blob => {
-        let formData = new FormData();
-        formData.append('image', blob);
-
-        fetch("{% url 'save_processed_image' %}", {
-            method: "POST",
-            headers: { "X-CSRFToken": "{{ csrf_token }}" },
-            body: formData
-        }).then(res => res.json())
-          .then(() => alert("保存成功"));
-    });
+function redo(){
+    if(redoStack.length>0){
+        undoStack.push(JSON.stringify(annotations));
+        const next = redoStack.pop();
+        annotations = JSON.parse(next);
+        updateAnnotationList();
+        updateCanvas();
+    }
 }
 </script>
 {% endblock extrajs %}

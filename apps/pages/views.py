@@ -8,7 +8,7 @@ import uuid
 
 
 def index(request):
-    return render(request, 'pages/dashboard.html')
+    return render(request, 'pages/image_processing.html') # 初始页面
 
 
 def image_processing(request):
