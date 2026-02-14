@@ -1,0 +1,43 @@
+/* Override styles to ensure fixed-plugin dropdown (language switcher, labels)
+   are readable in both dark and light (white-content) themes. */
+
+/* Light theme (white-content) - make dropdown background light and text dark */
+body.white-content .fixed-plugin .dropdown-menu {
+  background: #ffffff !important;
+  border: 1px solid #e6e6e6 !important;
+  color: #222222 !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08) !important;
+}
+
+body.white-content .fixed-plugin .dropdown-menu li,
+body.white-content .fixed-plugin .dropdown-menu li a,
+body.white-content .fixed-plugin .dropdown-menu .color-label,
+body.white-content .fixed-plugin .dropdown-menu label,
+body.white-content .fixed-plugin .dropdown-menu .tim-icons {
+  color: #222222 !important;
+}
+
+/* Make the language select readable */
+body.white-content .fixed-plugin .dropdown-menu select#langSelect {
+  background: #ffffff !important;
+  color: #222222 !important;
+  border: 1px solid #dcdcdc !important;
+  padding: 6px 8px !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Options inside select (some browsers) */
+body.white-content .fixed-plugin .dropdown-menu select#langSelect option {
+  color: #222222 !important;
+  background: #ffffff !important;
+}
+
+/* Slightly dim badges/bubbles so they remain visible */
+body.white-content .fixed-plugin .badge {
+  border-color: #cccccc !important;
+}
+
+/* Ensure header/title in the dropdown is dark */
+body.white-content .fixed-plugin li.header-title { color: #222222 !important; }

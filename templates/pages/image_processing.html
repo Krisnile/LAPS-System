@@ -82,6 +82,10 @@
 #image-canvas {
     background: #fff;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    max-width: 100%;
+    height: auto;
+    display: block;
+    max-height: 720px;
 }
 
 /* 右侧面板 */
@@ -130,6 +134,17 @@
 
 <div class="ps-container">
 
+    <!-- 页面标题与简介 -->
+    <div class="ps-header" style="padding:12px 16px; background:#2b2f33; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h5 style="margin:0; font-weight:600;">图像标注（Image Annotation）</h5>
+            <div style="font-size:12px; color:#cbd3d7;">上传图像并使用左侧工具进行矩形/多边形标注。可使用右侧面板管理标签并导出 JSON。</div>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-light" onclick="$('#helpModal').modal('show')">帮助</button>
+        </div>
+    </div>
+
     <!-- 顶部菜单 -->
     <div class="ps-topbar">
         <span onclick="document.getElementById('image').click()">上传文件</span>
@@ -172,13 +187,46 @@
 
             <div class="panel">
                 <h6>导出</h6>
-                <button class="btn btn-sm btn-success w-100" onclick="exportAnnotations()">导出 JSON</button>
+            <button class="btn btn-sm btn-success w-100" onclick="exportAnnotations()">导出 JSON</button>
+            <hr />
+            <button class="btn btn-sm btn-primary w-100" onclick="runSam()">Run SAM 分割</button>
+            </div>
+            <div class="panel">
+                <h6>项目信息</h6>
+                <div style="font-size:12px; color:#e9ecef;">LAPS 标注系统模版</div>
+                <div style="font-size:12px; color:#cfd8db; margin-top:6px;">版本: 0.1 · 联系: dev@example.com</div>
             </div>
         </div>
 
     </div>
 
-    <!-- 状态栏 -->
+        <!-- 帮助 Modal -->
+        <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">使用说明</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="color:#333;">
+                        <ul>
+                            <li>点击“上传文件”按钮选择要标注的图片。</li>
+                            <li>左侧选择工具：矩形或多边形用于创建标注；选择工具可用于添加 SAM 提示点。</li>
+                            <li>在右侧选择或新增标签类别，然后点击“设置类别”。</li>
+                            <li>完成后使用“导出 JSON”将标注保存为本地文件。</li>
+                            <li>可使用“Run SAM 分割”将图像与提示点提交到后端进行自动分割（需后端支持）。</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
     <div class="ps-statusbar">
         <span id="tool-name">选择</span>
         <span id="mouse-coords">X:0 Y:0</span>
@@ -202,6 +250,7 @@ let annotations = [];
 let currentPolygon = [];
 let undoStack = [];
 let redoStack = [];
+let promptPoints = []; // user-clicked prompt points for SAM
 
 /* ===== 工具切换 ===== */
 function setTool(tool) {
@@ -246,6 +295,10 @@ function startDraw(e){
             currentPolygon = [{x,y}];
         } else if(currentTool === 'polygon'){
             currentPolygon.push({x,y});
+        } else if(currentTool === 'select'){
+            // register prompt point for SAM
+            promptPoints.push([x,y]);
+            updateCanvas();
         }
         updateCanvas();
     }
@@ -308,6 +361,25 @@ function updateCanvas(){
     }
 }
 
+// draw prompt points
+function drawPromptPoints(){
+    ctx.fillStyle = 'cyan';
+    promptPoints.forEach(pt=>{
+        ctx.beginPath();
+        ctx.arc(pt[0], pt[1], 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle='black';
+        ctx.stroke();
+    });
+}
+
+// integrate prompt points drawing into updateCanvas
+const _origUpdateCanvas = updateCanvas;
+updateCanvas = function(){
+    _origUpdateCanvas();
+    if(promptPoints.length>0) drawPromptPoints();
+}
+
 /* ===== 标注列表更新 ===== */
 function updateAnnotationList(){
     const list = document.getElementById('annotation-list');
@@ -327,6 +399,28 @@ function exportAnnotations(){
     a.href = URL.createObjectURL(blob);
     a.download = 'annotations.json';
     a.click();
+}
+
+// Send image and prompts to backend SAM endpoint
+function runSam(){
+    if(!originalImage.src) { alert('请先上传图片'); return; }
+    canvas.toBlob(function(blob){
+        const fd = new FormData();
+        fd.append('image', blob, 'upload.png');
+        if(promptPoints.length>0) fd.append('points', JSON.stringify(promptPoints));
+        // no box right now; can be added
+        fetch('/segment-image/', {method:'POST', body: fd})
+        .then(r=>{
+            if(!r.ok) throw new Error('Server error '+r.status);
+            return r.blob();
+        })
+        .then(b=>{
+            const url = URL.createObjectURL(b);
+            // display result in a new window/tab
+            const img = new Image(); img.src = url; const w = window.open(''); w.document.write('<img src="'+url+'" />');
+        })
+        .catch(e=>{ alert('运行SAM失败: '+e.message); });
+    }, 'image/png');
 }
 
 /* ===== 撤销/重做 ===== */

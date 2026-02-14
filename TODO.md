@@ -1,0 +1,138 @@
+LAPS-System 待办（中文，按优先级）
+
+说明：本文件将之前对项目改进与工程化思路整理为可执行的 TODO 列表，包含目的、验收标准、相关文件提示与推荐起步命令，便于你逐步完善。
+
+## 优先（立刻做，影响大）
+
+- 完成模板的客户端 i18n 覆盖（确保所有可见文本都有 `data-en`/`data-zh`）
+  - 目的：保证语言切换能覆盖所有页面文本。
+  - 验收：切换语言后没有明显未翻译的英文或中文遗漏（抽查首页、项目页、任务页、标注页）。
+  - 相关文件：`templates/` 下所有文件（重点 `templates/includes/*`, `templates/pages/*`）。
+  - 建议起步命令：
+    ```bash
+    # 列出已带 data-en 的文件（快速了解覆盖率）
+    grep -R --line-number "data-en" templates/ | cut -d: -f1 | sort -u
+
+    # 列出没有 data-en 的模板文件（初探）
+    find templates -name '*.html' -print0 | xargs -0 grep -L "data-en" | sed 's/^/ /'
+    ```
+  - 估时：中（1-3 天）
+
+- 处理 SAM 模型加载的 torch FutureWarning（安全/兼容性）
+  - 目的：消除 torch.load 的安全/未来不兼容风险（例如 `weights_only` 参数）。
+  - 验收：加载模型时无 FutureWarning，且记录/评估风险或使用推荐的安全加载方式。
+  - 相关文件：可能是 `apps/pages/sam_inference.py` 或其他包含 model load 的文件。
+  - 建议起步：定位加载模型的代码（grep "torch.load" 或搜索 SAM 加载函数），根据当前 PyTorch/segment_anything 推荐方式修改或 pin 依赖。
+  - 估时：小->中（数小时到1天）
+
+- 添加基本单元/集成测试（关键 API）
+  - 目的：保证 `/tasks/next/`、`/segment-image/`、`/api/annotations/` 的稳定性。
+  - 验收：新增测试通过，CI 能执行。
+  - 相关文件：`apps/pages/tests.py`（已有），新增 `tests/test_annotation_flow.py` 等。
+  - 建议起步命令：
+    ```bash
+    python3 manage.py test apps.pages
+    ```
+  - 估时：中（半天到1天）
+
+## 重要（短期改进，提升可用性）
+
+- 丰富标注工具（多边形、画笔/刷子、边界框、标签管理）
+  - 目的：从点/掩码扩展为 LabelStudio 级别的交互工具。
+  - 验收：在 `annotate` 页面可创建/编辑多边形、边框，并能保存为 `Annotation`。
+  - 相关文件：`templates/pages/annotation.html`, `static/assets/js/annotation.js`, 后端 `views.py` 保存逻辑。
+  - 建议：分步实现：先边界框，再多边形，最后刷子。
+  - 估时：大（数天到数周）
+
+- 任务与工作流（分配/审核/回退/历史）
+  - 目的：实现多人协作与审核流程（assign/review/status transitions）。
+  - 验收：能分配任务给用户、标注后进入待审、审阅通过/退回并记录历史。
+  - 相关文件：`apps/pages/models.py`（Task 扩展）、`views.py`、`templates/pages/tasks*`。
+  - 估时：中->大（几天）
+
+- 导出/导入（COCO / PascalVOC / CSV）
+  - 目的：支持模型训练与外部系统互通（导出标注到 COCO 等）。
+  - 验收：成功导出 COCO 格式的 `annotations.json`，并能由外部脚本加载。
+  - 相关文件：新增 `apps/pages/export.py`，前端增加导出按钮。
+  - 估时：中（1-3 天）
+
+## 可选/中长期（工程化、性能、安全）
+
+- 迁移为服务端 i18n（Django gettext）
+  - 目的：从客户端 DOM 替换迁移到 Django 原生 i18n（更完整、SEO 与无 JS 支持、更易维护）。
+  - 验收：模板使用 `{% trans %}` 与 `.po/.mo` 文件，语言中间件工作正常。
+  - 影响文件：大量模板重写，`settings.py` i18n 配置。
+  - 估时：中->大（数天）
+
+- 存储 & 性能（S3、CDN、缓存、分页）
+  - 目的：实现大规模图片存储与性能优化。
+  - 验收：图片/掩码能存至 S3，前端通过 CDN 加载，页面在大量数据下仍能响应。
+  - 相关：修改 `settings.py`（storages）、迁移脚本。
+  - 估时：中
+
+- 权限与用户角色（admin/annotator/reviewer）
+  - 目的：细粒度访问控制。
+  - 验收：不同角色看到不同 UI/可执行操作。
+  - 相关：models + views + templates + admin
+  - 估时：中
+
+- CI / CD（自动化测试、静态检查）
+  - 目的：保证合并质量，自动运行测试和 lint。
+  - 验收：PR 自动跑测试并阻止失败合并。
+  - 建议工具：GitHub Actions
+  - 估时：小->中
+
+## 小任务 / UX 改善（快速可交付）
+
+- 修复 light-theme 下 fixed-plugin 的所有可见性问题（已添加 override，但检查其他元素）
+  - 验收：light/dark 两种模式下均无文本不可见问题。
+  - 文件：`static/assets/css/fixed-plugin-override.css`、`templates/includes/head.html`
+  - 估时：小（数小时）
+
+- 在 fixed-plugin 添加语言切换提示（帮助文案），并把 `#langSelect` 放在可访问位置
+  - 估时：小（数小时）
+
+- 提供“示例数据 / 快速体验”按钮（load demo dataset）
+  - 目的：让新用户能快速体验标注流程。
+  - 验收：点击加载 demo project/dataset/task。
+  - 估时：小（数小时）
+
+- 异常与错误提示国际化（在 `annotation.js` 中把提示通过 `lang-switcher` 获取）
+  - 估时：小（半天）
+
+## QA / 验收清单（质量门）
+
+- 构建检查
+  - `python3 manage.py check` → PASS
+- 运行/烟雾测试
+  - `python3 manage.py runserver` → 主页、标注页能打开
+- 单元/集成测试
+  - `python3 manage.py test` → 关键 API 测试通过
+- Lint / Typecheck（可选）
+  - 使用 `flake8` / `mypy`（如果引入）
+
+示例命令：
+```bash
+python3 manage.py check
+python3 manage.py migrate
+python3 manage.py runserver
+python3 manage.py test apps.pages
+```
+
+## 建议的短期行动计划（阶段化）
+
+1.（今天/明天）扫描并填补缺失的 `data-en`/`data-zh`，修复 light-theme 可见性（高优先）。
+2.（1 周内）添加 3-5 个关键后端测试，确保保存/读取/下一任务流程稳定（高优先）。
+3.（2 周内）实现边界框或多边形工具的最简版本（中优先）。
+4.（1 个月）导出为 COCO，并开始考虑 server-side i18n 与权限设计（中→低优先）。
+
+## 风险与注意事项
+
+- 客户端 i18n 快速但有局限：SEO、无 JS 环境和复杂文本需要 server-side i18n。
+- SAM 模型加载的警告需要在上线前解决或记录风险（安全 / future default）。
+- 大文件存储需规划（本地 vs S3）；本地适合开发，生产建议 S3。
+
+## 下一步（你可以选择）
+- 选项 1：扫描 `templates/` 并生成「缺失 `data-en` 的模板文件清单」。
+- 选项 2：我直接为某些页面（例如 `templates/pages/annotation.html`、`templates/includes/menu-list.html`）补全 `data-en`/`data-zh` 并提交修改（需要你确认要我直接修改）。
+- 选项 3：为关键 API 写 2-3 个单元测试并运行它们。

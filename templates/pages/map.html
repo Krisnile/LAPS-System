@@ -1,28 +1,19 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
 
-{% block title %} Map {% endblock title %}
+{% block title %}已归档示例页面{% endblock title %}
 
 {% block content %}
 <div class="content">
   <div class="row">
-    <div class="col-md-12">
-      <div class="card card-plain">
-        <div class="card-header">
-          Google Maps
-        </div>
-        <div class="card-body">
-          <div id="map" class="map"></div>
+    <div class="col-md-8 ml-auto mr-auto">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3>该示例页面已归档</h3>
+          <p>示例/演示页面已移动到 <code>templates/archived_templates/</code>，以便清理项目模板目录。</p>
+          <a href="{% url 'index' %}" class="btn btn-primary">返回仪表盘</a>
         </div>
       </div>
     </div>
   </div>
 </div>
 {% endblock content %}
-{% block extrajs %}
-<script>
-  $(document).ready(function () {
-    // Javascript method's body can be found in assets/js/demos.js
-    demo.initGoogleMaps();
-  });
-</script>{% endblock extrajs %}

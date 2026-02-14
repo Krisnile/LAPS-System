@@ -4,7 +4,7 @@
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 {% get_direction as direction %}
 {% get_admin_setting as admin_setting %}
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 
 <head>
     <title>{% block title %}{% endblock title %} | Django Black Dashboard </title>
