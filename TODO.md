@@ -1,22 +1,23 @@
 LAPS-System 待办（中文，按优先级）
 
-说明：本文件将之前对项目改进与工程化思路整理为可执行的 TODO 列表，包含目的、验收标准、相关文件提示与推荐起步命令，便于你逐步完善。
+说明：可执行的改进列表，含目的、验收与相关文件，便于逐步完善。
 
-## 优先（立刻做，影响大）
+## 已完成（供参考）
 
-- 完成模板的客户端 i18n 覆盖（确保所有可见文本都有 `data-en`/`data-zh`）
-  - 目的：保证语言切换能覆盖所有页面文本。
-  - 验收：切换语言后没有明显未翻译的英文或中文遗漏（抽查首页、项目页、任务页、标注页）。
-  - 相关文件：`templates/` 下所有文件（重点 `templates/includes/*`, `templates/pages/*`）。
-  - 建议起步命令：
-    ```bash
-    # 列出已带 data-en 的文件（快速了解覆盖率）
-    grep -R --line-number "data-en" templates/ | cut -d: -f1 | sort -u
+- 仪表盘 i18n：dashboard 页可见文案已加 `data-en`/`data-zh`。
+- 仪表盘主页增强：欢迎语、KPI（含已完成）、最近任务列表与标注入口、空状态快速开始引导（`views.py::index`、`dashboard.html`）。
+- 专业主题与布局：`laps-theme.css`（Inter 字体、侧栏/卡片/页脚样式）；页脚与主背景一致（透明）；main-panel 左边距与 footer 左内边距避免被侧栏遮挡。
+- 固定插件浅色可读：`fixed-plugin-override.css` 保证主题/语言下拉在 white-content 下可读。
+- 页面加载优化：全局已移除 Google Maps、TrackJS；字体异步加载（不阻塞首屏）；Chart/demo 全局加载以保持切换稳定。
 
-    # 列出没有 data-en 的模板文件（初探）
-    find templates -name '*.html' -print0 | xargs -0 grep -L "data-en" | sed 's/^/ /'
-    ```
-  - 估时：中（1-3 天）
+## 优先（建议先做）
+
+- 补全其余页面的客户端 i18n（`data-en`/`data-zh`）
+  - 目的：语言切换覆盖项目、数据集、任务、footer 等所有可见文本。
+  - 验收：切换语言后各主要页面无遗漏。
+  - 相关文件：`templates/pages/projects.html`、`datasets.html`、`tasks.html`、`templates/includes/footer.html` 等。
+  - 参考命令：`grep -R "data-en" templates/ | cut -d: -f1 | sort -u`；`find templates -name '*.html' -exec grep -L "data-en" {} \;`
+  - 估时：中（1-2 天）
 
 - 处理 SAM 模型加载的 torch FutureWarning（安全/兼容性）
   - 目的：消除 torch.load 的安全/未来不兼容风险（例如 `weights_only` 参数）。
@@ -84,20 +85,15 @@ LAPS-System 待办（中文，按优先级）
 
 ## 小任务 / UX 改善（快速可交付）
 
-- 修复 light-theme 下 fixed-plugin 的所有可见性问题（已添加 override，但检查其他元素）
-  - 验收：light/dark 两种模式下均无文本不可见问题。
-  - 文件：`static/assets/css/fixed-plugin-override.css`、`templates/includes/head.html`
+- 在 fixed-plugin 添加语言切换提示（帮助文案），确保 `#langSelect` 可访问
   - 估时：小（数小时）
 
-- 在 fixed-plugin 添加语言切换提示（帮助文案），并把 `#langSelect` 放在可访问位置
+- 提供「示例数据 / 快速体验」按钮（load demo dataset）
+  - 目的：新用户一键加载 demo project/dataset/task 体验标注。
+  - 验收：点击即可体验完整流程。
   - 估时：小（数小时）
 
-- 提供“示例数据 / 快速体验”按钮（load demo dataset）
-  - 目的：让新用户能快速体验标注流程。
-  - 验收：点击加载 demo project/dataset/task。
-  - 估时：小（数小时）
-
-- 异常与错误提示国际化（在 `annotation.js` 中把提示通过 `lang-switcher` 获取）
+- 标注页错误/提示文案国际化（`annotation.js` 中通过 `lang-switcher` 或 `data-en`/`data-zh` 获取）
   - 估时：小（半天）
 
 ## QA / 验收清单（质量门）
@@ -119,20 +115,15 @@ python3 manage.py runserver
 python3 manage.py test apps.pages
 ```
 
-## 建议的短期行动计划（阶段化）
+## 建议的短期行动计划
 
-1.（今天/明天）扫描并填补缺失的 `data-en`/`data-zh`，修复 light-theme 可见性（高优先）。
-2.（1 周内）添加 3-5 个关键后端测试，确保保存/读取/下一任务流程稳定（高优先）。
-3.（2 周内）实现边界框或多边形工具的最简版本（中优先）。
-4.（1 个月）导出为 COCO，并开始考虑 server-side i18n 与权限设计（中→低优先）。
+1. 补全项目/数据集/任务/页脚等页面的 `data-en`/`data-zh`。
+2. 添加 3–5 个关键后端测试（`/tasks/next/`、`/segment-image/`、`/api/annotations/`）。
+3. 实现边界框或多边形工具的最简版本（可选）。
+4. 导出 COCO 格式；后续可考虑 server-side i18n 与权限角色。
 
 ## 风险与注意事项
 
-- 客户端 i18n 快速但有局限：SEO、无 JS 环境和复杂文本需要 server-side i18n。
-- SAM 模型加载的警告需要在上线前解决或记录风险（安全 / future default）。
-- 大文件存储需规划（本地 vs S3）；本地适合开发，生产建议 S3。
-
-## 下一步（你可以选择）
-- 选项 1：扫描 `templates/` 并生成「缺失 `data-en` 的模板文件清单」。
-- 选项 2：我直接为某些页面（例如 `templates/pages/annotation.html`、`templates/includes/menu-list.html`）补全 `data-en`/`data-zh` 并提交修改（需要你确认要我直接修改）。
-- 选项 3：为关键 API 写 2-3 个单元测试并运行它们。
+- 客户端 i18n：SEO 与无 JS 场景有限，复杂需求可迁 Django gettext。
+- SAM：`torch.load` 的 FutureWarning 建议上线前处理或记录。
+- 存储：生产环境建议 S3 等；本地适合开发。

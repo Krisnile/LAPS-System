@@ -3,13 +3,7 @@
 
 {% block title %}Dashboard{% endblock title %}
 
-{% block extrastyle %}
-<style>
-  .kpi { display:flex; gap:12px; }
-  .kpi .card { flex:1; text-align:center; }
-  .dashboard-actions { margin-top:18px; }
-</style>
-{% endblock extrastyle %}
+{% block extrastyle %}{% endblock extrastyle %}
 
 {% block content %}
 <div class="content">
@@ -17,45 +11,75 @@
     <div class="col-md-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">Data Management Dashboard</h4>
-          <p class="card-category">Quick overview of projects, datasets and tasks</p>
+          <h4 class="card-title" data-en="Data Management Dashboard" data-zh="数据管理仪表盘">数据管理仪表盘</h4>
+          <p class="card-category" data-en="Quick overview of projects, datasets and tasks" data-zh="项目、数据集与任务的快速概览">项目、数据集与任务的快速概览</p>
+          {% if request.user.is_authenticated %}
+          <p class="mb-0 mt-1 text-muted" style="font-size:0.9rem;">
+            <span data-en="Welcome back" data-zh="欢迎回来">欢迎回来</span>，{{ request.user.get_full_name|default:request.user.username }}。
+          </p>
+          {% endif %}
         </div>
         <div class="card-body">
+          {% if not projects_count and not datasets_count and not tasks_count %}
+          <div class="alert alert-info mb-4" role="alert">
+            <h6 class="alert-heading" data-en="Get started" data-zh="快速开始">快速开始</h6>
+            <p class="mb-0" data-en="Create your first project, add a dataset with images, then create tasks and open the annotation workspace." data-zh="创建第一个项目 → 添加数据集并上传图片 → 创建任务 → 打开标注工作区开始标注。">创建第一个项目 → 添加数据集并上传图片 → 创建任务 → 打开标注工作区开始标注。</p>
+            <hr>
+            <a class="btn btn-primary btn-sm" href="{% url 'projects' %}" data-en="Create Project" data-zh="创建项目">创建项目</a>
+          </div>
+          {% endif %}
+
           <div class="kpi">
             <div class="card">
               <div class="card-body">
-                <h5>Projects</h5>
+                <h5 data-en="Projects" data-zh="项目">项目</h5>
                 <h2>{{ projects_count|default:0 }}</h2>
-                <p><a href="{% url 'projects' %}">Manage projects</a></p>
+                <p><a href="{% url 'projects' %}" data-en="Manage projects" data-zh="管理项目">管理项目</a></p>
               </div>
             </div>
             <div class="card">
               <div class="card-body">
-                <h5>Datasets</h5>
+                <h5 data-en="Datasets" data-zh="数据集">数据集</h5>
                 <h2>{{ datasets_count|default:0 }}</h2>
-                <p><a href="{% url 'datasets' %}">Manage datasets</a></p>
+                <p><a href="{% url 'datasets' %}" data-en="Manage datasets" data-zh="管理数据集">管理数据集</a></p>
               </div>
             </div>
             <div class="card">
               <div class="card-body">
-                <h5>Tasks</h5>
+                <h5 data-en="Tasks" data-zh="任务">任务</h5>
                 <h2>{{ tasks_count|default:0 }}</h2>
-                <p>Pending: {{ pending_tasks|default:0 }} — <a href="{% url 'tasks' %}">View tasks</a></p>
+                <p><span data-en="Pending" data-zh="待办">待办</span>: {{ pending_tasks|default:0 }} · <span data-en="Done" data-zh="已完成">已完成</span>: {{ completed_tasks|default:0 }} — <a href="{% url 'tasks' %}" data-en="View tasks" data-zh="查看任务">查看任务</a></p>
               </div>
             </div>
           </div>
 
           <div class="dashboard-actions">
-            <a class="btn btn-primary" href="{% url 'projects' %}">Create Project</a>
-            <a class="btn btn-secondary" href="{% url 'datasets' %}">Upload Dataset</a>
-            <a class="btn btn-success" href="{% url 'annotation' %}">Open Annotate</a>
+            <a class="btn btn-primary" href="{% url 'projects' %}" data-en="Create Project" data-zh="创建项目">创建项目</a>
+            <a class="btn btn-secondary" href="{% url 'datasets' %}" data-en="Upload Dataset" data-zh="上传数据集">上传数据集</a>
+            <a class="btn btn-success" href="{% url 'annotation' %}" data-en="Open Annotate" data-zh="打开标注">打开标注</a>
           </div>
 
           <hr />
-          <h5>Recent tasks</h5>
+          <h5 data-en="Recent tasks" data-zh="最近任务">最近任务</h5>
           <div>
-            {% comment %} light recent tasks preview: link to tasks page for full view {% endcomment %}
-            <p>Open Tasks and Recent Activity are available in Tasks and Projects pages.</p>
+            {% if recent_tasks %}
+            <ul class="list-group list-group-flush">
+              {% for task in recent_tasks %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-0" style="background:transparent; border-color: rgba(255,255,255,0.06);">
+                <span class="text-truncate" style="max-width:60%;" title="{{ task.image.file.name }}">{{ task.project.name }} / {{ task.image.file.name|truncatechars:30 }}</span>
+                <span class="dashboard-task-actions">
+                  <span class="badge badge-{% if task.status == 'done' %}success{% elif task.status == 'in_review' %}warning{% else %}secondary{% endif %}">{{ task.get_status_display }}</span>
+                  <a class="btn btn-sm btn-outline-primary" href="{% url 'annotation' %}?task_id={{ task.id }}" data-en="Annotate" data-zh="标注">标注</a>
+                </span>
+              </li>
+              {% endfor %}
+            </ul>
+            <p class="mt-2 mb-0">
+              <a href="{% url 'tasks' %}" data-en="View all tasks" data-zh="查看全部任务">查看全部任务</a>
+            </p>
+            {% else %}
+            <p class="text-muted mb-0" data-en="No tasks yet. Create a project and dataset, then add tasks." data-zh="暂无任务。请先创建项目与数据集，再创建任务。">暂无任务。请先创建项目与数据集，再创建任务。</p>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -67,9 +91,7 @@
 {% block extrajs %}
 <script>
     $(document).ready(function () {
-        // Javascript method's body can be found in assets/js/demos.js
         if (typeof demo !== 'undefined' && demo.initDashboardPageCharts) demo.initDashboardPageCharts();
-
     });
 </script>
 {% endblock extrajs %}

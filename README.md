@@ -9,10 +9,11 @@
 
 主要特性概览
 - 图像上传与管理：按数据集组织图片并生成任务。
-- 交互式标注界面：点/框提示 -> SAM 分割 -> 结果可视化，支持保存、撤销、清除与历史回放。
-- 项目/任务管理：任务分配、标注保存并记录 Annotation 记录到数据库。
-- 客户端国际化：页面元素通过 data-en / data-zh 实现即时切换，语言选择保存在 localStorage（轻量实现）。
-- 主题切换：深色/浅色（white-content）可切换，并有样式覆盖以保证可读性。
+- 交互式标注界面：点/框提示 → SAM 分割 → 结果可视化，支持保存、撤销、清除与历史回放。
+- 项目/任务管理：任务分配、标注保存并记录 Annotation 到数据库。
+- 仪表盘主页：欢迎语、项目/数据集/任务 KPI（含待办与已完成）、最近任务列表与快捷标注入口、空状态时快速开始引导。
+- 客户端国际化：页面元素通过 `data-en` / `data-zh` 即时切换，语言保存在 localStorage。
+- 主题与界面：深色/浅色（white-content）可切换；专业主题 `laps-theme.css`（Inter 字体、统一卡片与侧栏样式）；页脚与主背景一致；固定插件（主题/语言）在浅色下可读。
 
 快速开始（开发者）
 
@@ -48,9 +49,9 @@ python3 manage.py runserver
 
 下面按页面给出“用户可见功能（如何操作）”与“程序员注意点/实现位置（方便后续开发）”。
 
-1) 仪表盘（Dashboard）
-- 用户：快速查看整体项目/任务统计、近期活动、系统状态。通常作为登录后的首页。
-- 程序员：模板文件 `templates/pages/dashboard.html`；可在 `apps/pages/views.py` 增加统计逻辑与上下文数据。
+1) 仪表盘（Dashboard，主页）
+- 用户：登录后首页；欢迎语、项目/数据集/任务数量（含待办与已完成）、快捷操作（创建项目、上传数据集、打开标注）；最近任务列表（状态徽章 + 标注入口）；无数据时显示快速开始引导。
+- 程序员：模板 `templates/pages/dashboard.html`；视图 `apps/pages/views.py::index` 提供 `projects_count`、`datasets_count`、`tasks_count`、`pending_tasks`、`completed_tasks`、`recent_tasks`。
 
 2) 项目（Projects）
 - 用户：管理项目（创建/编辑/删除）；每个项目可关联标签配置与多个数据集。
@@ -81,9 +82,9 @@ python3 manage.py runserver
 
 程序员快速参考（文件与逻辑位置）
 - 核心 App：`apps/pages/`（models.py, views.py, urls.py, templates/pages/）
-- 模板布局：`templates/layouts/base.html` 与 `templates/includes/`（sidebar, navigation, fixed-plugin 等）
-- 静态资源：`static/assets/js/`、`static/assets/css/`（注：新增 `lang-switcher.js` 和 `fixed-plugin-override.css`）
-- SAM 相关：`apps/pages/sam_inference.py`（或第三方库 import），注意运行时可能输出 torch 的 FutureWarning（关于 torch.load 的 weights_only 参数），建议在部署时审查模型加载安全参数。
+- 模板布局：`templates/layouts/base.html` 与 `templates/includes/`（sidebar, navigation, fixed-plugin, footer 等）
+- 静态资源：`static/assets/js/`（如 `lang-switcher.js`、`annotation.js`）、`static/assets/css/`（`laps-theme.css` 主题与侧栏/卡片/页脚样式，`fixed-plugin-override.css` 浅色主题与页脚透明）
+- SAM：`apps/pages/sam_inference.py`；运行时可能有 torch 的 FutureWarning（`torch.load` 的 `weights_only`），部署前建议处理。
 
 国际化 & 主题（实现说明）
 - 当前实现采用客户端即时切换：所有需要翻译的可见文本都应带上 `data-en` 与 `data-zh` 属性（这样 `lang-switcher.js` 能统一替换）。

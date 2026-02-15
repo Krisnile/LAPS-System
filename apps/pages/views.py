@@ -20,19 +20,26 @@ except Exception:
 def index(request):
     # Dashboard as the home page for data management
     context = {'segment': 'dashboard'}
-    # Simple metrics for dashboard (counts)
     try:
         projects_count = models.Project.objects.count()
         datasets_count = models.Dataset.objects.count()
         tasks_count = models.Task.objects.count()
         pending_tasks = models.Task.objects.filter(status='new').count()
+        completed_tasks = models.Task.objects.filter(status='done').count()
+        recent_tasks = (
+            models.Task.objects.select_related('project', 'image')
+            .order_by('-created_at')[:8]
+        )
     except Exception:
-        projects_count = datasets_count = tasks_count = pending_tasks = 0
+        projects_count = datasets_count = tasks_count = pending_tasks = completed_tasks = 0
+        recent_tasks = []
     context.update({
         'projects_count': projects_count,
         'datasets_count': datasets_count,
         'tasks_count': tasks_count,
         'pending_tasks': pending_tasks,
+        'completed_tasks': completed_tasks,
+        'recent_tasks': recent_tasks,
     })
     return render(request, 'pages/dashboard.html', context)
 

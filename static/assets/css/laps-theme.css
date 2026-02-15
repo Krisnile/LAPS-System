@@ -1,0 +1,378 @@
+/**
+ * LAPS-System 专业仪表盘主题覆盖
+ * 在保留原有功能前提下提升视觉层次与专业感（深色/浅色主题兼容）
+ */
+
+/* ========== 字体与基础 ========== */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 主内容区 ========== */
+.main-panel {
+  min-height: 100vh;
+  background: var(--laps-bg, #1a1c2e);
+  margin-left: 250px;
+}
+body.white-content .main-panel {
+  background: var(--laps-bg-light, #f0f2f7);
+}
+@media (max-width: 991px) {
+  .main-panel {
+    margin-left: 0;
+  }
+}
+
+.content {
+  padding: 28px 24px 32px;
+}
+@media (min-width: 992px) {
+  .content {
+    padding: 32px 30px 40px;
+  }
+}
+
+/* ========== 侧边栏 ========== */
+.sidebar {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+body.white-content .sidebar {
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.06);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sidebar .sidebar-wrapper {
+  padding-top: 18px;
+  padding-bottom: 24px;
+}
+
+.sidebar .logo {
+  padding: 12px 20px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+body.white-content .sidebar .logo {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.sidebar .simple-text.logo-normal {
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sidebar .nav > li > a {
+  margin: 2px 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sidebar .nav > li > a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+body.white-content .sidebar .nav > li > a:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .nav > li.active > a {
+  background: rgba(225, 78, 202, 0.18);
+  color: #e14eca;
+  font-weight: 500;
+}
+body.white-content .sidebar .nav > li.active > a {
+  background: rgba(94, 114, 228, 0.12);
+  color: #5e72e4;
+}
+
+.sidebar .nav p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ========== 顶栏 ========== */
+.navbar.navbar-absolute.navbar-transparent {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: saturate(180%) blur(12px);
+  background: rgba(26, 28, 46, 0.85);
+}
+body.white-content .navbar.navbar-absolute.navbar-transparent {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.navbar .navbar-brand {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ========== 卡片 ========== */
+.card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+body.white-content .card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+}
+
+.card .card-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+body.white-content .card .card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.card .card-title {
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 4px;
+}
+
+.card .card-category {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  font-weight: 400;
+}
+
+.card .card-body {
+  padding: 22px 24px;
+}
+
+/* ========== 仪表盘 KPI 卡片 ========== */
+.content .kpi {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.content .kpi .card {
+  flex: 1;
+  min-width: 140px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.content .kpi .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+}
+body.white-content .content .kpi .card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.content .kpi .card .card-body {
+  padding: 20px 16px;
+}
+.content .kpi .card h5 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+.content .kpi .card h2 {
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.content .kpi .card p {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+.content .kpi .card p a {
+  font-weight: 500;
+  text-decoration: none;
+  opacity: 0.9;
+}
+.content .kpi .card p a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 8px;
+  padding: 10px 18px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+.dashboard-actions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ========== 内容区分隔与标题 ========== */
+.content hr {
+  border: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 24px 0 18px;
+}
+body.white-content .content hr {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.content h5:not(.card-title) {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+/* ========== 页脚（与主背景一致，左侧留出与侧栏同宽） ========== */
+.footer {
+  padding: 16px 24px 16px 250px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.8125rem;
+  background: transparent;
+}
+body.white-content .footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: transparent;
+}
+@media (max-width: 991px) {
+  .footer {
+    padding-left: 24px;
+  }
+}
+
+.footer .nav-link {
+  font-weight: 500;
+  opacity: 0.9;
+}
+.footer .copyright {
+  opacity: 0.8;
+  font-size: 0.75rem;
+}
+
+/* ========== 表格（若页面使用） ========== */
+.table {
+  font-size: 0.875rem;
+}
+.table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  border-bottom-width: 1px;
+  padding: 12px 16px;
+}
+.table tbody td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* ========== 表单控件 ========== */
+.form-control {
+  border-radius: 8px;
+  font-size: 0.875rem;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+body.white-content .form-control {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: #fff;
+}
+
+/* ========== 下拉与导航下拉 ========== */
+.dropdown-menu {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 6px 0;
+}
+body.white-content .dropdown-menu {
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  margin: 2px 8px;
+  width: auto;
+}
+
+/* ========== 搜索模态框 ========== */
+.modal-content {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+body.white-content .modal-content {
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.modal-header .form-control {
+  border-radius: 8px;
+}
+
+/* ========== 标注工作区（保持功能与可读性） ========== */
+.content .annotation-canvas-card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+body.white-content .content .annotation-canvas-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.content .card-sidebar .card {
+  border-radius: 12px;
+}
+
+/* 仪表盘最近任务：状态徽章与标注按钮统一高度与宽度 */
+.dashboard-task-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dashboard-task-actions .badge {
+  min-width: 4.5rem;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35em 0.6em;
+  font-size: 0.8125rem;
+}
+.dashboard-task-actions .btn {
+  min-width: 4.5rem;
+  height: 28px;
+  padding: 0 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+}

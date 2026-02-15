@@ -41,3 +41,13 @@ body.white-content .fixed-plugin .badge {
 
 /* Ensure header/title in the dropdown is dark */
 body.white-content .fixed-plugin li.header-title { color: #222222 !important; }
+
+/* Footer 与主背景一致，无缝衔接 */
+.footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+body.white-content .footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
