@@ -1,0 +1,62 @@
+{% extends 'layouts/base_standalone.html' %}
+{% load static %}
+
+{% block title %}Account & Settings{% endblock title %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title" data-en="Account & Settings" data-zh="账户与设置">账户与设置</h4>
+    <p class="card-category" data-en="Manage your avatar, email and display name" data-zh="管理头像、邮箱与昵称">管理头像、邮箱与昵称</p>
+  </div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" class="profile-form">
+      {% csrf_token %}
+      <div class="form-group text-center mb-4">
+        <label class="d-block" data-en="Avatar" data-zh="头像">头像</label>
+        <div class="profile-avatar-wrap mb-2">
+          {% if profile.avatar %}
+            <img id="avatarPreview" src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
+          {% else %}
+            <img id="avatarPreview" src="{% static 'assets/img/anime3.png' %}" alt="Avatar" class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
+          {% endif %}
+        </div>
+        <input type="file" name="avatar" id="id_avatar" accept="image/*" class="form-control-file" style="max-width:220px;margin:0 auto;">
+        <small class="text-muted d-block mt-1" data-en="Optional. JPG/PNG recommended." data-zh="可选，建议 JPG/PNG。">可选，建议 JPG/PNG。</small>
+      </div>
+      <div class="form-group">
+        <label for="id_email" data-en="Email" data-zh="邮箱">邮箱</label>
+        <input type="email" name="email" id="id_email" class="form-control" value="{{ request.user.email }}" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label for="id_nickname" data-en="Display name / Nickname" data-zh="昵称">昵称</label>
+        <input type="text" name="nickname" id="id_nickname" class="form-control" value="{{ request.user.first_name }}" placeholder="" maxlength="150">
+        <small class="text-muted" data-en="Shown in dashboard and profile." data-zh="将显示在仪表盘与个人页。">将显示在仪表盘与个人页。</small>
+      </div>
+      <div class="form-group mb-0 dashboard-actions">
+        <button type="submit" class="btn btn-primary" data-en="Save" data-zh="保存">保存</button>
+        <a href="{% url 'index' %}" class="btn btn-secondary" data-en="Back to Dashboard" data-zh="返回仪表盘">返回仪表盘</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extrajs %}
+<script>
+(function(){
+  var input = document.getElementById('id_avatar');
+  var preview = document.getElementById('avatarPreview');
+  if (input && preview) {
+    input.addEventListener('change', function(e){
+      var f = e.target.files[0];
+      if (f && f.type.indexOf('image') === 0) {
+        var r = new FileReader();
+        r.onload = function(){ preview.src = r.result; };
+        r.readAsDataURL(f);
+      }
+    });
+  }
+})();
+</script>
+{% endblock extrajs %}

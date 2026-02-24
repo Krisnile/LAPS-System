@@ -1,3 +1,4 @@
+/* theme-switcher.css: 顶栏/固定插件中浅色/深色开关的滑块样式，与 laps-theme/themeSettings 配合 */
 /* The switch - the box around the slider */
 .switch {
     --width-of-switch: 3.5em;

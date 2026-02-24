@@ -1,7 +1,17 @@
-from django.shortcuts import render, get_object_or_404
+"""
+apps.pages.views
+----------------
+主站页面视图：仪表盘、项目/数据集/任务、标注、个人信息、用户管理（admin）、
+登录重定向、API（segment-image、annotations 等）。依赖 admin_black 登录视图。
+"""
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.models import User
 from PIL import Image as PILImage, ImageDraw
 from django.conf import settings
 import os
@@ -10,13 +20,30 @@ import base64
 from . import models
 from django.utils import timezone
 
-# Try to use SAM inference helper in apps/pages/sam_inference.py
+# SAM 分割推理（可选）：apps/pages/sam_inference.run_segmentation_on_bytes
 try:
     from .sam_inference import run_segmentation_on_bytes
 except Exception:
     run_segmentation_on_bytes = None
 
 
+def _is_manage_admin(user):
+    """仅用户名 admin 可进入用户管理系统"""
+    return user.is_authenticated and user.username == 'admin'
+
+
+from admin_black.views import AuthSignin
+
+
+class LAPSLoginView(AuthSignin):
+    """登录成功后若为 admin 则跳转到 /manage/，否则跳转首页"""
+    def get_success_url(self):
+        if self.request.user.username == 'admin':
+            return '/manage/'
+        return super().get_success_url() or '/'
+
+
+@login_required
 def index(request):
     # Dashboard as the home page for data management
     context = {'segment': 'dashboard'}
@@ -44,29 +71,69 @@ def index(request):
     return render(request, 'pages/dashboard.html', context)
 
 
+@login_required
+def profile(request):
+    """个人信息与设置页：头像、邮箱、昵称"""
+    user = request.user
+    try:
+        profile_obj, _ = models.UserProfile.objects.get_or_create(user=user, defaults={})
+    except Exception:
+        class _DummyProfile:
+            avatar = None
+        profile_obj = _DummyProfile()
+    if request.method == 'POST' and hasattr(profile_obj, 'save'):
+        try:
+            user.email = (request.POST.get('email') or user.email or '').strip() or user.email
+            user.first_name = (request.POST.get('nickname') or user.first_name or '').strip()
+            user.save()
+            if request.FILES.get('avatar'):
+                profile_obj.avatar = request.FILES['avatar']
+                profile_obj.save()
+            messages.success(request, '保存成功。邮箱与昵称已更新。')
+        except Exception:
+            messages.error(request, '保存失败，请重试。')
+        return redirect('profile')
+    return render(request, 'pages/profile.html', {
+        'segment': 'profile',
+        'profile': profile_obj,
+    })
+
+
+@login_required
+def user_manage_list(request):
+    """用户管理列表（仅 admin 可访问，对应 auth_user 表信息）"""
+    if not _is_manage_admin(request.user):
+        messages.warning(request, '无权限访问用户管理。')
+        return redirect('index')
+    users = User.objects.all().order_by('-date_joined')
+    return render(request, 'pages/user_manage.html', {
+        'segment': 'user_manage',
+        'users': users,
+    })
+
+
+@login_required
+@require_http_methods(['POST'])
+def user_manage_toggle_active(request, pk):
+    """切换用户 is_active（仅 admin）"""
+    if not _is_manage_admin(request.user):
+        return redirect('index')
+    user = get_object_or_404(User, pk=pk)
+    if user.username == 'admin':
+        messages.warning(request, '不能禁用 admin 账户。')
+        return redirect('user_manage')
+    user.is_active = not user.is_active
+    user.save()
+    messages.success(request, f'用户 {user.username} 已{"启用" if user.is_active else "禁用"}。')
+    return redirect('user_manage')
+
+
 def image_processing(request):
-    context = {'segment': 'image_processing'}
-
-    if request.method == 'POST' and request.FILES.get('image'):
-        uploaded_file = request.FILES['image']
-        fs = FileSystemStorage()
-
-        filename = fs.save(uploaded_file.name, uploaded_file)
-        context['uploaded_image'] = fs.url(filename)
-
-        # PIL 灰度处理
-        image_path = fs.path(filename)
-        img = Image.open(image_path).convert('L')
-
-        processed_filename = f"processed_{filename}"
-        processed_path = os.path.join(fs.location, processed_filename)
-        img.save(processed_path)
-
-        context['processed_image'] = fs.url(processed_filename)
-
-    return render(request, 'pages/image_processing.html', context)
+    """原图像处理页已归档，模板已移除，重定向到首页。"""
+    return redirect('index')
 
 
+@login_required
 def projects(request):
     """Projects management listing."""
     context = {'segment': 'projects'}
@@ -80,6 +147,7 @@ def projects(request):
     return render(request, 'pages/projects.html', context)
 
 
+@login_required
 def datasets(request):
     """Datasets listing and upload."""
     context = {'segment': 'datasets'}
@@ -109,6 +177,7 @@ def datasets(request):
     return render(request, 'pages/datasets.html', context)
 
 
+@login_required
 def tasks(request):
     """Tasks list and assignment page."""
     context = {'segment': 'tasks'}
@@ -132,6 +201,7 @@ def tasks(request):
     return render(request, 'pages/tasks.html', context)
 
 
+@login_required
 def annotation(request):
     """Annotation workspace page. This is a skeleton UI that will call into
     the existing `segment_image` endpoint for SAM or the fallback.
@@ -143,23 +213,8 @@ def annotation(request):
 
 
 def examples_index(request):
-    """List archived/example templates available for preview.
-
-    This reads files from templates/archived_templates and builds a safe
-    whitelist of names that can be rendered via `examples_view`.
-    """
-    archived_dir = os.path.join(settings.BASE_DIR, 'templates', 'archived_templates')
-    files = []
-    try:
-        for f in sorted(os.listdir(archived_dir)):
-            if f.endswith('.html'):
-                name = os.path.splitext(f)[0]
-                files.append({'name': name, 'filename': f})
-    except Exception:
-        files = []
-
-    context = {'segment': 'examples', 'examples': files}
-    return render(request, 'pages/examples.html', context)
+    """示例列表页模板 pages/examples.html 已移除，重定向到首页。"""
+    return redirect('index')
 
 
 def examples_view(request, name):
@@ -302,7 +357,7 @@ def segment_image(request):
             output_bytes = run_segmentation_on_bytes(img_bytes, points=points, box=box)
             return HttpResponse(output_bytes, content_type='image/png')
 
-        img = Image.open(uploaded_file)
+        img = PILImage.open(uploaded_file)
         draw = ImageDraw.Draw(img)
         draw.rectangle([10, 10, img.width-10, img.height-10], outline="red", width=5)
         output = BytesIO()

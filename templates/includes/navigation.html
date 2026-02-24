@@ -46,30 +46,18 @@
             </ul>
                 </li>
                 <li class="dropdown nav-item">
-                    <a href="{% url 'admin:logout' %}" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="photo">
-                            <img src="{% static 'assets/img/anime3.png' %}" alt="Profile Photo">
+                            <img src="{% static 'assets/img/anime3.png' %}" alt="Profile">
                         </div>
                         <b class="caret d-none d-lg-block d-xl-block"></b>
-                        <p class="d-lg-none">
-                            Log out
-                        </p>
+                        <p class="d-lg-none" data-en="Account" data-zh="账户">账户</p>
                     </a>
-                        <ul class="dropdown-menu dropdown-navbar">
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Profile" data-zh="个人资料">个人资料</a>
-                        </li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Settings" data-zh="设置">设置</a>
-                        </li>
+                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar">
+                        <li class="nav-link"><a href="{% url 'profile' %}" class="nav-item dropdown-item" data-en="Account & Settings" data-zh="账户与设置">账户与设置</a></li>
                         <li class="dropdown-divider"></li>
                         {% if request.user.is_authenticated %}
-                        {% if request.user.is_superuser %}
-                        <li class="nav-link"><a href="{% url 'admin:password_change' %}" class="dropdown-item" data-en="Change Password" data-zh="修改密码">修改密码</a></li>
                         <li class="nav-link"><a href="{% url 'logout' %}" class="nav-item dropdown-item" data-en="Logout" data-zh="登出">登出</a></li>
-                        {% else %}
-
-            <li><a href="{% url 'password_change' %}" class="dropdown-item"><i class="feather icon-lock"></i> <span data-en="Change Password" data-zh="修改密码">修改密码</span></a></li>
-            <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="feather icon-lock"></i> <span data-en="Logout" data-zh="登出">登出</span></a></li>
-                        {% endif %}
                         {% endif %}
                     </ul>
                 </li>

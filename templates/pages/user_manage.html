@@ -1,0 +1,62 @@
+{% extends 'layouts/base_manage.html' %}
+{% load static %}
+
+{% block title %}用户管理{% endblock title %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title" data-en="User Management" data-zh="用户管理">用户管理</h4>
+    <p class="card-category" data-en="View and manage users (auth_user)" data-zh="查看与管理用户（对应数据库 auth_user 表）">查看与管理用户（对应数据库 auth_user 表）</p>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table tablesorter">
+        <thead class="text-primary">
+          <tr>
+            <th>ID</th>
+            <th data-en="Username" data-zh="用户名">用户名</th>
+            <th data-en="Email" data-zh="邮箱">邮箱</th>
+            <th data-en="Display name" data-zh="昵称">昵称</th>
+            <th data-en="Date joined" data-zh="注册时间">注册时间</th>
+            <th data-en="Status" data-zh="状态">状态</th>
+            <th data-en="Actions" data-zh="操作">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email|default:"—" }}</td>
+            <td>{{ u.first_name|default:"—" }}</td>
+            <td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+            <td>
+              {% if u.is_active %}
+              <span class="badge badge-success" data-en="Active" data-zh="启用">启用</span>
+              {% else %}
+              <span class="badge badge-secondary" data-en="Inactive" data-zh="禁用">禁用</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.username != 'admin' %}
+              <form method="post" action="{% url 'user_manage_toggle' u.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if u.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                  {% if u.is_active %}<span data-en="Disable" data-zh="禁用">禁用</span>{% else %}<span data-en="Enable" data-zh="启用">启用</span>{% endif %}
+                </button>
+              </form>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted" data-en="No users" data-zh="暂无用户">暂无用户</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

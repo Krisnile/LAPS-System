@@ -1,7 +1,15 @@
 from django.db import models
 from django.conf import settings
-from django.db import models
 from django.utils import timezone
+
+
+class UserProfile(models.Model):
+    """用户扩展信息：头像等（与 Django User 一对一）"""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='laps_profile')
+    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
 
 
 # Existing model kept for compatibility

@@ -23,7 +23,7 @@ anthropic==0.34.2
 whitenoise==6.7.0
 gunicorn==23.0.0
 
-# DB
-#psycopg2-binary==2.9.9
-#mysqlclient==2.1.1
+# DB (use PostgreSQL: set DB_ENGINE=postgresql and DB_* in .env)
+psycopg2-binary==2.9.9
+# mysqlclient==2.1.1
 django-dbbackup==4.2.1

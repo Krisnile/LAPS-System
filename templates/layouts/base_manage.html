@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="{{ request.LANGUAGE_CODE|default:'zh' }}">
+
+<head>
+    <title>{% block title %}{% endblock title %} | 用户管理</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/black-dashboard.css' %}?v=1.0.0" rel="stylesheet" />
+    <link href="{% static 'assets/css/theme-switcher.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/fixed-plugin-override.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/laps-theme.css' %}?v=1.0.0" rel="stylesheet" />
+    <style>
+        body.manage-page { min-height: 100vh; background: #1a1c2e; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body.manage-page.white-content { background: #f0f2f7; }
+        .manage-topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); }
+        body.manage-page.white-content .manage-topbar { border-bottom-color: rgba(0,0,0,0.08); background: #fff; }
+        .manage-topbar a { color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; margin-left: 16px; }
+        body.manage-page.white-content .manage-topbar a { color: #32325d; }
+        .manage-topbar a:hover { opacity: 0.9; }
+        .manage-topbar .topbar-left { font-weight: 600; }
+        .manage-main { max-width: 980px; margin: 0 auto; padding: 32px 24px; }
+        .manage-main .card { border-radius: 12px; overflow: hidden; }
+        body.manage-page .fixed-plugin { top: 130px; background: rgba(0,0,0,.3); border-radius: 8px 0 0 8px; }
+        body.manage-page .fixed-plugin .fa-cog { color: #fff; }
+        body.manage-page.white-content .fixed-plugin { background: rgba(0,0,0,.15); }
+        body.manage-page.white-content .fixed-plugin .fa-cog { color: #32325d; }
+    </style>
+    {% block extrahead %}{% endblock extrahead %}
+    {% block extrastyle %}{% endblock extrastyle %}
+</head>
+
+<body class="manage-page" id="manage-body">
+    <header class="manage-topbar">
+        <span class="topbar-left" data-en="User Management System" data-zh="用户管理系统">用户管理系统</span>
+        <a href="{% url 'logout' %}?next=/accounts/auth-signin/" data-en="Logout" data-zh="退出">退出</a>
+    </header>
+    {% include 'includes/fixed-plugin.html' %}
+    <main class="manage-main">
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock content %}
+    </main>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/themeSettings.js' %}"></script>
+    <script src="{% static 'assets/js/lang-switcher.js' %}"></script>
+    <script>
+      (function(){ var light = localStorage.getItem('light_color'); if (light === 'true') document.getElementById('manage-body').classList.add('white-content'); })();
+    </script>
+    {% block extrajs %}{% endblock extrajs %}
+</body>
+
+</html>

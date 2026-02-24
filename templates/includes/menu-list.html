@@ -30,16 +30,9 @@
       <p data-en="Annotate" data-zh="标注">标注</p>
     </a>
   </li>
-  {# Hidden: other app pages not needed for the annotation workflow. Uncomment if required later. #}
+  {# 用户管理为独立系统，admin 登录后自动跳转 /manage/，不在 LAPS 侧边栏显示 #}
   
-  {% if request.user.is_authenticated %}
-  <li>
-    <a href="{% url 'logout' %}">
-      <i class="tim-icons icon-button-power"></i>
-      <p data-en="Logout" data-zh="登出">登出</p>
-    </a>
-  </li>
-  {% else %}
+  {% if not request.user.is_authenticated %}
   <li class="{% if 'pages' in parent %}active{% endif %}">
     <a data-toggle="collapse" href="#pagesExamples">
       <i class="tim-icons icon-lock-circle"></i>

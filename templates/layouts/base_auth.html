@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="{{ request.LANGUAGE_CODE|default:'zh' }}">
+
+<head>
+    <title>{% block title %}{% endblock title %} | LAPS-System</title>
+    {% include 'includes/head.html' %}
+    {% block extrahead %}{% endblock extrahead %}
+</head>
+
+<body class="" id="auth-body">
+<div class="wrapper">
+    <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent mw-100">
+        <div class="container-fluid overflow-hidden">
+            <div class="navbar-wrapper">
+                <div class="navbar-toggle d-inline">
+                    <button type="button" class="navbar-toggler">
+                        <span class="navbar-toggler-bar bar1"></span>
+                        <span class="navbar-toggler-bar bar2"></span>
+                        <span class="navbar-toggler-bar bar3"></span>
+                    </button>
+                </div>
+                <a class="navbar-brand" href="/" data-en="LAPS System" data-zh="LAPS 标注系统">LAPS 标注系统</a>
+            </div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-bar navbar-kebab"></span>
+                <span class="navbar-toggler-bar navbar-kebab"></span>
+                <span class="navbar-toggler-bar navbar-kebab"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navigation">
+                <ul class="navbar-nav ml-auto">
+                    <li class="separator d-lg-none"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="content">
+            <div class="container">
+                <div class="row pt-5">
+                    <div class="col-md-6 mt-5 offset-md-3 pt-5 mt-5">
+                        <div class="card">
+                            {% block auth_card %}{% endblock auth_card %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer px-5 py-4 fixed-bottom">
+            <div class="copyright mx-auto float-none text-center">
+                <!-- © <script>document.write(new Date().getFullYear())</script> -->
+                <!-- <span data-en="made with" data-zh="用心制作">用心制作</span> <i class="tim-icons icon-heart-2"></i> -->
+                &copy; Krisnile - <a href="https://github.com/Krisnile/LAPS-System" target="_blank">LAPS-System</a>.
+            </div>
+        </footer>
+    </div>
+</div>
+
+{% include 'includes/fixed-plugin.html' %}
+{% include 'includes/scripts.html' %}
+<script>
+(function(){
+  var light = localStorage.getItem('light_color');
+  if (light === 'true') document.getElementById('auth-body').classList.add('white-content');
+})();
+</script>
+{% block extrajs %}{% endblock extrajs %}
+</body>
+</html>

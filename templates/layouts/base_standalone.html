@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="{{ request.LANGUAGE_CODE|default:'zh' }}">
+
+<head>
+    <title>{% block title %}{% endblock title %} | LAPS-System</title>
+    <link rel="canonical" href="https://github.com/Krisnile/LAPS-System" />
+    {% include 'includes/head.html' %}
+    <style>
+        body.standalone-page { min-height: 100vh; background: #1a1c2e; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body.standalone-page.white-content { background: #f0f2f7; }
+        /* 与主页顶栏 .navbar.navbar-absolute.navbar-transparent 一致（含上下高度 56px） */
+        .standalone-topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; min-height: 56px; box-sizing: border-box; border-bottom: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: saturate(180%) blur(12px); background: rgba(26, 28, 46, 0.85); }
+        body.standalone-page.white-content .standalone-topbar { border-bottom: 1px solid rgba(0, 0, 0, 0.06); background: rgba(255, 255, 255, 0.9); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
+        .standalone-topbar a { color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 600; font-size: 1rem; letter-spacing: 0.02em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body.standalone-page.white-content .standalone-topbar a { color: #32325d; }
+        .standalone-topbar a:hover { opacity: 0.9; }
+        .standalone-main { max-width: 560px; margin: 0 auto; padding: 48px 24px; }
+        .standalone-main .card { border-radius: 12px; overflow: hidden; }
+        body.standalone-page .fixed-plugin { top: 130px; background: rgba(0,0,0,.3); border-radius: 8px 0 0 8px; }
+        body.standalone-page .fixed-plugin .fa-cog { color: #fff; }
+        body.standalone-page.white-content .fixed-plugin { background: rgba(0,0,0,.15); }
+        body.standalone-page.white-content .fixed-plugin .fa-cog { color: #32325d; }
+    </style>
+    {% block extrahead %}{% endblock extrahead %}
+    {% block extrastyle %}{% endblock extrastyle %}
+</head>
+
+<body class="standalone-page" id="standalone-body">
+    <header class="standalone-topbar">
+        <a href="{% url 'index' %}" data-en="LAPS System" data-zh="LAPS 标注系统">LAPS 标注系统</a>
+        <a href="{% url 'index' %}" data-en="Back to Dashboard" data-zh="返回主页">返回主页</a>
+    </header>
+    {% include 'includes/fixed-plugin.html' %}
+    <main class="standalone-main">
+        {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock content %}
+    </main>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/themeSettings.js' %}"></script>
+    <script src="{% static 'assets/js/lang-switcher.js' %}"></script>
+    <script>
+      (function(){ var light = localStorage.getItem('light_color'); if (light === 'true') document.getElementById('standalone-body').classList.add('white-content'); })();
+    </script>
+    {% block extrajs %}{% endblock extrajs %}
+</body>
+
+</html>

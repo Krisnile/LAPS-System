@@ -1,5 +1,8 @@
-/* Override styles to ensure fixed-plugin dropdown (language switcher, labels)
-   are readable in both dark and light (white-content) themes. */
+/**
+ * fixed-plugin-override.css
+ * 仅覆盖右侧齿轮下拉（语言、主题切换）在浅色主题下的可读性。
+ * 页脚等全局样式在 laps-theme.css 中统一定义。
+ */
 
 /* Light theme (white-content) - make dropdown background light and text dark */
 body.white-content .fixed-plugin .dropdown-menu {
@@ -42,12 +45,4 @@ body.white-content .fixed-plugin .badge {
 /* Ensure header/title in the dropdown is dark */
 body.white-content .fixed-plugin li.header-title { color: #222222 !important; }
 
-/* Footer 与主背景一致，无缝衔接 */
-.footer {
-  background: transparent !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-body.white-content .footer {
-  background: transparent !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
+/* 注：.footer 样式统一在 laps-theme.css 中定义（主题变量、padding、透明背景） */

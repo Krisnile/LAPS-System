@@ -43,6 +43,21 @@ python3 manage.py runserver
 # 访问 http://127.0.0.1:8000/
 ```
 
+4. 使用 PostgreSQL 存储用户与业务数据（可选）
+
+默认使用 SQLite（`db.sqlite3`）。若需使用 PostgreSQL 存储用户信息（账号、邮箱、昵称、密码、头像等）及项目/任务等数据，在项目根目录的 `.env` 中配置：
+
+```bash
+DB_ENGINE=postgresql
+DB_NAME=laps
+DB_USERNAME=your_db_user
+DB_PASS=your_db_password
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+安装依赖中已包含 `psycopg2-binary`。配置后执行 `migrate` 即可在 PostgreSQL 中创建表（含 `auth_user`、`pages_userprofile` 等）。
+
 如果想创建示例数据，可使用 Django shell（或提供的辅助脚本）来创建 Project/Dataset/Image/Task。
 
 页面与功能（面向用户与开发人员说明）
@@ -75,6 +90,11 @@ python3 manage.py runserver
 - 用户：主题（浅色/深色）与语言（中/英）切换按钮；点击语言选择不会自动收起下拉，语言保存在 localStorage，页面即时生效。
 - 程序员：模板 `templates/includes/fixed-plugin.html`；样式覆盖 `static/assets/css/fixed-plugin-override.css`；语言切换代码集中在 `static/assets/js/lang-switcher.js`（全站复用）。
 
+7) 用户管理系统（仅 admin 账户）
+- 用户：使用**用户名 admin、密码 123456** 登录后会自动跳转到用户管理页 `/manage/`；可查看所有用户（对应数据库 auth_user 表的 ID、用户名、邮箱、昵称、注册时间、状态），并对非 admin 用户进行启用/禁用。
+- 首次使用请执行：`python manage.py create_admin`，将创建用户 admin（密码 123456）；之后用该账号登录即可进入用户管理。
+- 程序员：视图 `apps/pages/views.py::user_manage_list`、`user_manage_toggle_active`；模板 `templates/pages/user_manage.html`；路由 `manage/`、`manage/user/<id>/toggle/`。
+
 后端 API（重要开发接口）
 - GET /tasks/next/ — 返回下一个任务与图片 URL（JSON）。
 - POST /segment-image/ — 接收图片路径与提示点，调用 SAM 生成 mask，返回二进制图像或 base64（当前实现返回 PNG 二进制）。
@@ -85,6 +105,21 @@ python3 manage.py runserver
 - 模板布局：`templates/layouts/base.html` 与 `templates/includes/`（sidebar, navigation, fixed-plugin, footer 等）
 - 静态资源：`static/assets/js/`（如 `lang-switcher.js`、`annotation.js`）、`static/assets/css/`（`laps-theme.css` 主题与侧栏/卡片/页脚样式，`fixed-plugin-override.css` 浅色主题与页脚透明）
 - SAM：`apps/pages/sam_inference.py`；运行时可能有 torch 的 FutureWarning（`torch.load` 的 `weights_only`），部署前建议处理。
+
+代码结构（整理说明）
+- **布局**：`base.html` 主站（侧栏+顶栏+内容+页脚）；`base_auth.html` 登录/注册；`base_standalone.html` 个人设置；`base_manage.html` 用户管理（无侧栏）。
+- **head/脚本**：统一使用 `includes/head.html`、`includes/scripts.html`，避免重复；页脚等全局样式仅在 `laps-theme.css` 定义。
+- **已归档**：`/image-processing/`、`/examples/` 重定向首页；旧模板在 `templates/archived_templates/`，仅通过 `/examples/<name>/` 可访问。
+- **无用/占位**：`includes/navigationrtl.html`、`rtlsidebar.html` 为 RTL 占位，主站未使用。
+
+代码整理与本次修改记录
+- **Bug 修复**：`views.py` 中 `Image.open` 改为 `PILImage.open`（两处）；缺失模板的 `image_processing`、`examples_index` 改为重定向首页，避免 TemplateDoesNotExist。
+- **重复代码合并**：`.footer` 样式仅保留在 `laps-theme.css`，从 `fixed-plugin-override.css` 中移除重复定义。
+- **注释与文档**：为 `apps/pages/views.py`、`urls.py` 增加文件头注释；为 `includes/head.html`、`scripts.html`、`layouts/base.html`、`fixed-plugin-override.css`、`theme-switcher.css` 增加用途说明；为归档路由在 `urls.py` 增加行尾注释；新增 `templates/archived_templates/README.md` 说明归档模板用途。
+- **主题与侧栏**：在 `laps-theme.css` 中定义主题变量 `--laps-bg`、`--laps-bg-light`、`--laps-text`、`--laps-text-muted`、`--laps-border`；侧栏背景改为使用主题背景（与主内容区一致）；全站部分文字颜色（body、顶栏、页脚、内容区、卡片标题/副标题）统一使用上述变量，切换深浅主题时整体一致。
+- **布局统一**：登录/注册页使用 `base_auth.html`（共用 `includes/head.html`），个人设置页使用 `base_standalone.html`（共用 head）；顶栏与主页一致：内边距 12px 20px、min-height 56px，个人信息页顶栏样式与主站 navbar 对齐。
+- **账户与用户管理**：右上角下拉提供「账户与设置」「登出」；个人设置页为独立页（无侧栏）、保存后成功/失败提示；admin 登录跳转 `/manage/`，用户管理为独立系统（无侧栏）；`python manage.py create_admin` 创建 admin（密码 123456）；侧栏已移除登出入口，仅保留下拉内登出。
+- **登录/注册页**：支持语言与主题切换（fixed-plugin + lang-switcher）；表单与错误提示 i18n（data-en/data-zh）。
 
 国际化 & 主题（实现说明）
 - 当前实现采用客户端即时切换：所有需要翻译的可见文本都应带上 `data-en` 与 `data-zh` 属性（这样 `lang-switcher.js` 能统一替换）。

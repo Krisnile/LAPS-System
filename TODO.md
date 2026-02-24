@@ -1,6 +1,7 @@
 LAPS-System 待办（中文，按优先级）
 
-说明：可执行的改进列表，含目的、验收与相关文件，便于逐步完善。
+说明：可执行的改进列表，含目的、验收与相关文件，便于逐步完善。  
+代码整理与本次修改的完整记录见 **README.md** 中「代码整理与本次修改记录」一节。
 
 ## 已完成（供参考）
 
@@ -9,6 +10,11 @@ LAPS-System 待办（中文，按优先级）
 - 专业主题与布局：`laps-theme.css`（Inter 字体、侧栏/卡片/页脚样式）；页脚与主背景一致（透明）；main-panel 左边距与 footer 左内边距避免被侧栏遮挡。
 - 固定插件浅色可读：`fixed-plugin-override.css` 保证主题/语言下拉在 white-content 下可读。
 - 页面加载优化：全局已移除 Google Maps、TrackJS；字体异步加载（不阻塞首屏）；Chart/demo 全局加载以保持切换稳定。
+- **账户与个人设置**：右上角下拉「账户与设置」→ 个人设置页（头像/邮箱/昵称、保存成功/失败提示）；个人设置页为独立布局（无侧栏），与主站 head 统一，顶栏样式与主站一致（含高度 56px）。
+- **登录/注册**：登录页、注册页可切换语言与主题；统一使用 `base_auth.html` 与 `includes/head.html`；admin 登录自动跳转 `/manage/`。
+- **用户管理**：admin（密码 123456）登录后跳转 `/manage/`；用户管理为独立系统（无侧栏）；`python manage.py create_admin` 创建 admin 账户；侧栏已移除「登出」，仅保留下拉内登出。
+- **主题变量与侧栏**：`laps-theme.css` 中定义 `--laps-bg`、`--laps-text`、`--laps-text-muted`、`--laps-border`；侧栏背景改为主题背景；全站部分文字颜色随主题变量统一。
+- **代码整理**：`views.py` 中 `Image.open` → `PILImage.open` 修复；`image_processing`、`examples_index` 因模板移除改为重定向首页；`.footer` 仅保留在 `laps-theme.css`，从 `fixed-plugin-override.css` 移除重复；为 views/urls、head/scripts、布局、CSS 增加注释；归档说明见 `templates/archived_templates/README.md`；README 中补充「代码整理与本次修改记录」。
 
 ## 优先（建议先做）
 
