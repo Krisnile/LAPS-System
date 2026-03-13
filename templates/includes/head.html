@@ -5,6 +5,19 @@
 <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
 <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
 
+<!-- 初始主题：在加载 CSS 前尽量根据 localStorage 应用当前主题色，减少闪烁 -->
+<script>
+  (function() {
+    try {
+      var saved = localStorage.getItem('sidebar_color');
+      var themeClass = 'theme-primary';
+      if (saved === 'blue') themeClass = 'theme-blue';
+      else if (saved === 'green') themeClass = 'theme-green';
+      document.documentElement.classList.add(themeClass);
+    } catch (e) {}
+  })();
+</script>
+
 <!--     Fonts and icons     -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

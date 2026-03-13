@@ -19,32 +19,77 @@
         </button>
         <div class="collapse navbar-collapse" id="navigation">
             <ul class="navbar-nav ml-auto">
+                {# 从右到左视觉顺序：头像 → 通知 → 黑白切换 → 中英文 → 主题色 → 搜索 #}
+
+                <!-- 搜索（最左侧） -->
+                <li class="search-bar input-group">
+                    <button class="btn btn-link" id="search-button" data-toggle="modal" data-target="#searchModal">
+                        <i class="tim-icons icon-zoom-split"></i>
+                        <span class="d-lg-none d-md-block" data-en="Search" data-zh="搜索">搜索</span>
+                    </button>
+                </li>
+
+                <!-- 主题色设置：圆点 + 文本 -->
+                <li class="nav-item dropdown">
+                    <a href="javascript:void(0)" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="主题色">
+                        <i class="tim-icons icon-palette"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-navbar px-3 py-2">
+                        <div class="badge-colors text-left d-flex flex-column">
+                            <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item" data-color="primary">
+                                <span class="badge filter badge-primary mr-2" data-color="primary"></span>
+                                <span class="theme-label" data-en="Primary" data-zh="默认主题">默认主题</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item mt-1" data-color="blue">
+                                <span class="badge filter badge-info mr-2" data-color="blue"></span>
+                                <span class="theme-label" data-en="Blue" data-zh="蓝色主题">蓝色主题</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item mt-1" data-color="green">
+                                <span class="badge filter badge-success mr-2" data-color="green"></span>
+                                <span class="theme-label" data-en="Green" data-zh="绿色主题">绿色主题</span>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- 语言切换：图标下拉，弹出两行文字 -->
+                <li class="nav-item dropdown d-none d-md-block">
+                    <a href="javascript:void(0)" class="nav-link" data-toggle="dropdown" aria-haspopup="true"
+                       aria-expanded="false" title="语言 / Language">
+                        <i class="tim-icons icon-world"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-navbar px-3 py-2 lang-toggle-group"
+                         onclick="event.stopPropagation();">
+                        <div class="lang-toggle" data-lang="zh">中文</div>
+                        <div class="lang-toggle" data-lang="en">English</div>
+                    </div>
+                </li>
+
+                <!-- 深浅模式：黑白切换按钮 -->
                 <li class="input-group d-flex align-items-center mb-0">
                     <label class="switch theme-switch" title="切换主题 / Switch theme">
                         <input type="checkbox" class="bsc" checked="">
                         <span class="slider"></span>
                     </label>
                 </li>
-                <li class="search-bar input-group">
-                        <button class="btn btn-link" id="search-button" data-toggle="modal" data-target="#searchModal"><i
-                            class="tim-icons icon-zoom-split"></i>
-                        <span class="d-lg-none d-md-block" data-en="Search" data-zh="搜索">搜索</span>
-                    </button>
-                </li>
+
+                <!-- 通知 -->
                 <li class="dropdown nav-item">
                     <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <div class="notification d-none d-lg-block d-xl-block"></div>
                         <i class="tim-icons icon-sound-wave"></i>
                         <p class="d-lg-none" data-en="Notifications" data-zh="通知">通知</p>
                     </a>
-            <ul class="dropdown-menu dropdown-menu-right dropdown-navbar">
-            <li class="nav-link"><a href="#" class="nav-item dropdown-item" data-en="Mike John responded to your email" data-zh="Mike John 已回复你的邮件">Mike John 已回复你的邮件</a></li>
-            <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="You have 5 more tasks" data-zh="你还有 5 个任务">你还有 5 个任务</a></li>
-            <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Your friend Michael is in town" data-zh="你的朋友 Michael 在城里">你的朋友 Michael 在城里</a></li>
-            <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another notification" data-zh="其他通知">其他通知</a></li>
-            <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another one" data-zh="再一条">再一条</a></li>
-            </ul>
+                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar">
+                        <li class="nav-link"><a href="#" class="nav-item dropdown-item" data-en="Mike John responded to your email" data-zh="Mike John 已回复你的邮件">Mike John 已回复你的邮件</a></li>
+                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="You have 5 more tasks" data-zh="你还有 5 个任务">你还有 5 个任务</a></li>
+                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Your friend Michael is in town" data-zh="你的朋友 Michael 在城里">你的朋友 Michael 在城里</a></li>
+                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another notification" data-zh="其他通知">其他通知</a></li>
+                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another one" data-zh="再一条">再一条</a></li>
+                    </ul>
                 </li>
+
+                <!-- 账户（最右侧：头像） -->
                 <li class="dropdown nav-item">
                     <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="photo">

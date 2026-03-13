@@ -40,7 +40,6 @@
         <span class="topbar-left" data-en="User Management System" data-zh="用户管理系统">用户管理系统</span>
         <a href="{% url 'logout' %}?next=/accounts/auth-signin/" data-en="Logout" data-zh="退出">退出</a>
     </header>
-    {% include 'includes/fixed-plugin.html' %}
     <main class="manage-main">
         {% if messages %}
         <div class="mb-3">

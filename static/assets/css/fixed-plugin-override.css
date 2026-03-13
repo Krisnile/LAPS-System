@@ -45,4 +45,21 @@ body.white-content .fixed-plugin .badge {
 /* Ensure header/title in the dropdown is dark */
 body.white-content .fixed-plugin li.header-title { color: #222222 !important; }
 
+/* vben 风格的布局按钮（左 / 中 / 宽） */
+.fixed-plugin .layout-item {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.fixed-plugin .layout-item.active {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+body.white-content .fixed-plugin .layout-item.active {
+  background-color: #3a5eea;
+  border-color: #3a5eea;
+  color: #ffffff;
+}
+
 /* 注：.footer 样式统一在 laps-theme.css 中定义（主题变量、padding、透明背景） */

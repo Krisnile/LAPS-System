@@ -11,13 +11,13 @@
 - 图像上传与管理：按数据集组织图片并生成任务。
 - 交互式标注界面：点/框提示 → SAM 分割 → 结果可视化，支持保存、撤销、清除与历史回放。
 - 项目/任务管理：任务分配、标注保存并记录 Annotation 到数据库。
-- 仪表盘主页：欢迎语、项目/数据集/任务 KPI（含待办与已完成）、最近任务列表与快捷标注入口、空状态时快速开始引导。
+- 仪表盘主页（已用 React 重写）：欢迎语、项目/数据集/任务 KPI（含待办与已完成）、最近任务列表与快捷标注入口、空状态时快速开始引导。
 - 客户端国际化：页面元素通过 `data-en` / `data-zh` 即时切换，语言保存在 localStorage。
-- 主题与界面：深色/浅色（white-content）可切换；专业主题 `laps-theme.css`（Inter 字体、统一卡片与侧栏样式）；页脚与主背景一致；固定插件（主题/语言）在浅色下可读。
+- 主题与界面：深色/浅色（white-content）可切换；专业主题 `laps-theme.css`（Inter 字体、统一卡片与侧栏样式）；顶部栏/侧边栏/强调文字会随主题色变化；页脚固定在底部。
 
 快速开始（开发者）
 
-前提：项目在 conda 环境 `laps` 中开发/运行（推荐 Python 3.10）。
+前提：项目在 conda 环境中开发/运行（推荐 Python 3.10）。
 
 1. 创建并激活环境（示例）
 
@@ -36,14 +36,24 @@ python3 manage.py migrate
 python3 manage.py collectstatic --noinput
 ```
 
-3. 运行开发服务器
+3. 构建前端（React 仪表盘与登录页）
+
+前端使用 Vite + React，仅作为若干页面（登录页、Dashboard、Projects/Datasets/Tasks 等）的增强 UI 层，打包产物会被 Django 模板通过 `{% static %}` 引入：
+
+```bash
+cd frontend
+npm install        # 首次拉取仓库时执行
+npm run build      # 构建到 static/frontend/
+```
+
+4. 运行开发服务器
 
 ```bash
 python3 manage.py runserver
 # 访问 http://127.0.0.1:8000/
 ```
 
-4. 使用 PostgreSQL 存储用户与业务数据（可选）
+5. 使用 PostgreSQL 存储用户与业务数据（可选）
 
 默认使用 SQLite（`db.sqlite3`）。若需使用 PostgreSQL 存储用户信息（账号、邮箱、昵称、密码、头像等）及项目/任务等数据，在项目根目录的 `.env` 中配置：
 

@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Tasks{% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Tasks</h4>
+          <p class="card-category">Create and assign annotation tasks to team members.</p>
+        </div>
+        <div class="card-body">
+          <p>从 Dataset 为 Project 生成任务（每张图片一个任务）。</p>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="col-md-4">
+                <label>Project</label>
+                <select name="project" class="form-control">
+                  {% for p in projects %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label>Dataset</label>
+                <select name="dataset" class="form-control">
+                  {% for d in datasets %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 align-self-end">
+                <button class="btn btn-primary">Create Tasks</button>
+              </div>
+            </div>
+          </form>
+          <hr />
+          <p><a href="{% url 'projects' %}" class="btn btn-secondary">Back to Projects</a></p>
+          <h5 class="mt-3">Recent Tasks</h5>
+          <ul>
+            {% for t in tasks %}
+              <li>Task {{ t.id }} - {{ t.project.name }} - {{ t.image.file.url }} - {{ t.status }}</li>
+            {% empty %}
+              <li>No tasks yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+

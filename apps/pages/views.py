@@ -37,9 +37,21 @@ from admin_black.views import AuthSignin
 
 class LAPSLoginView(AuthSignin):
     """登录成功后若为 admin 则跳转到 /manage/，否则跳转首页"""
+    def post(self, request, *args, **kwargs):
+        # 简单服务端校验滑动验证是否完成
+        slider_ok = request.POST.get('slider_ok')
+        if slider_ok != '1':
+            messages.error(request, '请先完成滑动验证后再登录。')
+            return redirect('auth_signin')
+        return super().post(request, *args, **kwargs)
+
     def get_success_url(self):
+        # 根据登录身份选择跳转：admin + 选择超级管理员 → /manage/；否则回首页
         if self.request.user.username == 'admin':
-            return '/manage/'
+            role = self.request.POST.get('role') or 'user'
+            if role == 'super':
+                return '/manage/'
+            return '/'
         return super().get_success_url() or '/'
 
 

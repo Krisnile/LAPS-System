@@ -5,11 +5,236 @@
 <head>
     <title>{% block title %}{% endblock title %} | LAPS-System</title>
     {% include 'includes/head.html' %}
+    <style>
+        /* 登录 / 注册页整体布局，参考现代后台登录页风格 */
+        body#auth-body {
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #1f2235 0, #141625 55%, #101221 100%);
+        }
+        body#auth-body.white-content {
+            background: radial-gradient(circle at top left, #f4f6fb 0, #e9edf7 40%, #dde3f0 100%);
+        }
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .auth-main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center; /* 垂直方向居中 */
+            padding-top: 32px;   /* 整体稍微向下偏移一点，让登录/注册卡片位置更舒适 */
+        }
+        .auth-hero {
+            flex: 1.1;
+            padding: 48px 48px 40px 56px;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        body.white-content .auth-hero {
+            color: #32325d;
+        }
+        .auth-hero-title {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 16px;
+        }
+        .auth-hero-subtitle {
+            font-size: 0.95rem;
+            max-width: 420px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .auth-hero-badges {
+            margin-top: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .auth-hero-badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            font-size: 0.78rem;
+            opacity: 0.92;
+        }
+        body.white-content .auth-hero-badge {
+            border-color: rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.75);
+        }
+        .auth-hero-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        .auth-hero-metrics-item span:first-child {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .auth-form-col {
+            flex: 0 0 420px;
+            max-width: 460px;
+            padding: 40px 40px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 991.98px) {
+            .auth-main {
+                justify-content: center;
+            }
+            .auth-hero {
+                display: none;
+            }
+            .auth-form-col {
+                flex: 1 1 auto;
+                max-width: 520px;
+                padding: 32px 20px 40px;
+            }
+        }
+
+        /* 登录页布局模式：左 / 中，仅作用于 auth-main */
+        /* 左：默认布局，左侧约 3/5 为介绍，右侧约 2/5 为登录卡片，双方在各自区域内水平/垂直都居中 */
+        body.layout-left .auth-main {
+            flex-direction: row;
+            align-items: center;
+        }
+        body.layout-left .auth-hero {
+            flex: 0 0 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        body.layout-left .auth-form-col {
+            flex: 0 0 40%;
+            max-width: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 垂直 3/5 分割线 + 左侧极浅蒙版，仅在桌面端显示（不影响上方导航栏） */
+        @media (min-width: 992px) {
+            body.layout-left .auth-main {
+                position: relative;
+            }
+            body.layout-left .auth-main::before {
+                content: '';
+                position: absolute;
+                top: 10%;
+                bottom: 10%;
+                left: 60%;
+                width: 1px;
+                background: rgba(255, 255, 255, 0.06);
+            }
+            body.white-content body.layout-left .auth-main::before {
+                background: rgba(0, 0, 0, 0.04);
+            }
+            body.layout-left .auth-main::after {
+                content: '';
+                position: absolute;
+                top: 72px; /* 避开顶部导航栏高度，避免遮挡按钮区域 */
+                bottom: 0;
+                right: 40%;
+                left: 0;
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.18));
+                pointer-events: none;
+            }
+            body.white-content body.layout-left .auth-main::after {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 246, 251, 0.98));
+            }
+        }
+
+        /* 中：只显示登录卡片，整体居中，不显示系统介绍 */
+        body.layout-center .auth-main {
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+        body.layout-center .auth-hero {
+            display: none !important;
+        }
+        /* 居中布局时卡片宽度与居左布局一致：占 40% 宽度 */
+        body.layout-center .auth-form-col {
+            flex: 0 0 40%;
+            max-width: none;
+            padding-top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 中布局在小屏下也保留系统介绍（改为居中对齐） */
+        @media (max-width: 991.98px) {
+            body.layout-center .auth-main {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            body.layout-center .auth-form-col {
+                flex: 0 0 auto;
+                max-width: 520px;
+                padding: 16px 20px 32px;
+            }
+        }
+
+        /* 右：介绍在右，登录卡片在左 */
+        body.layout-right .auth-main {
+            flex-direction: row-reverse;
+        }
+
+        .auth-card {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .auth-card .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(16, 18, 33, 0.96);
+            padding: 18px 24px;
+        }
+        body.white-content .auth-card .card-header {
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+            background: #ffffff;
+        }
+        .auth-card .card-header .title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .auth-card .card-header .subtitle {
+            margin-top: 4px;
+            font-size: 0.82rem;
+            opacity: 0.85;
+        }
+        .auth-card .card-body {
+            padding: 22px 24px 26px;
+        }
+        @media (max-width: 575.98px) {
+            .auth-card .card-header {
+                padding: 16px 18px;
+            }
+            .auth-card .card-body {
+                padding: 20px 18px 24px;
+            }
+        }
+    </style>
     {% block extrahead %}{% endblock extrahead %}
 </head>
 
 <body class="" id="auth-body">
-<div class="wrapper">
+<div class="wrapper auth-wrapper">
     <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent mw-100">
         <div class="container-fluid overflow-hidden">
             <div class="navbar-wrapper">
@@ -30,34 +255,115 @@
             </button>
             <div class="collapse navbar-collapse" id="navigation">
                 <ul class="navbar-nav ml-auto">
-                    <li class="separator d-lg-none"></li>
+                    <!-- 主题色：与主站导航一致，圆点 + 文本竖排 -->
+                    <li class="nav-item dropdown">
+                        <a href="javascript:void(0)" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="主题色">
+                            <i class="tim-icons icon-palette"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right dropdown-navbar px-3 py-2">
+                            <div class="badge-colors text-left d-flex flex-column">
+                                <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item" data-color="primary">
+                                    <span class="badge filter badge-primary mr-2" data-color="primary"></span>
+                                    <span class="theme-label" data-en="Primary" data-zh="默认主题">默认主题</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item mt-1" data-color="blue">
+                                    <span class="badge filter badge-info mr-2" data-color="blue"></span>
+                                    <span class="theme-label" data-en="Blue" data-zh="蓝色主题">蓝色主题</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link d-flex align-items-center px-0 theme-item mt-1" data-color="green">
+                                    <span class="badge filter badge-success mr-2" data-color="green"></span>
+                                    <span class="theme-label" data-en="Green" data-zh="绿色主题">绿色主题</span>
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- 布局：图标 + 文字 -->
+                    <li class="nav-item dropdown d-none d-md-block">
+                        <a href="javascript:void(0)" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="布局">
+                            <i class="tim-icons icon-components"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right dropdown-navbar px-3 py-2 text-center">
+                            <div class="layout-item d-flex align-items-center mb-1" data-layout="left">
+                                <i class="tim-icons icon-align-left-2 mr-1"></i>
+                                <span data-en="Align left" data-zh="居左">居左</span>
+                            </div>
+                            <div class="layout-item d-flex align-items-center mb-1" data-layout="center">
+                                <i class="tim-icons icon-align-center mr-1"></i>
+                                <span data-en="Align center" data-zh="居中">居中</span>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- 语言：图标下拉，弹出两行文字 -->
+                    <li class="nav-item dropdown d-none d-md-block">
+                        <a href="javascript:void(0)" class="nav-link" data-toggle="dropdown" aria-haspopup="true"
+                           aria-expanded="false" title="语言 / Language">
+                            <i class="tim-icons icon-world"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right dropdown-navbar px-3 py-2 lang-toggle-group"
+                             onclick="event.stopPropagation();">
+                            <div class="lang-toggle" data-lang="zh">中文</div>
+                            <div class="lang-toggle" data-lang="en">English</div>
+                        </div>
+                    </li>
+
+                    <!-- 深浅模式：放在最右侧 -->
+                    <li class="input-group d-flex align-items-center mb-0">
+                        <label class="switch theme-switch" title="切换主题 / Switch theme">
+                            <input type="checkbox" class="bsc" checked="">
+                            <span class="slider"></span>
+                        </label>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container-fluid">
-        <div class="content">
-            <div class="container">
-                <div class="row pt-5">
-                    <div class="col-md-6 mt-5 offset-md-3 pt-5 mt-5">
-                        <div class="card">
-                            {% block auth_card %}{% endblock auth_card %}
-                        </div>
+    <div class="auth-main">
+        <div class="auth-hero d-none d-lg-flex">
+            <div>
+                <div class="auth-hero-title" data-en="Labeling, analytics, production-ready." data-zh="标注、分析，一站到位。">
+                    标注、分析，一站到位。
+                </div>
+                <div class="auth-hero-subtitle" data-en="LAPS-System helps your team build high-quality datasets, streamline labeling workflow, and monitor progress in one place."
+                     data-zh="LAPS 标注系统帮助团队构建高质量数据集，在一个平台中管理标注流程与进度。">
+                    LAPS 标注系统帮助团队构建高质量数据集，在一个平台中管理标注流程与进度。
+                </div>
+                <div class="auth-hero-badges">
+                    <span class="auth-hero-badge" data-en="Multi-project & multi-dataset" data-zh="多项目 · 多数据集">
+                        多项目 · 多数据集
+                    </span>
+                    <span class="auth-hero-badge" data-en="Visual annotation workspace" data-zh="可视化标注工作区">
+                        可视化标注工作区
+                    </span>
+                    <span class="auth-hero-badge" data-en="Team collaboration" data-zh="团队协作">
+                        团队协作
+                    </span>
+                </div>
+                <div class="auth-hero-metrics">
+                    <div class="auth-hero-metrics-item">
+                        <span>3x</span>
+                        <span data-en="Faster iteration" data-zh="迭代提速">迭代提速</span>
+                    </div>
+                    <div class="auth-hero-metrics-item">
+                        <span>100k+</span>
+                        <span data-en="Annotations managed" data-zh="标注任务管理">标注任务管理</span>
                     </div>
                 </div>
             </div>
         </div>
-        <footer class="footer px-5 py-4 fixed-bottom">
-            <div class="copyright mx-auto float-none text-center">
-                <!-- © <script>document.write(new Date().getFullYear())</script> -->
-                <!-- <span data-en="made with" data-zh="用心制作">用心制作</span> <i class="tim-icons icon-heart-2"></i> -->
-                &copy; Krisnile - <a href="https://github.com/Krisnile/LAPS-System" target="_blank">LAPS-System</a>.
+        <div class="auth-form-col">
+            <div class="card auth-card">
+                {% block auth_card %}{% endblock auth_card %}
             </div>
-        </footer>
+        </div>
     </div>
-</div>
-
-{% include 'includes/fixed-plugin.html' %}
+    <footer class="footer px-5 py-4">
+        <div class="mx-auto float-none text-center">
+            &copy; Krisnile -
+            <a href="https://github.com/Krisnile/LAPS-System" target="_blank">LAPS-System</a>.
+        </div>
+    </footer>
 {% include 'includes/scripts.html' %}
 <script>
 (function(){
@@ -65,6 +371,7 @@
   if (light === 'true') document.getElementById('auth-body').classList.add('white-content');
 })();
 </script>
+<script src="{% static 'frontend/assets/main-DeLxURL3.js' %}"></script>
 {% block extrajs %}{% endblock extrajs %}
 </body>
 </html>

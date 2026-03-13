@@ -40,7 +40,7 @@ $(document).ready(function() {
             if ($sidebar_responsive.length !== 0) {
                 $sidebar_responsive.attr('data', color);
             }
-            $('.fixed-plugin .background-color span')
+            $('.badge-colors .badge[data-color]')
                 .removeClass('active')
                 .filter('[data-color="' + color + '"]')
                 .addClass('active');
@@ -51,11 +51,47 @@ $(document).ready(function() {
             applySidebarColor(saved_sidebar_color);
         }
 
-        $('.fixed-plugin .background-color span').click(function() {
+        $('.badge-colors .badge[data-color]').click(function() {
             var new_color = $(this).data('color');
             if (!new_color) return;
             localStorage.setItem('sidebar_color', new_color);
             applySidebarColor(new_color);
+        });
+
+        // 允许点击整行主题项（不仅仅是圆点）
+        $('.theme-item').on('click', function() {
+            var new_color = $(this).data('color') ||
+                $(this).find('.badge[data-color]').data('color');
+            if (!new_color) return;
+            localStorage.setItem('sidebar_color', new_color);
+            applySidebarColor(new_color);
+
+            // 同时更新 html 上的 theme-* class，避免切换页面时闪烁
+            var $root = $(document.documentElement);
+            $root.removeClass('theme-primary theme-blue theme-green');
+            if (new_color === 'blue') $root.addClass('theme-blue');
+            else if (new_color === 'green') $root.addClass('theme-green');
+            else $root.addClass('theme-primary');
+        });
+
+        // Layout mode (left / center / right)，主要用于登录页布局；其他页面可忽略
+        function applyLayoutMode(mode) {
+            var valid = ['left', 'center', 'right'];
+            if (valid.indexOf(mode) === -1) mode = 'left';
+            $('body').removeClass('layout-left layout-center layout-wide')
+                     .addClass('layout-' + mode);
+            $('.layout-item').removeClass('active')
+                .filter('[data-layout="' + mode + '"]').addClass('active');
+        }
+
+        var saved_layout_mode = localStorage.getItem('layout_mode') || 'left';
+        applyLayoutMode(saved_layout_mode);
+
+        $('.layout-item').on('click', function() {
+            var mode = $(this).data('layout');
+            if (!mode) return;
+            localStorage.setItem('layout_mode', mode);
+            applyLayoutMode(mode);
         });
 
         $('.switch-sidebar-mini input').on("switchChange.bootstrapSwitch", function() {

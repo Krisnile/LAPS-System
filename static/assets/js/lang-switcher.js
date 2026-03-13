@@ -62,6 +62,16 @@
     var sel = document.getElementById('langSelect');
     if(sel) sel.value = lang;
 
+    // Update lang toggle buttons if present
+    document.querySelectorAll('.lang-toggle').forEach(function(btn){
+      var bLang = btn.getAttribute('data-lang') || 'zh';
+      if(bLang === lang){
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
     // Emit an event so other scripts can react
     var ev;
     try{ ev = new CustomEvent('languageChanged', { detail: { lang: lang } }); }catch(e){ ev = document.createEvent('Event'); ev.initEvent('languageChanged', true, true); ev.detail = { lang: lang }; }
@@ -84,6 +94,15 @@
         applyLang(v);
       });
     }
+
+    // Wire up inline toggle buttons (中 / EN)
+    document.querySelectorAll('.lang-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var v = btn.getAttribute('data-lang') || 'zh';
+        setStoredLang(v);
+        applyLang(v);
+      });
+    });
   });
 
   // Expose helper

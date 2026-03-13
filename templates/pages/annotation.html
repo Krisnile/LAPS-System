@@ -8,7 +8,7 @@
 {% endblock extrastyle %}
 
 {% block content %}
-<div class="content">
+<div class="content content-annotation">
   <div class="row annotate-row">
     <div class="col-md-9 annotate-left">
       <div class="card">
@@ -26,11 +26,11 @@
         </div>
         <div class="card-body" id="annotation-area">
           <div class="annotation-toolbar row">
-            <div class="col-auto">
-              <button id="btnRunSAM" class="btn btn-primary btn-sm" title="Space" data-en="Run" data-zh="运行">运行</button>
-              <button id="btnSave" class="btn btn-success btn-sm" title="S" data-en="Save" data-zh="保存">保存</button>
-              <button id="btnUndo" class="btn btn-secondary btn-sm" title="Z" data-en="Undo" data-zh="撤销">撤销</button>
-              <button id="btnClear" class="btn btn-danger btn-sm" title="C" data-en="Clear" data-zh="清除">清除</button>
+            <div class="col-auto d-flex align-items-center">
+              <button id="btnRunSAM" class="btn btn-primary btn-sm mr-1" title="Space" data-en="Run" data-zh="运行">运行</button>
+              <button id="btnSave" class="btn btn-success btn-sm mr-1" title="S" data-en="Save" data-zh="保存">保存</button>
+              <button id="btnUndo" class="btn btn-secondary btn-sm mr-1" title="Z" data-en="Undo" data-zh="撤销">撤销</button>
+              <button id="btnClear" class="btn btn-danger btn-sm mr-3" title="C" data-en="Clear" data-zh="清除">清除</button>
             </div>
             <div class="col text-center">
               <div class="zoom-controls">
@@ -40,23 +40,38 @@
                 <button id="zoomReset" class="btn btn-light btn-sm">Reset</button>
               </div>
             </div>
-            <div class="col-auto">
-                <label class="mr-2" data-en="Mask opacity" data-zh="遮罩透明度">遮罩透明度</label>
+            <div class="col-auto d-flex align-items-center">
+              <label class="mr-2 mb-0" data-en="Mask opacity" data-zh="遮罩透明度">遮罩透明度</label>
               <input id="maskOpacity" type="range" min="0" max="1" step="0.05" value="0.6" />
             </div>
           </div>
 
           <div class="annotation-canvas-card">
             <div class="annotation-canvas-wrapper">
-              <img id="annot-image" src="" alt="Upload an image to start" draggable="false" />
+              <div id="annot-placeholder" class="annot-placeholder">
+                <div class="annot-placeholder-icon">
+                  <i class="tim-icons icon-image-02"></i>
+                </div>
+                <p class="mb-1" data-en="No image loaded yet" data-zh="尚未加载图片">尚未加载图片</p>
+                <p class="small mb-0" data-en="Upload an image above or click 'Next' to load a task image. "
+                   data-zh="请在上方上传图片或点击“下一张”加载任务图片。">
+                  请在上方上传图片或点击“下一张”加载任务图片。
+                </p>
+              </div>
+              <img id="annot-image" src="" alt="" draggable="false" />
               <canvas id="annot-overlay"></canvas>
             </div>
           </div>
 
           <div class="annotation-bottom d-flex justify-content-between align-items-start">
             <div class="prompts w-75">
-              <h6 data-en="Prompts" data-zh="提示点">提示点</h6>
-              <div id="promptList" class="prompt-list">(点击图片：左键正点，右键负点)</div>
+              <h6 class="mb-1" data-en="Prompts" data-zh="提示点">提示点</h6>
+              <div id="promptList" class="prompt-list small">
+                <span data-en="Click on the image: left = positive, right = negative. In box mode, drag to create a rectangle."
+                      data-zh="点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。">
+                  点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。
+                </span>
+              </div>
             </div>
             <div class="task-info text-right">
               <p><strong data-en="Current task" data-zh="当前任务">当前任务</strong></p>

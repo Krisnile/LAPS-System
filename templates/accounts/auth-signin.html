@@ -4,42 +4,13 @@
 {% block title %}登录{% endblock title %}
 
 {% block auth_card %}
-<div class="card-header text-center py-4">
-    <h4 class="title" data-en="Login to LAPS" data-zh="登录 LAPS">登录 LAPS</h4>
-</div>
-<div class="card-body px-5 py-3">
-    <form method="post" action="{% url 'auth_signin' %}" autocomplete="on">
-        {% csrf_token %}
-        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
-        {% endif %}
-        <div class="row">
-            <div class="col-md-12 px-md-1">
-                <div class="form-group">
-                    <label for="id_username" data-en="Username" data-zh="用户名">用户名</label>
-                    <input type="text" name="username" id="id_username" class="form-control" autocomplete="username" required maxlength="150" value="{{ form.username.value|default:'' }}" placeholder="Username" />
-                </div>
-                {% if form.username.errors %}<span class="text-danger small">{{ form.username.errors.0 }}</span>{% endif %}
-            </div>
-            <div class="col-md-12 px-md-1">
-                <div class="form-group">
-                    <label for="id_password" data-en="Password" data-zh="密码">密码</label>
-                    <input type="password" name="password" id="id_password" class="form-control" autocomplete="current-password" required placeholder="Password" />
-                </div>
-                {% if form.password.errors %}<span class="text-danger small">{{ form.password.errors.0 }}</span>{% endif %}
-            </div>
-            <div class="col-md-12 px-md-1">
-                <button type="submit" class="btn btn-fill btn-primary" data-en="Login" data-zh="登录">登录</button>
-                <span style="margin: 12px !important;">
-                    <span data-en="Or" data-zh="或">或</span>
-                    <a href="{% url 'auth_signup' %}" data-en="Register" data-zh="注册">注册</a>
-                </span>
-            </div>
-        </div>
-    </form>
-</div>
+<div id="root-login"></div>
 {% endblock auth_card %}
+
+{% block extrajs %}
+{{ block.super }}
+<script>
+  // 将 Django 生成的 CSRF token 暴露给前端 React
+  window.__CSRFTOKEN__ = '{{ csrf_token }}';
+</script>
+{% endblock extrajs %}

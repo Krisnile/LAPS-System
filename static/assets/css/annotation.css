@@ -1,8 +1,51 @@
 .annotation-canvas-wrapper{ position:relative; width:100%; background:#f8f9fb; display:flex; align-items:center; justify-content:center; min-height:420px; }
 .annotation-canvas-wrapper img{ max-width:100%; height:auto; display:block; user-select:none; }
 .annotation-canvas-wrapper canvas{ position:absolute; left:0; top:0; pointer-events:auto; }
+.annot-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:24px;
+  color:var(--laps-text-muted);
+  pointer-events:none;
+  z-index: 3; /* 保证文字在画布与图片之上 */
+}
+.annot-placeholder p{
+  font-size: 0.95rem;
+}
+.annot-placeholder p.small{
+  font-size: 0.85rem;
+}
+/* 深色模式下，画布背景是白色，为了对比度提升占位提示用更深的文字，并强制覆盖 */
+body:not(.white-content) .annot-placeholder{
+  color:#000000 !important;
+}
+.annot-placeholder-icon{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px dashed rgba(255,255,255,0.12);
+  color:var(--laps-accent);
+}
+body.white-content .annot-placeholder-icon{
+  background:rgba(0,0,0,0.02);
+  border-color:rgba(0,0,0,0.08);
+}
 .annotation-toolbar{ display:flex; gap:8px; margin-bottom:12px; align-items:center; }
-.card-sidebar{ position:sticky; top:80px; }
+.card-sidebar{
+  /* 让标注右侧面板随页面一起滚动，避免卡顿感 */
+  position: static;
+  top: auto;
+}
 .label-item{ margin-bottom:6px; }
 .annotation-hint{ margin-top:8px; color:#6c757d; }
 .prompt-list{ max-height:220px; overflow:auto; border:1px solid #eee; padding:8px; background:#fff; }
@@ -11,6 +54,11 @@
 .annotation-bottom{ display:flex; justify-content:space-between; margin-top:12px; align-items:center; }
 
 /* New LabelStudio-like layout styles */
+.content.content-annotation {
+  /* 覆盖全局 content 左内边距，让标注工作区更贴近侧边栏 */
+  padding-left: 30px;
+  padding-right: 24px;
+}
 .annotate-row { gap: 16px; }
 .annotate-left { padding-right: 6px; }
 .annotate-right { padding-left: 6px; }

@@ -23,20 +23,46 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnAssignNext = document.getElementById('btnAssignNext');
   const btnSubmitReview = document.getElementById('btnSubmitReview');
   const historyList = document.getElementById('historyList');
+  const placeholder = document.getElementById('annot-placeholder');
 
   let currentImageFile = null;
   let currentTaskId = null;
   let prompts = [] // {x,y,positive}
+  let boxes = []   // {x1,y1,x2,y2}
   let selectedLabel = null;
   let zoom = 1.0;
   let maskAlpha = parseFloat(maskOpacity ? maskOpacity.value : 0.6);
+  let boxDrawing = null; // 当前正在拖拽的框（canvas 坐标）
+  let dragState = null;  // {button, startX, startY}（canvas 坐标）
+  let hasRealImage = false; // 是否已经加载了真正的任务/上传图片
 
   function renderPrompts() {
     promptListEl.innerHTML = '';
+    if (!prompts.length && !boxes.length) {
+      const hint = document.createElement('div');
+      hint.className = 'prompt-item';
+      hint.textContent = getLangText(
+        'prompt_hint',
+        '点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。',
+        'Click: left=positive, right=negative. In box mode, drag to draw a rectangle.'
+      );
+      promptListEl.appendChild(hint);
+      return;
+    }
     prompts.forEach((p, i) => {
       const el = document.createElement('div');
       el.className = 'prompt-item';
-      el.textContent = `${i+1}. (${Math.round(p.x)}, ${Math.round(p.y)}) ${p.positive? '＋':'－'}`;
+      el.textContent = `${i + 1}. (${Math.round(p.x)}, ${Math.round(p.y)}) ${p.positive ? '＋' : '－'}`;
+      promptListEl.appendChild(el);
+    });
+    boxes.forEach((b, i) => {
+      const el = document.createElement('div');
+      el.className = 'prompt-item';
+      el.textContent = getLangText(
+        'box_item',
+        `框 ${i + 1}: (${Math.round(b.x1)}, ${Math.round(b.y1)}) → (${Math.round(b.x2)}, ${Math.round(b.y2)})`,
+        `Box ${i + 1}: (${Math.round(b.x1)}, ${Math.round(b.y1)}) → (${Math.round(b.x2)}, ${Math.round(b.y2)})`
+      );
       promptListEl.appendChild(el);
     });
   }
@@ -60,12 +86,17 @@ document.addEventListener('DOMContentLoaded', function () {
       // reset state
       currentTaskId = null;
       prompts = [];
+      boxes = [];
+      boxDrawing = null;
+      dragState = null;
+      hasRealImage = true;
+      if (placeholder) placeholder.style.display = 'none';
       renderPrompts();
     };
   });
 
     btnRun.addEventListener('click', function () {
-    if (!imgEl.src) {
+    if (!imgEl.src || !hasRealImage) {
       alert(getLangText('please_upload', '请先上传或加载图片', 'Please upload or load an image first'));
       return;
     }
@@ -78,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (prompts.length) {
         const pts = prompts.map(p => [p.x, p.y]);
         form.append('points', JSON.stringify(pts));
+      }
+      if (boxes.length) {
+        const bxs = boxes.map(b => [b.x1, b.y1, b.x2, b.y2]);
+        form.append('boxes', JSON.stringify(bxs));
       }
       fetch('/segment-image/', { method: 'POST', body: form }).then(r => {
         if (!r.ok) throw new Error('segmentation failed');
@@ -142,51 +177,176 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 'image/png');
   });
 
-  // Click to record point prompts (left=positive, right=negative)
-  canvas.addEventListener('click', function (ev) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (ev.clientX - rect.left) * (imgEl.naturalWidth / imgEl.clientWidth);
-    const y = (ev.clientY - rect.top) * (imgEl.naturalHeight / imgEl.clientHeight);
-    prompts.push({ x: x, y: y, positive: true });
-    // draw small green dot
+  // Mode toggles (point / box)
+  function setPromptMode(mode) {
+    promptMode = mode;
+    if (modePointBtn && modeBoxBtn) {
+      modePointBtn.classList.toggle('active', mode === 'point');
+      modeBoxBtn.classList.toggle('active', mode === 'box');
+    }
+  }
+  if (modePointBtn) {
+    modePointBtn.addEventListener('click', function () { setPromptMode('point'); });
+  }
+  if (modeBoxBtn) {
+    modeBoxBtn.addEventListener('click', function () { setPromptMode('box'); });
+  }
+  setPromptMode('point');
+
+  // Helpers to convert between canvas coords and image coords
+  function canvasToImageCoords(canvasX, canvasY) {
+    const scaleX = imgEl.naturalWidth / imgEl.clientWidth;
+    const scaleY = imgEl.naturalHeight / imgEl.clientHeight;
+    return {
+      x: canvasX * scaleX,
+      y: canvasY * scaleY,
+    };
+  }
+
+  // Draw current box overlay (for visual feedback)
+  function redrawOverlay() {
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(0,255,0,0.9)';
-    ctx.beginPath();
-    const drawX = (ev.clientX - rect.left);
-    const drawY = (ev.clientY - rect.top);
-    ctx.arc(drawX, drawY, 6, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // existing boxes
+    ctx.lineWidth = 2;
+    boxes.forEach(b => {
+      const rect = imageBoxToCanvasRect(b);
+      ctx.strokeStyle = 'rgba(0, 123, 255, 0.9)';
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    });
+    if (boxDrawing) {
+      ctx.strokeStyle = 'rgba(0, 123, 255, 0.9)';
+      ctx.setLineDash([5, 4]);
+      const x = Math.min(boxDrawing.startX, boxDrawing.endX);
+      const y = Math.min(boxDrawing.startY, boxDrawing.endY);
+      const w = Math.abs(boxDrawing.endX - boxDrawing.startX);
+      const h = Math.abs(boxDrawing.endY - boxDrawing.startY);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+    }
+  }
+
+  function imageBoxToCanvasRect(b) {
+    const scaleX = imgEl.clientWidth / imgEl.naturalWidth;
+    const scaleY = imgEl.clientHeight / imgEl.naturalHeight;
+    const x1 = b.x1 * scaleX;
+    const y1 = b.y1 * scaleY;
+    const x2 = b.x2 * scaleX;
+    const y2 = b.y2 * scaleY;
+    return {
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      w: Math.abs(x2 - x1),
+      h: Math.abs(y2 - y1),
+    };
+  }
+
+  // Click / drag events on canvas：根据鼠标轨迹自动判断点选或框选
+  canvas.addEventListener('mousedown', function (ev) {
+    if (!hasRealImage) return; // 占位图时不允许标注
+    const rect = canvas.getBoundingClientRect();
+    const cx = ev.clientX - rect.left;
+    const cy = ev.clientY - rect.top;
+    dragState = {
+      button: ev.button,
+      startX: cx,
+      startY: cy,
+    };
+    boxDrawing = null;
+  });
+
+  canvas.addEventListener('mousemove', function (ev) {
+    if (!dragState || !hasRealImage) return;
+    // 仅左键拖动才考虑成为框
+    if (dragState.button !== 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = ev.clientX - rect.left;
+    const cy = ev.clientY - rect.top;
+    const dx = cx - dragState.startX;
+    const dy = cy - dragState.startY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const threshold = 5; // 像素阈值，避免误判单击为框
+    if (dist >= threshold) {
+      boxDrawing = {
+        startX: dragState.startX,
+        startY: dragState.startY,
+        endX: cx,
+        endY: cy,
+      };
+      redrawOverlay();
+    }
+  });
+
+  canvas.addEventListener('mouseup', function (ev) {
+    if (!dragState || !hasRealImage) return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = ev.clientX - rect.left;
+    const cy = ev.clientY - rect.top;
+    const dx = cx - dragState.startX;
+    const dy = cy - dragState.startY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const threshold = 5;
+
+    if (dragState.button === 0) {
+      // 左键：短距离认为是点，长距离认为是框
+      if (dist < threshold) {
+        const imgCoords = canvasToImageCoords(cx, cy);
+        prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: true });
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(0,255,0,0.9)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const startImg = canvasToImageCoords(dragState.startX, dragState.startY);
+        const endImg = canvasToImageCoords(cx, cy);
+        boxes.push({
+          x1: startImg.x,
+          y1: startImg.y,
+          x2: endImg.x,
+          y2: endImg.y,
+        });
+        boxDrawing = null;
+        redrawOverlay();
+      }
+    } else if (dragState.button === 2) {
+      // 右键：始终作为负点（忽略拖拽）
+      const imgCoords = canvasToImageCoords(cx, cy);
+      prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: false });
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(255,0,0,0.9)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    dragState = null;
     renderPrompts();
   });
+
   canvas.addEventListener('contextmenu', function (ev) {
+    // 统一屏蔽默认右键菜单，便于负点操作
     ev.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const x = (ev.clientX - rect.left) * (imgEl.naturalWidth / imgEl.clientWidth);
-    const y = (ev.clientY - rect.top) * (imgEl.naturalHeight / imgEl.clientHeight);
-    prompts.push({ x: x, y: y, positive: false });
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(255,0,0,0.9)';
-    const drawX = (ev.clientX - rect.left);
-    const drawY = (ev.clientY - rect.top);
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, 6, 0, Math.PI * 2);
-    ctx.fill();
-    renderPrompts();
     return false;
   });
 
   // Undo/clear
   btnUndo.addEventListener('click', function () {
-    if (!prompts.length) return;
-    prompts.pop();
-    // redraw overlay by clearing and, if mask exists, keep it (simple approach: clear points only)
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (boxes.length) {
+      boxes.pop();
+    } else if (prompts.length) {
+      prompts.pop();
+    } else {
+      return;
+    }
+    redrawOverlay();
     renderPrompts();
   });
 
   btnClear.addEventListener('click', function () {
     prompts = [];
+    boxes = [];
+    boxDrawing = null;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     renderPrompts();
@@ -202,7 +362,16 @@ document.addEventListener('DOMContentLoaded', function () {
       currentTaskId = j.task;
       // load image
       imgEl.src = j.image_url;
-      imgEl.onload = function () { resizeCanvasToImage(); prompts = []; renderPrompts(); };
+      imgEl.onload = function () {
+        resizeCanvasToImage();
+        prompts = [];
+        boxes = [];
+        boxDrawing = null;
+        dragState = null;
+        hasRealImage = true;
+        if (placeholder) placeholder.style.display = 'none';
+        renderPrompts();
+      };
       document.getElementById('currentTask').textContent = 'Task #' + currentTaskId;
     }).catch(e => { console.error(e); alert('Error fetching next task'); });
   });
