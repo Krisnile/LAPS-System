@@ -3,16 +3,30 @@
  * 主题背景与文字颜色统一为变量，侧边栏与全站一致
  */
 
-/* ========== 主题变量（背景与文字，影响整个系统） ========== */
+/* ========== 主题变量（背景与文字 + 主色，影响整个系统） ========== */
 :root {
-  --laps-bg: #1a1c2e;
-  --laps-bg-light: #f0f2f7;
+  --laps-bg: #141625;
+  --laps-bg-light: #f4f6fb;
   --laps-text: rgba(255, 255, 255, 0.9);
   --laps-text-muted: rgba(255, 255, 255, 0.65);
   --laps-border: rgba(255, 255, 255, 0.06);
+
+  /* 主色体系（商业风：蓝稍深，红/绿稍浅） */
+  --laps-accent-primary: #e56fae;          /* 比原来的 primary 更柔和一点的红 / 品红 */
+  --laps-accent-primary-soft: rgba(229, 111, 174, 0.18);
+
+  --laps-accent-blue: #465ad8;             /* 更深的商务蓝 */
+  --laps-accent-blue-soft: rgba(70, 90, 216, 0.20);
+
+  --laps-accent-green: #3ac58f;            /* 稍浅一点的绿色，避免太荧光 */
+  --laps-accent-green-soft: rgba(58, 197, 143, 0.20);
+
+  /* 当前激活主题色（默认用 primary，一会儿根据 sidebar data-color 覆盖） */
+  --laps-accent: var(--laps-accent-primary);
+  --laps-accent-soft: var(--laps-accent-primary-soft);
 }
 body.white-content {
-  --laps-bg: #f0f2f7;
+  --laps-bg: #f4f6fb;
   --laps-text: #32325d;
   --laps-text-muted: #525f7f;
   --laps-border: rgba(0, 0, 0, 0.06);
@@ -54,21 +68,70 @@ body.white-content .main-panel {
   }
 }
 
-/* ========== 侧边栏（使用主题背景与主题文字色） ========== */
+/* ========== 侧边栏（使用主题背景与主题文字色，支持固定插件切换 primary/blue/green） ========== */
 .sidebar {
-  background: var(--laps-bg) !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  background: #101221 !important;
+  box-shadow: 4px 0 22px rgba(0, 0, 0, 0.35);
   border-right: 1px solid var(--laps-border);
 }
 body.white-content .sidebar {
-  background: var(--laps-bg-light) !important;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.06);
+  background: #ffffff !important;
+  box-shadow: 4px 0 20px rgba(15, 18, 32, 0.08);
   border-right: 1px solid var(--laps-border);
 }
 
+/* 根据 sidebar 的 data-color 选择当前主题主色 */
+.sidebar[data-color="primary"],
+.sidebar[data="primary"] {
+  --laps-accent: var(--laps-accent-primary);
+  --laps-accent-soft: var(--laps-accent-primary-soft);
+}
+
+.sidebar[data-color="blue"],
+.sidebar[data="blue"] {
+  --laps-accent: var(--laps-accent-blue);
+  --laps-accent-soft: var(--laps-accent-blue-soft);
+}
+
+.sidebar[data-color="green"],
+.sidebar[data="green"] {
+  --laps-accent: var(--laps-accent-green);
+  --laps-accent-soft: var(--laps-accent-green-soft);
+}
+
+/* 侧边栏内部 wrapper：随主题主色做轻微着色，保持商业风低饱和 */
 .sidebar .sidebar-wrapper {
+  background: radial-gradient(circle at top left,
+    rgba(0, 0, 0, 0.0),
+    rgba(0, 0, 0, 0.22)
+  );
+  box-shadow: 4px 0 22px rgba(0, 0, 0, 0.35);
+  border-right: 1px solid var(--laps-border);
   padding-top: 18px;
   padding-bottom: 24px;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.sidebar[data-color] .sidebar-wrapper,
+.sidebar[data] .sidebar-wrapper {
+  background: linear-gradient(
+    180deg,
+    var(--laps-accent-soft),
+    rgba(16, 18, 33, 0.98)
+  );
+  border-right-color: rgba(0, 0, 0, 0.35);
+}
+
+body.white-content .sidebar .sidebar-wrapper {
+  background: #ffffff;
+  box-shadow: 4px 0 20px rgba(15, 18, 32, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.white-content .sidebar[data-color] .sidebar-wrapper,
+body.white-content .sidebar[data] .sidebar-wrapper {
+  background: #ffffff;
+  border-right-color: var(--laps-accent-soft);
 }
 
 .sidebar .logo {
@@ -115,13 +178,13 @@ body.white-content .sidebar .nav > li > a:hover {
 }
 
 .sidebar .nav > li.active > a {
-  background: rgba(225, 78, 202, 0.18);
-  color: #e14eca;
+  background: var(--laps-accent-soft);
+  color: var(--laps-accent);
   font-weight: 500;
 }
 body.white-content .sidebar .nav > li.active > a {
-  background: rgba(94, 114, 228, 0.12);
-  color: #5e72e4;
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--laps-accent);
 }
 
 /* ========== 顶栏 ========== */
