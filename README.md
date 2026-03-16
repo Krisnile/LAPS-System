@@ -1,4 +1,55 @@
 # LAPS-System
+
+轻量交互式图像标注系统，基于 **Django + React + SAM**。
+
+## 功能简介
+
+- **账号系统**：自定义登录 / 注册页，支持中英文切换、主题色切换、深色 / 浅色模式。
+- **项目 / 数据集 / 任务管理**：按项目组织数据集和标注任务，主页提供简单的统计与快捷入口（已 React 化）。
+- **标注工作区**：基于 Segment Anything Model（SAM）的点选 / 框选交互式分割，支持撤销、清除与结果保存。
+- **统一主题**：侧边栏、顶部栏、按钮、提示文字等随主题联动，登录页支持左布局 / 居中布局切换。
+
+## 快速开始
+
+1. 创建并激活环境（建议 Python 3.10）：
+
+```bash
+conda create -n laps python=3.10 -y
+conda activate laps
+pip install -r requirements.txt
+```
+
+2. 初始化数据库与静态文件：
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+3. 构建前端（首次或修改前端代码后需要）：
+
+```bash
+cd frontend
+npm install        # 首次执行
+npm run build      # 生成 static/frontend/assets/main-*.js
+```
+
+4. 启动开发服务器：
+
+```bash
+python manage.py runserver
+# 打开浏览器访问 http://127.0.0.1:8000/
+```
+
+## 技术栈
+
+- **后端**：Django、SQLite（默认）/ PostgreSQL（可选）
+- **前端**：React + Vite（登录页、Dashboard、Projects / Datasets / Tasks）、自定义主题 `laps-theme.css`
+- **标注引擎**：Segment Anything Model（SAM）
+
+更多实现细节可直接阅读源码与注释。***
+# LAPS-System
 轻量交互式图像标注系统（基于 SAM 的点/框提示分割）
 
 本仓库实现了一个面向研究与数据标注流程的轻量级平台，主要目标是：
