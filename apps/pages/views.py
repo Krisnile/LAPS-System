@@ -12,6 +12,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth import login as auth_login, get_user_model
+from django.views import View
 from PIL import Image as PILImage, ImageDraw
 from django.conf import settings
 import os
@@ -19,6 +21,7 @@ import uuid
 import base64
 from . import models
 from django.utils import timezone
+from django.contrib.auth.views import LoginView
 
 # SAM 分割推理（可选）：apps/pages/sam_inference.run_segmentation_on_bytes
 try:
@@ -32,27 +35,86 @@ def _is_manage_admin(user):
     return user.is_authenticated and user.username == 'admin'
 
 
-from admin_black.views import AuthSignin
+class LAPSLoginView(LoginView):
+    """
+    自定义登录视图：
+    - 保留原有滑动验证校验
+    - 支持登录身份选择（普通 / super）
+    - admin + super 身份登录后跳转到 /admin/（django-unfold 后台）
+    """
+    template_name = "accounts/auth-signin.html"
 
-
-class LAPSLoginView(AuthSignin):
-    """登录成功后若为 admin 则跳转到 /manage/，否则跳转首页"""
     def post(self, request, *args, **kwargs):
         # 简单服务端校验滑动验证是否完成
         slider_ok = request.POST.get('slider_ok')
         if slider_ok != '1':
             messages.error(request, '请先完成滑动验证后再登录。')
             return redirect('auth_signin')
+        # 记录本次登录选择的身份（user / super），以便在重定向时使用
+        role = request.POST.get('role') or 'user'
+        request.session['login_role'] = role
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
-        # 根据登录身份选择跳转：admin + 选择超级管理员 → /manage/；否则回首页
-        if self.request.user.username == 'admin':
-            role = self.request.POST.get('role') or 'user'
-            if role == 'super':
-                return '/manage/'
-            return '/'
-        return super().get_success_url() or '/'
+        """
+        根据登录身份选择跳转：
+        - 用户名为 admin 且选择超级管理员(super) → /admin/ （django-unfold 后台）
+        - 其他情况 → 首页 /
+        """
+        user = self.request.user
+        # 从 session 里取出刚才登录时选择的身份（避免 POST 数据在重定向时丢失）
+        role = self.request.session.pop('login_role', 'user')
+        # 用户名为 admin 且选择了 super → django-unfold 后台主页
+        if user.is_authenticated and user.username == 'admin' and role == 'super':
+            return '/admin/'
+        # 其他用户（普通身份）→ 前台仪表盘主页
+        return '/'
+
+
+class LAPSSignupView(View):
+    """
+    简单的注册视图：
+    - 使用 Django 自带 User 模型创建账号
+    - 表单复用 UserCreationForm + Email 字段
+    - 注册成功后自动登录并跳转到首页
+    """
+    template_name = "accounts/auth-signup.html"
+
+    def get(self, request, *args, **kwargs):
+        from django.contrib.auth.forms import UserCreationForm
+        User = get_user_model()
+
+        class SignupForm(UserCreationForm):
+            class Meta(UserCreationForm.Meta):
+                model = User
+                fields = ("username", "email")
+
+        form = SignupForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        from django.contrib.auth.forms import UserCreationForm
+        User = get_user_model()
+
+        class SignupForm(UserCreationForm):
+            class Meta(UserCreationForm.Meta):
+                model = User
+                fields = ("username", "email")
+
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            auth_login(request, user)
+            messages.success(request, "注册成功，已自动登录。")
+            return redirect("index")
+        return render(request, self.template_name, {"form": form})
+
+    def get_redirect_url(self):
+        """
+        覆盖默认重定向逻辑，优先使用我们自定义的 get_success_url，
+        避免 login_required 的 ?next= 参数把 admin+super 的跳转改回首页。
+        """
+        return self.get_success_url()
 
 
 @login_required

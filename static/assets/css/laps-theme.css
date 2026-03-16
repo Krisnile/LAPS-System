@@ -258,6 +258,129 @@ body.white-content .sidebar .nav > li.active > a {
   color: var(--laps-accent);
 }
 
+/* ========== 按钮 / 选择控件：随主题变化（登录 / 注册等页面一起生效） ========== */
+.btn.btn-primary,
+.btn.btn-fill.btn-primary,
+.auth-card .btn.btn-primary,
+.auth-card .btn.btn-fill.btn-primary,
+.btn.btn-primary:focus,
+.btn.btn-fill.btn-primary:focus,
+.auth-card .btn.btn-primary:focus,
+.auth-card .btn.btn-fill.btn-primary:focus {
+  background: var(--laps-accent) !important;
+  background-image: none !important;
+  border-color: var(--laps-accent) !important;
+  box-shadow: 0 0.25rem 0.9rem rgba(0, 0, 0, 0.18),
+    0 0 0.8rem rgba(255, 255, 255, 0.04),
+    0 0 1.1rem var(--laps-accent-soft);
+}
+.btn.btn-primary:hover,
+.btn.btn-fill.btn-primary:hover,
+.auth-card .btn.btn-primary:hover,
+.auth-card .btn.btn-fill.btn-primary:hover {
+  background: var(--laps-accent) !important;
+  background-image: none !important;
+  border-color: var(--laps-accent) !important;
+  filter: brightness(1.05);
+}
+.btn.btn-primary:active,
+.btn.btn-fill.btn-primary:active,
+.btn.btn-primary.active,
+.btn.btn-fill.btn-primary.active,
+.auth-card .btn.btn-primary:active,
+.auth-card .btn.btn-fill.btn-primary:active,
+.auth-card .btn.btn-primary.active,
+.auth-card .btn.btn-fill.btn-primary.active {
+  background: var(--laps-accent) !important;
+  background-image: none !important;
+  border-color: var(--laps-accent) !important;
+  box-shadow: 0 0.12rem 0.4rem rgba(0, 0, 0, 0.3),
+    0 0 0.7rem var(--laps-accent-soft);
+}
+.btn.btn-primary.disabled,
+.btn.btn-primary:disabled,
+.btn.btn-fill.btn-primary.disabled,
+.btn.btn-fill.btn-primary:disabled,
+.auth-card .btn.btn-primary.disabled,
+.auth-card .btn.btn-primary:disabled,
+.auth-card .btn.btn-fill.btn-primary.disabled,
+.auth-card .btn.btn-fill.btn-primary:disabled {
+  background-color: var(--laps-accent-soft) !important;
+  border-color: var(--laps-accent-soft) !important;
+}
+
+/* 登录身份单选框、记住账号复选框：选中时使用主题色 */
+.custom-control-label::before {
+  background-image: none !important;
+  transition: none !important;
+}
+.custom-control-input:checked ~ .custom-control-label::before {
+  border-color: var(--laps-accent) !important;
+  background-color: var(--laps-accent) !important;
+}
+.custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 0 0.1rem rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--laps-accent-soft) !important;
+}
+.custom-control-input:active ~ .custom-control-label::before {
+  background-color: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+}
+
+/* 登录卡片内单选 / 复选控件：去掉 .custom-control 的整体缩进，并让圆点与文字在垂直方向完全居中对齐 */
+.auth-card .custom-control {
+  padding-left: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.auth-card .custom-control-label {
+  padding-left: 1rem;
+  white-space: nowrap;
+  line-height: 1.1;
+  margin-bottom: 0;
+}
+
+/* 登录身份提示文字也保持在一行内，略小字号 */
+.auth-card .small.text-muted {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  line-height: 1.1;
+  position: relative;
+  top: 1px;
+}
+.auth-card .custom-control-label::before,
+.auth-card .custom-control-label::after {
+  left: 0;
+  width: 0.8rem;
+  height: 0.8rem;
+  top: 0.05rem;
+}
+
+/* 登录 / 注册卡片里的文字链接：颜色随主题变化 */
+.auth-card a,
+.auth-card a:focus {
+  color: var(--laps-accent);
+}
+.auth-card a:hover {
+  color: var(--laps-accent);
+  text-decoration: underline;
+}
+
+/* 页脚文字与链接颜色随主题变化 */
+.footer,
+.footer span,
+.footer a {
+  color: var(--laps-text-muted);
+}
+.footer a,
+.footer a:focus {
+  color: var(--laps-accent);
+}
+.footer a:hover {
+  color: var(--laps-accent);
+  text-decoration: underline;
+}
+
 /* ========== 顶栏 ========== */
 .navbar.navbar-absolute.navbar-transparent {
   position: fixed;
@@ -318,18 +441,39 @@ body.white-content .sidebar .nav > li.active > a {
   font-weight: 600;
   color: var(--laps-accent);
 }
+.navbar .dropdown-menu .badge-colors {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
 .navbar .dropdown-menu .badge-colors .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 14px;
   height: 14px;
   border-radius: 50%;
   border: 2px solid transparent;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  padding: 0;
+  line-height: 1;
   cursor: pointer;
 }
 .navbar .dropdown-menu .badge-colors .badge.active {
   border-color: #ffffff;
-  box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px rgba(255, 255, 255, 0.25);
+  border-width: 1px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
+}
+
+/* 主题色圆点容器按钮：去掉竖直间距，点击区域紧贴圆点 */
+.navbar .dropdown-menu .badge-colors .theme-item {
+  margin: 0 4px 0 0;
+  padding: 0;
+}
+.navbar .dropdown-menu .badge-colors .theme-item.mt-1 {
+  margin-top: 0 !important;
 }
 
 /* 顶栏下拉在浅色模式下的配色 */
@@ -431,6 +575,11 @@ body.white-content .navbar.navbar-absolute.navbar-transparent {
 .navbar .dropdown-menu.dropdown-navbar .layout-item.active,
 .navbar .lang-toggle-group .lang-toggle.active {
   color: var(--laps-accent);
+}
+
+/* 主题切换下拉：只显示圆点，不显示文字 */
+.navbar .dropdown-menu.dropdown-navbar .theme-label {
+  display: none;
 }
 
 .navbar .navbar-brand {

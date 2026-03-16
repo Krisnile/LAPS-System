@@ -11,6 +11,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('account/', views.profile, name='profile'),
     path('accounts/auth-signin/', views.LAPSLoginView.as_view(), name='auth_signin'),
+    path('accounts/auth-signup/', views.LAPSSignupView.as_view(), name='auth_signup'),
     path('manage/', views.user_manage_list, name='user_manage'),
     path('manage/user/<int:pk>/toggle/', views.user_manage_toggle_active, name='user_manage_toggle'),
     path('image-processing/', views.image_processing, name='image_processing'),  # 已归档，重定向首页

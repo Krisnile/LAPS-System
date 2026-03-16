@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.contrib.auth.views import LogoutView
+from apps.pages.views import LAPSLoginView
 from rest_framework.authtoken.views import obtain_auth_token # <-- NEW
 
 urlpatterns = [
@@ -22,8 +24,10 @@ urlpatterns = [
     path('', include('apps.dyn_dt.urls')),
     path('', include('apps.dyn_api.urls')),
     path('charts/', include('apps.charts.urls')),
+    # 统一登录入口：当访问 /admin/login/ 时使用自定义登录视图（React 登录页）
+    path("admin/login/", LAPSLoginView.as_view(), name="admin_login"),  # /admin/login/ -> LAPSLoginView
     path("admin/", admin.site.urls),
-    path("", include('admin_black.urls')),
+    path("accounts/logout/", LogoutView.as_view(next_page='/accounts/auth-signin/'), name="logout"),
 ]
 
 # Lazy-load on routing is needed

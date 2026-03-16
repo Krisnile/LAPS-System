@@ -1,10 +1,7 @@
 {# 主站布局：侧栏 + main-panel(顶栏/内容/页脚) + 齿轮；被 dashboard/projects/datasets/tasks/annotation 等继承 #}
 <!DOCTYPE html>
-{% load i18n static admin_black %}
+{% load i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
-{% get_current_language_bidi as LANGUAGE_BIDI %}
-{% get_direction as direction %}
-{% get_admin_setting as admin_setting %}
 <html lang="{{ LANGUAGE_CODE }}">
 
 <head>
@@ -32,7 +29,7 @@
         </div>
     </div>
     {% include 'includes/scripts.html' %}
-    <script src="{% static 'frontend/assets/main-DeLxURL3.js' %}"></script>
+    <script src="{% static 'frontend/assets/main-9w6-qYzu.js' %}"></script>
     {% block extrajs %}{% endblock extrajs %}
 </body>
 

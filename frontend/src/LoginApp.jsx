@@ -4,6 +4,7 @@ import './index.css'
 function LoginApp() {
   const [role, setRole] = useState('user')
   const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [sliderOk, setSliderOk] = useState(false)
   const [remember, setRemember] = useState(false)
 
@@ -27,7 +28,9 @@ function LoginApp() {
     }
   }, [])
 
-  // 简单滑动验证
+  const sliderDisabled = !username || !password
+
+  // 简单滑动验证（仅在已填写账号 + 密码后才允许操作）
   useEffect(() => {
     const track = trackRef.current
     const handle = handleRef.current
@@ -53,7 +56,7 @@ function LoginApp() {
     }
 
     const onDown = (e) => {
-      if (sliderOk) return
+      if (sliderOk || sliderDisabled) return
       dragging = true
       const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0
       startX = clientX
@@ -92,7 +95,7 @@ function LoginApp() {
     }
 
     const onTrackClick = () => {
-      if (sliderOk) return
+      if (sliderOk || sliderDisabled) return
       setVerified()
     }
 
@@ -113,7 +116,7 @@ function LoginApp() {
       window.removeEventListener('touchend', onUp)
       track.removeEventListener('click', onTrackClick)
     }
-  }, [sliderOk])
+  }, [sliderOk, sliderDisabled])
 
   const onSubmit = (e) => {
     if (!sliderOk) {
@@ -163,11 +166,11 @@ function LoginApp() {
 
           <div className="row">
             <div className="col-md-12 px-md-1 mb-2">
-              <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
                 <span className="small text-muted" data-en="Login role" data-zh="登录身份">
                   登录身份
                 </span>
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center ml-3">
                   <div className="custom-control custom-radio custom-control-inline">
                     <input
                       type="radio"
@@ -181,7 +184,7 @@ function LoginApp() {
                       普通用户
                     </label>
                   </div>
-                  <div className="custom-control custom-radio custom-control-inline ml-3">
+                  <div className="custom-control custom-radio custom-control-inline ml-2">
                     <input
                       type="radio"
                       id="role_super"
@@ -231,6 +234,8 @@ function LoginApp() {
                   autoComplete="current-password"
                   required
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
@@ -247,7 +252,8 @@ function LoginApp() {
                   borderRadius: 22,
                   background: 'rgba(255,255,255,0.06)',
                   overflow: 'hidden',
-                  cursor: 'pointer',
+                  cursor: sliderDisabled || sliderOk ? 'not-allowed' : 'pointer',
+                  opacity: sliderDisabled && !sliderOk ? 0.5 : 1,
                 }}
               >
                 <div

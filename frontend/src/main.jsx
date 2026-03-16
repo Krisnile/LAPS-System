@@ -6,6 +6,7 @@ import DashboardApp from './DashboardApp.jsx'
 import ProjectsApp from './ProjectsApp.jsx'
 import DatasetsApp from './DatasetsApp.jsx'
 import TasksApp from './TasksApp.jsx'
+import SignupApp from './SignupApp.jsx'
 
 function mountLogin() {
   const el = document.getElementById('root-login')
@@ -13,6 +14,16 @@ function mountLogin() {
   createRoot(el).render(
     <StrictMode>
       <LoginApp />
+    </StrictMode>,
+  )
+}
+
+function mountSignup() {
+  const el = document.getElementById('root-signup')
+  if (!el) return
+  createRoot(el).render(
+    <StrictMode>
+      <SignupApp />
     </StrictMode>,
   )
 }
@@ -94,6 +105,7 @@ function mountTasks() {
 }
 
 mountLogin()
+mountSignup()
 mountDashboard()
 mountProjects()
 mountDatasets()

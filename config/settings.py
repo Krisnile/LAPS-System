@@ -45,8 +45,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
-    'admin_black.apps.AdminBlackConfig',
+    "unfold",  # modern admin skin, must come before django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
