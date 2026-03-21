@@ -18,7 +18,8 @@ env
 /avatar*.png
 
 #src
-#.env
+.env
+.cursor/
 node_modules
 yarn.lock
 
