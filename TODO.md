@@ -1,7 +1,7 @@
 LAPS-System 待办（中文，按优先级）
 
 说明：可执行的改进列表，含目的、验收与相关文件，便于逐步完善。  
-代码整理与本次修改的完整记录见 **README.md** 中「代码整理与本次修改记录」一节。
+近期变更摘要见 **[CHANGELOG.md](CHANGELOG.md)**；环境与部署见 **[docs/SETUP.md](docs/SETUP.md)**。
 
 ## 已完成（供参考）
 
