@@ -1,0 +1,82 @@
+/* Admin-only overrides (django-unfold / Django admin) */
+
+/* 列表页操作列：修改/删除按钮更醒目 */
+#result_list .field-_actions a.button,
+#result_list .field-_actions a.deletelink {
+  display: inline-block;
+  padding: 4px 10px;
+  margin: 0 2px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+#result_list .field-_actions a.button {
+  background: var(--primary-600, #2563eb);
+  color: #fff;
+}
+#result_list .field-_actions a.button:hover {
+  opacity: 0.9;
+}
+#result_list .field-_actions a.deletelink {
+  background: transparent;
+  color: var(--danger-600, #dc2626);
+  border: 1px solid currentColor;
+}
+#result_list .field-_actions a.deletelink:hover {
+  background: var(--danger-50, rgba(220, 38, 38, 0.1));
+}
+
+.laps-admin-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 999px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.laps-admin-lang-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.laps-admin-lang-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.laps-admin-lang-btn.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* Light mode (Django admin can be light depending on theme) */
+@media (prefers-color-scheme: light) {
+  .laps-admin-lang {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.12);
+  }
+  .laps-admin-lang-btn {
+    color: rgba(15, 23, 42, 0.78);
+  }
+  .laps-admin-lang-btn:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: rgba(15, 23, 42, 0.92);
+  }
+  .laps-admin-lang-btn.is-active {
+    background: rgba(15, 23, 42, 0.10);
+    color: rgba(15, 23, 42, 0.92);
+  }
+}
+

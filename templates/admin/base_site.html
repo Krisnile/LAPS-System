@@ -1,0 +1,11 @@
+{# 覆盖 admin base_site：引入 admin-custom.css，隐藏 nav-global #}
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'assets/css/admin-custom.css' %}">
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+

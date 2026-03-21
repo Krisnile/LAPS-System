@@ -8,6 +8,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('support/', views.support_wiki, name='support'),
     path('', views.index, name='index'),
     path('account/', views.profile, name='profile'),
     path('accounts/auth-signin/', views.LAPSLoginView.as_view(), name='auth_signin'),
@@ -16,10 +17,9 @@ urlpatterns = [
     path('manage/user/<int:pk>/toggle/', views.user_manage_toggle_active, name='user_manage_toggle'),
     path('image-processing/', views.image_processing, name='image_processing'),  # 已归档，重定向首页
     path('projects/', views.projects, name='projects'),
+    path('datasets/<int:pk>/', views.dataset_detail, name='dataset_detail'),
     path('datasets/', views.datasets, name='datasets'),
     path('tasks/', views.tasks, name='tasks'),
-    path('examples/', views.examples_index, name='examples_index'),  # 已归档，重定向首页
-    path('examples/<str:name>/', views.examples_view, name='examples_view'),  # 仅渲染 archived_templates/<name>.html
     path('tasks/next/', views.next_task, name='next_task'),
     path('annotate/', views.annotation, name='annotation'),
     path('save-image/', views.save_processed_image, name='save_processed_image'),

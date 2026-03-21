@@ -7,14 +7,10 @@
 <div id="root-signup"></div>
 {% endblock auth_card %}
 
-{% block extrajs %}
+{% block extrahead %}
 {{ block.super }}
 <script>
-  (function() {
-    var tokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
-    if (tokenInput && tokenInput.value) {
-      window.__CSRFTOKEN__ = tokenInput.value;
-    }
-  })();
+  // 将 Django 生成的 CSRF token 暴露给前端 React（注册页，需在 bundle 之前）
+  window.__CSRFTOKEN__ = '{{ csrf_token }}';
 </script>
-{% endblock extrajs %}
+{% endblock extrahead %}

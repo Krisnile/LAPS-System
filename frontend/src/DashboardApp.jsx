@@ -40,12 +40,11 @@ function DashboardApp(props) {
             </div>
             <div className="card-body">
               {!projectsCount && !datasetsCount && !tasksCount && (
-                <div className="alert alert-info mb-4" role="alert">
-                  <h6 className="alert-heading" data-en="Get started" data-zh="快速开始">
+                <div className="dashboard-quick-start" role="region" aria-label="快速开始">
+                  <h6 className="dashboard-quick-start-heading" data-en="Get started" data-zh="快速开始">
                     快速开始
                   </h6>
                   <p
-                    className="mb-0"
                     data-en="Create your first project, add a dataset with images, then create tasks and open the annotation workspace."
                     data-zh="创建第一个项目 → 添加数据集并上传图片 → 创建任务 → 打开标注工作区开始标注。"
                   >

@@ -9,10 +9,15 @@
 build/
 env
 /staticfiles/
+/media/
+
+# 勿在仓库根目录建 datasets/ 存上传文件；统一使用 MEDIA_ROOT（media/datasets/…）
+/datasets/
+
+# 历史：误用 FileSystemStorage() 时曾把上传文件落在仓库根目录
+/avatar*.png
 
 #src
-#*.sqlite*
-db.sqlite3
 #.env
 node_modules
 yarn.lock

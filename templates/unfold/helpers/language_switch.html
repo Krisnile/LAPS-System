@@ -1,0 +1,19 @@
+{% load i18n %}
+{# 后台语言切换：show_languages=True 时显示，由 navigation_user 传入（顶栏已隐藏） #}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+
+{% if show_languages %}
+    <div class="border-b border-base-200 flex flex-row gap-1 mb-1 pb-1 px-2 dark:border-base-700">
+        {% if languages_list %}
+            {% for language in languages_list %}
+                {% include "unfold/helpers/language_form.html" with language=language %}
+            {% endfor %}
+        {% else %}
+            {% for language in languages %}
+                {% include "unfold/helpers/language_form.html" with language=language %}
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endif %}

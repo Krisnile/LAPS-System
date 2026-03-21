@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{# 详情页顶部增加「添加 XXX」链接，方便从详情页直接进入添加表单 #}
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if laps_admin_add_url %}
+    <li>
+        <a href="{{ laps_admin_add_url }}" class="addlink">{{ laps_admin_add_label|default:"添加" }}</a>
+    </li>
+    {% endif %}
+{% endblock %}

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static laps_tags %}
 {# 用于账户与设置等独立页：顶栏与主站一致，头像下拉为「返回主页」+「登出」 #}
 <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent">
     <div class="container-fluid">
@@ -49,7 +49,7 @@
                 <li class="dropdown nav-item">
                     <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="photo">
-                            <img src="{% static 'assets/img/anime3.png' %}" alt="Profile">
+                            <img src="{% user_avatar_src request.user %}" alt="Profile">
                         </div>
                         <b class="caret d-none d-lg-block d-xl-block"></b>
                         <p class="d-lg-none" data-en="Account" data-zh="账户">账户</p>

@@ -41,11 +41,11 @@
         el.textContent = text;
       } else {
         // Default: update visible text
-        // Preserve inner HTML structure only if element has no child elements
+        // 仅更新文本，不改变子元素结构或顺序（el.children 仅含元素节点，不含文本节点）
         if(el.children && el.children.length === 0){
           el.textContent = text;
         } else {
-          // For complex nodes, only update attributes like title if present
+          // 有子元素时只更新 title，保留结构
           if(el.hasAttribute('title')) el.setAttribute('title', text);
         }
       }

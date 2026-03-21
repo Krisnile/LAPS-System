@@ -1,7 +1,20 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import './index.css'
 
+function getCookie(name) {
+  if (typeof document === 'undefined') return ''
+  const value = `; ${document.cookie || ''}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift() || ''
+  return ''
+}
+
 function SignupApp() {
+  const csrfToken = useMemo(() => {
+    if (typeof window !== 'undefined' && window.__CSRFTOKEN__) return window.__CSRFTOKEN__
+    return getCookie('csrftoken')
+  }, [])
+
   return (
     <>
       <div className="card-header text-center py-4">
@@ -14,11 +27,7 @@ function SignupApp() {
           <input
             type="hidden"
             name="csrfmiddlewaretoken"
-            value={
-              typeof window !== 'undefined' && window.__CSRFTOKEN__
-                ? window.__CSRFTOKEN__
-                : ''
-            }
+            value={csrfToken || ''}
           />
           <div className="row">
             <div className="col-md-12 px-md-1">

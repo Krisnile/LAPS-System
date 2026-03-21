@@ -404,8 +404,19 @@
             </div>
         </div>
         <div class="auth-form-col">
-            <div class="card auth-card">
-                {% block auth_card %}{% endblock auth_card %}
+            <div class="w-100 auth-card-wrap" style="max-width: 380px;">
+                {% if messages %}
+                <div class="auth-messages">
+                    {% for message in messages %}
+                    <div class="alert auth-alert auth-alert-{{ message.tags|default:'info' }}" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="card auth-card">
+                    {% block auth_card %}{% endblock auth_card %}
+                </div>
             </div>
         </div>
     </div>
@@ -415,14 +426,14 @@
             <a href="https://github.com/Krisnile/LAPS-System" target="_blank">LAPS-System</a>.
         </div>
     </footer>
-{% include 'includes/scripts.html' %}
+{% include 'includes/scripts_auth.html' %}
 <script>
 (function(){
   var light = localStorage.getItem('light_color');
   if (light === 'true') document.getElementById('auth-body').classList.add('white-content');
 })();
 </script>
-<script src="{% static 'frontend/assets/main-9w6-qYzu.js' %}"></script>
+<script src="{% static 'frontend/assets/main.js' %}"></script>
 {% block extrajs %}{% endblock extrajs %}
 </body>
 </html>

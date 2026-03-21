@@ -11,13 +11,30 @@
       "projects": "{% url 'projects' %}",
       "annotation": "{% url 'annotation' %}"
     },
+    "annotation_type_choices": [
+      {% for c in annotation_type_choice_list %}
+      {"value": "{{ c.value|escapejs }}", "label": "{{ c.label|escapejs }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ],
+    "datasets_for_project": [
+      {% for d in datasets_for_project %}
+      {"id": {{ d.id }}, "name": "{{ d.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ],
     "projects": [
       {% for p in projects %}
       {
         "id": {{ p.id }},
         "name": "{{ p.name|escapejs }}",
+        "description": "{{ p.description|default_if_none:''|escapejs }}",
         "created_at": "{{ p.created_at }}",
-        "owner": "{% if p.owner %}{{ p.owner|escapejs }}{% endif %}"
+        "owner": "{% if p.owner %}{{ p.owner|escapejs }}{% endif %}",
+        "annotation_type": "{{ p.annotation_type|escapejs }}",
+        "linked_dataset_ids": [
+          {% for ds in p.linked_datasets.all %}
+          {{ ds.id }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        ]
       }{% if not forloop.last %},{% endif %}
       {% endfor %}
     ]

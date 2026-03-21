@@ -1,0 +1,17 @@
+{# 单个语言按钮：POST 到 set_language，提交 language code 与 next 路径 #}
+<form action="{% if languages_action %}{{ languages_action }}{% else %}{% url 'set_language' %}{% endif %}" method="post" class="flex flex-1 min-w-0">
+    {% csrf_token %}
+
+    <input name="next" type="hidden" value="{% firstof redirect_to request.get_full_path %}">
+    <input name="language" type="hidden" value="{{ language.code }}">
+
+    <button type="submit" class="block cursor-pointer flex flex-row grow items-center gap-1 mx-1 px-3 py-2 rounded-default text-left whitespace-nowrap hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200 {% if language.code == LANGUAGE_CODE %}text-primary-600 dark:text-primary-500 dark:hover:text-primary-500! hover:text-primary-600!{% endif %}">
+        {% for language_key, language_flag in language_flags.items %}
+            {% if language_key == language.code %}
+                <span class="mr-0.5 shrink-0">{{ language_flag }}</span>
+            {% endif %}
+        {% endfor %}
+
+        <span>{{ language.name_local }}</span>
+    </button>
+</form>

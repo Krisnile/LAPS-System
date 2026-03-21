@@ -328,9 +328,6 @@ function LoginApp() {
                   验证通过
                 </span>
               </div>
-              <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem' }}>
-                用于防止误触或简单脚本提交。
-              </small>
             </div>
 
             <div className="col-md-12 px-md-1 d-flex justify-content-between align-items-center mb-3">

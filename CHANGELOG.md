@@ -1,5 +1,13 @@
 # Change Log
 
+## LAPS-System（仓库维护）
+
+- 数据库：**PostgreSQL**（`psycopg2-binary`）；连接由 `.env` 中 `DB_*` 配置，缺省示例见 `env.sample`。
+- 内置超级管理员：`admin` / 初始密码 `admin123456`（迁移 `0010` + `defaults.py`）；密码仅哈希存储，`create_admin` 可重置。（已移除「强制修改初始密码」中间件、路由与页面；现为登录成功后跳转 `admin:password_change`。）
+- 数据集导入：统一经 `ImageField`/`default_storage` 写入 **`MEDIA_ROOT`**；图片路径为 **`media/datasets/user_<owner_id>/%Y/%m/%d/`**（按用户隔离；迁移 `0011` 会搬迁旧版无 `user_` 前缀的路径）。**勿**在仓库根目录使用 `datasets/` 文件夹，已 `.gitignore`。
+- 删除数据集（或单张图片）：通过 `pre_delete` 信号删除 **`Image.file`**（及标注 **`Annotation.mask_file`**）在媒体目录中的物理文件，不再只删数据库行。
+- 登录：保留登录页「普通/超级管理员」选择；`get_redirect_url()` 处理合法 `next`。
+
 ## [1.0.26] 2025-04-18
 ### Changes
 
@@ -16,7 +24,7 @@
       - `Manage Environment`
       - `Manage Dependencies`
   - Session-based Authentication, Password recovery
-  - DB Persistence: SQLite (default), can be used with MySql, PgSql
+  - DB Persistence: PostgreSQL
   - Docker, CI/CD for Render
   - Vite for assets management 
 

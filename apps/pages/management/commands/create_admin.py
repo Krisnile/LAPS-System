@@ -1,18 +1,42 @@
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+
+from apps.pages.defaults import DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME
 
 
 class Command(BaseCommand):
-    help = 'Create admin user (username: admin, password: 123456) for user management system.'
+    help = (
+        f'确保内置超级管理员存在：用户名 {DEFAULT_ADMIN_USERNAME}，'
+        f'密码 {DEFAULT_ADMIN_PASSWORD}（与数据库迁移一致）。'
+    )
 
     def handle(self, *args, **options):
-        username = 'admin'
-        password = '123456'
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(self.style.WARNING(f'User "{username}" already exists.'))
+        User = get_user_model()
+        username = DEFAULT_ADMIN_USERNAME
+        password = DEFAULT_ADMIN_PASSWORD
+
+        user = User.objects.filter(username=username).first()
+        if user:
+            user.set_password(password)
+            user.is_staff = True
+            user.is_superuser = True
+            user.is_active = True
+            user.save()
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'已更新用户 "{username}"：已设为超级管理员并重置为默认密码。'
+                )
+            )
             return
-        user = User.objects.create_user(username=username, password=password)
-        user.is_staff = False
-        user.is_superuser = False
-        user.save()
-        self.stdout.write(self.style.SUCCESS(f'Created user "{username}" with password 123456. You can now log in and access /manage/.'))
+
+        User.objects.create_superuser(
+            username=username,
+            email="",
+            password=password,
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'已创建超级用户 "{username}"，默认密码见 apps/pages/defaults.py。'
+                f'登录后可选「超级管理员」进入 /admin/，或以普通身份进入 /manage/。'
+            )
+        )

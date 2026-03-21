@@ -6,30 +6,6 @@
 {% block content %}
 <div
   id="root-datasets"
-  data-datasets-props='{
-    "urls": {
-      "datasets": "{% url 'datasets' %}"
-    },
-    "datasets": [
-      {% for d in datasets %}
-      {
-        "id": {{ d.id }},
-        "name": "{{ d.name|escapejs }}",
-        "created_at": "{{ d.created_at }}",
-        "description": "{{ d.description|default_if_none:''|escapejs }}"
-      }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    ],
-    "createdImages": [
-      {% if created_images %}
-        {% for img in created_images %}
-        {
-          "id": {{ img.id }},
-          "url": "{{ img.file.url|escapejs }}"
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-      {% endif %}
-    ]
-  }'
+  data-datasets-props="{{ datasets_props_json|escape }}"
 ></div>
 {% endblock content %}

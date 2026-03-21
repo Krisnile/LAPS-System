@@ -92,6 +92,32 @@ body.white-content .main-panel {
   }
 }
 
+/* Django messages：单独一行布局，不与下方 .content 重复顶栏留白 */
+.laps-flash-messages {
+  margin-left: 260px;
+  padding: 88px 24px 8px;
+}
+@media (min-width: 992px) {
+  .laps-flash-messages {
+    padding: 88px 30px 8px;
+  }
+}
+@media (max-width: 991px) {
+  .laps-flash-messages {
+    margin-left: 0;
+    padding: 80px 24px 8px;
+  }
+}
+
+/* 有顶部提示时，下方主内容区减少 padding-top，避免整块被顶到视口外 */
+.laps-flash-messages ~ #root-dashboard .content,
+.laps-flash-messages ~ #root-projects .content,
+.laps-flash-messages ~ #root-datasets .content,
+.laps-flash-messages ~ #root-dataset-detail .content,
+.laps-flash-messages ~ #root-tasks .content {
+  padding-top: 20px;
+}
+
 .content {
   /* 顶部多留出空间，避免被导航条遮挡；
    * 左侧为 card 内容预留出 sidebar 宽度，背景仍由 main-panel 撑满
@@ -594,12 +620,261 @@ body.white-content .navbar .navbar-brand {
   color: var(--laps-text);
 }
 
+/*
+ * 小屏顶栏「三点」展开：black-dashboard.js 会给 .navbar 加上 .bg-white（固定白底），
+ * 与深色模式脱节；改为使用与 body 一致的 --laps-bg / --laps-bg-light，并修正文字色。
+ */
+@media (max-width: 991px) {
+  body:not(.white-content) .navbar.navbar-absolute.bg-white {
+    background: var(--laps-bg) !important;
+    background-color: var(--laps-bg) !important;
+  }
+  body.white-content .navbar.navbar-absolute.bg-white {
+    background: var(--laps-bg-light) !important;
+    background-color: var(--laps-bg-light) !important;
+  }
+
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-brand,
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-text,
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .nav-link,
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-nav a.nav-link,
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-nav .nav-link {
+    color: var(--laps-text) !important;
+  }
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-nav a.nav-link p {
+    color: var(--laps-text) !important;
+  }
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .nav-link .tim-icons {
+    color: var(--laps-text) !important;
+  }
+  body:not(.white-content) .navbar.navbar-absolute.bg-white .navbar-toggler-bar {
+    background: var(--laps-text) !important;
+  }
+
+  body.white-content .navbar.navbar-absolute.bg-white .navbar-brand,
+  body.white-content .navbar.navbar-absolute.bg-white .nav-link,
+  body.white-content .navbar.navbar-absolute.bg-white .navbar-nav a.nav-link {
+    color: var(--laps-text) !important;
+  }
+  body.white-content .navbar.navbar-absolute.bg-white .nav-link .tim-icons {
+    color: var(--laps-text) !important;
+  }
+  body.white-content .navbar.navbar-absolute.bg-white .navbar-toggler-bar {
+    background: var(--laps-text) !important;
+  }
+
+  /* 折叠区：竖排，整体靠右对齐 */
+  .navbar .navbar-collapse {
+    padding-top: 0;
+    padding-bottom: 8px;
+  }
+  .navbar .navbar-collapse .navbar-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 8px 0 0 !important;
+    margin-left: 0 !important;
+    padding: 8px 0 0 !important;
+    border-top: 1px solid var(--laps-border);
+    gap: 2px 0;
+  }
+  .navbar .navbar-collapse .navbar-nav > li {
+    width: auto;
+    max-width: 100%;
+    text-align: right;
+  }
+  .navbar .navbar-collapse .navbar-nav .nav-link {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px;
+    padding: 6px 0 6px 12px !important;
+    margin: 0 !important;
+  }
+  .navbar .navbar-collapse .navbar-nav .search-bar .btn {
+    justify-content: flex-end;
+  }
+}
+
+/* ========== Support 页 Markdown 文档（/support/） ========== */
+.content .laps-md {
+  color: var(--laps-text);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  padding: 0 0 32px;
+  width: 100%;
+  max-width: 100%;
+}
+/* 超宽屏时略限行长并居中，避免一行过长；其余宽度跟满主内容区 */
+@media (min-width: 1800px) {
+  .content .laps-md {
+    max-width: min(100%, 90rem);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+.content .laps-md h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--laps-border);
+  color: var(--laps-text);
+}
+.content .laps-md h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--laps-border);
+  color: var(--laps-text);
+}
+.content .laps-md h2:first-of-type {
+  margin-top: 1rem;
+}
+.content .laps-md .laps-md-lead {
+  margin: 0 0 0.25rem;
+  color: var(--laps-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.content .laps-md ul,
+.content .laps-md ol.laps-md-ol {
+  margin: 0.35rem 0 0.5rem;
+  padding-left: 1.35rem;
+}
+.content .laps-md ol.laps-md-ol li {
+  margin: 0.45rem 0;
+}
+.content .laps-md li {
+  margin: 0.3rem 0;
+}
+.content .laps-md li::marker {
+  color: var(--laps-text-muted);
+}
+.content .laps-md code {
+  font-size: 0.86em;
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--laps-border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+body.white-content .content .laps-md code {
+  background: rgba(0, 0, 0, 0.05);
+}
+.content .laps-md hr {
+  margin: 1.75rem 0 1.25rem;
+  border: 0;
+  height: 1px;
+  background: var(--laps-border);
+}
+.content .laps-md .laps-md-footer {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--laps-text-muted);
+}
+.content .laps-md .laps-md-footer a {
+  color: var(--laps-accent);
+  font-weight: 500;
+}
+.content .laps-md .laps-md-footer a:hover {
+  text-decoration: underline;
+}
+
 /* ========== 卡片 ========== */
 .card {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
   overflow: hidden;
+}
+
+/* ========== 登录/注册页提示：与卡片等宽 ========== */
+.auth-messages {
+  width: 100%;
+  max-width: none; /* 由外层 auth-card-wrap 控制宽度 */
+  margin: 0;
+}
+.auth-card-wrap {
+  position: relative;
+  /* 给提示留空间，但不挤动卡片：提示绝对定位 */
+  padding-top: 84px;
+}
+.auth-card-wrap .auth-messages {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: none;
+  z-index: 2;
+}
+.auth-alert {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  font-weight: 500;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  margin: 0 0 10px 0;
+}
+/* success / error / warning / info（Django message.tags） */
+.auth-alert-success {
+  background: rgba(46, 204, 113, 0.42);
+  border-color: rgba(46, 204, 113, 0.75);
+  color: #ffffff;
+}
+.auth-alert-error,
+.auth-alert-danger {
+  background: rgba(231, 76, 60, 0.46);
+  border-color: rgba(231, 76, 60, 0.78);
+  color: #ffffff;
+}
+.auth-alert-warning {
+  background: rgba(255, 193, 7, 0.26);
+  border-color: rgba(255, 193, 7, 0.48);
+  color: #ffffff;
+}
+.auth-alert-info {
+  background: rgba(70, 90, 216, 0.28);
+  border-color: rgba(70, 90, 216, 0.50);
+  color: #ffffff;
+}
+body.white-content .auth-alert {
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10);
+}
+body.white-content .auth-alert-success {
+  background: rgba(46, 204, 113, 0.24);
+  border-color: rgba(46, 204, 113, 0.45);
+  color: #0f172a;
+}
+body.white-content .auth-alert-error,
+body.white-content .auth-alert-danger {
+  background: rgba(231, 76, 60, 0.24);
+  border-color: rgba(231, 76, 60, 0.48);
+  color: #0f172a;
+}
+body.white-content .auth-alert-warning {
+  background: rgba(255, 193, 7, 0.18);
+  border-color: rgba(255, 193, 7, 0.35);
+  color: #0f172a;
+}
+body.white-content .auth-alert-info {
+  background: rgba(70, 90, 216, 0.16);
+  border-color: rgba(70, 90, 216, 0.30);
+  color: #0f172a;
+}
+
+/* Bootstrap alert-info 覆盖：无背景色，边框随主题色 */
+.alert.alert-info {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: inherit;
+  border: 1px solid var(--laps-accent);
 }
 body.white-content .card {
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -707,6 +982,38 @@ body.white-content .content .kpi .card:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* ========== 快速开始引导（无背景） ========== */
+.content .card .card-body .dashboard-quick-start {
+  background-color: transparent !important;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 18px;
+  margin-bottom: 24px;
+  color: var(--laps-text);
+}
+.content .card .card-body .dashboard-quick-start .dashboard-quick-start-heading {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--laps-text);
+  opacity: 0.95;
+}
+.content .card .card-body .dashboard-quick-start p {
+  font-size: 0.875rem;
+  color: var(--laps-text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.content .card .card-body .dashboard-quick-start hr {
+  border: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0 14px;
+}
+body.white-content .content .card .card-body .dashboard-quick-start hr {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 /* ========== 内容区分隔与标题 ========== */
@@ -871,4 +1178,146 @@ body.white-content .content .annotation-canvas-card {
   align-items: center;
   justify-content: center;
   font-size: 0.8125rem;
+}
+
+/* ========== 数据集：醒目的文件 / 文件夹选择区 ========== */
+.laps-file-pick-zone {
+  position: relative;
+  border: 3px dashed var(--laps-accent);
+  border-radius: 14px;
+  background: linear-gradient(
+    145deg,
+    var(--laps-accent-soft) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+body.white-content .laps-file-pick-zone {
+  background: linear-gradient(
+    145deg,
+    var(--laps-accent-soft) 0%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  box-shadow: 0 4px 20px rgba(70, 90, 216, 0.08);
+}
+.laps-file-pick-zone:hover,
+.laps-file-pick-zone:focus-within {
+  border-style: solid;
+  box-shadow:
+    0 0 0 4px var(--laps-accent-soft),
+    0 8px 28px rgba(0, 0, 0, 0.14);
+  transform: translateY(-1px);
+}
+.laps-file-pick-zone--large {
+  min-height: 200px;
+}
+.laps-file-pick-zone--compact {
+  min-height: 120px;
+  border-width: 2px;
+  border-radius: 12px;
+}
+.laps-file-pick-zone--compact .laps-file-pick-zone-inner {
+  padding: 1rem 0.75rem !important;
+}
+.laps-file-pick-zone--compact .laps-file-pick-title {
+  font-size: 0.95rem;
+}
+.laps-file-pick-zone--compact .laps-file-pick-actions .btn {
+  font-size: 0.875rem;
+}
+.laps-file-pick-input {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.laps-file-pick-zone-inner {
+  pointer-events: none;
+}
+.laps-file-pick-zone-inner .btn,
+.laps-file-pick-zone-inner button {
+  pointer-events: auto;
+}
+.laps-file-pick-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+.laps-file-pick-zone--compact .laps-file-pick-icon {
+  font-size: 1.75rem;
+}
+.laps-file-pick-title {
+  color: var(--laps-text);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.laps-file-pick-hint {
+  color: var(--laps-text-muted);
+  font-size: 0.8125rem;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.laps-file-pick-actions .btn-lg {
+  min-width: 200px;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.laps-file-pick-selected {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--laps-accent-soft);
+  border: 1px solid var(--laps-border);
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+/* 数据集详情：图片列表表（缩略图 + 文件名 / ID / 备注） */
+.laps-dataset-image-table .laps-col-thumb {
+  width: 88px;
+  vertical-align: middle;
+}
+.laps-dataset-image-table .laps-col-id {
+  width: 4.5rem;
+}
+.laps-dataset-image-table .laps-col-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+.laps-dataset-list-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--laps-border);
+  display: block;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.06);
+}
+body.white-content .laps-dataset-list-thumb {
+  background: rgba(0, 0, 0, 0.04);
+}
+.laps-thumb-hit {
+  cursor: zoom-in;
+  line-height: 0;
+}
+.laps-dataset-image-table tbody tr:hover .laps-dataset-list-thumb {
+  box-shadow: 0 0 0 2px var(--laps-accent-soft);
+}
+/* 数据集表格表头：不使用 thead-light 等灰色底，与内容区一致 */
+.laps-dataset-table thead th,
+.laps-dataset-image-table thead th {
+  background: transparent !important;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-bottom-width: 2px;
 }

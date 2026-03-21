@@ -1,0 +1,74 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Support{% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-12">
+      <article class="laps-md">
+        <h1 data-en="LAPS — User documentation" data-zh="LAPS — 使用说明">LAPS — User documentation</h1>
+        <p class="laps-md-lead" data-en="LAPS is a lightweight, prompt-based image segmentation labeling system (e.g. SAM); model backends may be extended (e.g. YOLO) for assisted annotation. This page documents module roles, dependencies, and navigation."
+           data-zh="LAPS 为基于提示的轻量级图像分割标注系统（如 SAM）；可扩展模型后端（如 YOLO）以辅助标注。本文说明模块职责、依赖与导航。">
+          LAPS is a lightweight, prompt-based image segmentation labeling system (e.g. SAM); model backends may be extended (e.g. YOLO) for assisted annotation. This page documents module roles, dependencies, and navigation.
+        </p>
+
+        <h2 data-en="Structure and dependencies" data-zh="结构与依赖关系">Structure and dependencies</h2>
+        <p data-en="Datasets can be created first; projects then declare task type and optional dataset links; tasks and annotation consume those entities."
+           data-zh="可先建数据集；再建项目并声明任务类型与可选的数据集关联；任务与标注基于这些实体执行。">
+          Datasets can be created first; projects then declare task type and optional dataset links; tasks and annotation consume those entities.
+        </p>
+        <ol class="laps-md-ol">
+          <li><span data-en="Dataset — upload and manage images freely; no project is required on the Datasets page." data-zh="数据集 — 可自由上传与管理图像，数据集页不强制绑定项目。">Dataset — upload and manage images freely; no project is required on the Datasets page.</span></li>
+          <li><span data-en="Project — top-level container: pick an annotation task type (e.g. SAM segmentation) and optionally link one or more datasets." data-zh="项目 — 顶层容器：选择标注任务类型（如 SAM 分割），并可多选关联数据集。">Project — top-level container: pick an annotation task type (e.g. SAM segmentation) and optionally link one or more datasets.</span></li>
+          <li><span data-en="Task — binds one project, one image, and workflow state (e.g. new, done). Annotation operates on this binding." data-zh="任务 — 关联一个项目、一幅图像及流程状态（如待办、已完成）；标注针对该关联执行。">Task — binds one project, one image, and workflow state (e.g. new, done). Annotation operates on this binding.</span></li>
+          <li><span data-en="Annotate — interactive segmentation workspace (SAM). Opened from the Dashboard or Task list via the Annotate action for a selected task." data-zh="标注 — 交互式分割工作区（SAM）。在仪表盘或任务列表中对选定任务执行「标注」进入。">Annotate — interactive segmentation workspace (SAM). Opened from the Dashboard or Task list via the Annotate action for a selected task.</span></li>
+        </ol>
+        <p data-en="Dashboard (home) provides aggregate metrics, quick links to Projects, Datasets, and Tasks, and a recent-task list with direct entry to Annotate per task."
+           data-zh="仪表盘（首页）提供汇总指标、至项目/数据集/任务的快捷入口，以及含逐条标注入口的最近任务列表。">
+          Dashboard (home) provides aggregate metrics, quick links to Projects, Datasets, and Tasks, and a recent-task list with direct entry to Annotate per task.
+        </p>
+
+        <h2 data-en="Standard workflow" data-zh="标准操作流程">Standard workflow</h2>
+        <ol class="laps-md-ol">
+          <li><span data-en="Datasets — list at /datasets/ (basic info + new import); open each dataset’s detail URL (e.g. /datasets/123/) to append files, preview images, edit captions, and edit metadata. Link projects on Projects or Tasks." data-zh="数据集 — /datasets/ 列表展示基本信息并新建导入；进入各数据集的详情页（如 /datasets/123/）继续导入、预览图片、编辑备注与元数据。与项目关联在「项目」或「任务」页完成。">Datasets — list at /datasets/ (basic info + new import); open each dataset’s detail URL (e.g. /datasets/123/) to append files, preview images, edit captions, and edit metadata. Link projects on Projects or Tasks.</span> <a href="{% url 'datasets' %}">/datasets/</a></li>
+          <li><span data-en="Projects — create or edit a project (name, description, annotation task type, linked datasets, optional label configuration). Deleting a project removes its tasks." data-zh="项目 — 新建或编辑（名称、说明、标注任务类型、关联数据集、可选标签配置）。删除项目将级联删除其下任务。">Projects — create or edit a project (name, description, annotation task type, linked datasets, optional label configuration). Deleting a project removes its tasks.</span> <a href="{% url 'projects' %}">/projects/</a></li>
+          <li><span data-en="Tasks — see task-type samples and quick-create a project; batch-generate tasks by choosing a project and dataset (if the project has linked datasets, only those appear)." data-zh="任务 — 查看任务类型示意并快速创建项目；批量生成时选择项目与数据集（若项目已关联数据集，则仅显示已关联项）。">Tasks — see task-type samples and quick-create a project; batch-generate tasks by choosing a project and dataset (if the project has linked datasets, only those appear).</span> <a href="{% url 'tasks' %}">/tasks/</a></li>
+          <li><span data-en="From the Dashboard or Task list, open Annotate for a task. The URL may include task_id to bind the image context." data-zh="在仪表盘或任务列表中对任务执行「标注」。URL 可含 task_id 以绑定图像上下文。">From the Dashboard or Task list, open Annotate for a task. The URL may include task_id to bind the image context.</span></li>
+          <li><span data-en="Annotate — Run / Save / Undo / Clear per toolbar; Prev / Next when a task queue is available." data-zh="标注 — 按工具栏执行运行/保存/撤销/清除；有队列时可用上一张/下一张。">Annotate — Run / Save / Undo / Clear per toolbar; Prev / Next when a task queue is available.</span> <a href="{% url 'annotation' %}">/annotate/</a></li>
+        </ol>
+
+        <h2 data-en="Alignment with Label Studio–style flow" data-zh="与 Label Studio 类流程的对照">Alignment with Label Studio–style flow</h2>
+        <p data-en="Label Studio centers on a Project, Data Manager, and per-task labeling. Here, Projects carry an annotation type and optional many-to-many linked datasets; Datasets are managed freely; batch task creation restricts dataset choice when the project has linked datasets."
+           data-zh="Label Studio 以项目、数据管理与逐任务标注为核心。本系统中项目包含标注类型与可选的多数据集关联；数据集独立管理；批量生成任务时，若项目已关联数据集则仅能从中选择。">
+          Label Studio centers on a Project, Data Manager, and per-task labeling. Here, Projects carry an annotation type and optional many-to-many linked datasets; Datasets are managed freely; batch task creation restricts dataset choice when the project has linked datasets.
+        </p>
+
+        <h2 data-en="Sidebar — module reference" data-zh="侧栏 — 模块说明">Sidebar — module reference</h2>
+        <ul>
+          <li><span data-en="Dashboard — summary metrics, shortcuts, recent tasks with per-task Annotate links." data-zh="仪表盘 — 汇总指标、快捷入口、带逐条标注链接的最近任务。">Dashboard — summary metrics, shortcuts, recent tasks with per-task Annotate links.</span></li>
+          <li><span data-en="Projects — project CRUD with annotation type and linked datasets." data-zh="项目 — 含标注类型与关联数据集的项目增删改查。">Projects — project CRUD with annotation type and linked datasets.</span></li>
+          <li><span data-en="Datasets — full lifecycle for datasets and images without mandatory project binding." data-zh="数据集 — 数据集与图像的全生命周期（无需强制绑定项目）。">Datasets — full lifecycle for datasets and images without mandatory project binding.</span></li>
+          <li><span data-en="Tasks — task CRUD (project, image, status, assignee). Annotate resolves the active task from the selected row." data-zh="任务 — 任务的增删改查（项目、图像、状态、执行人等）。标注页根据所选任务行解析当前任务。">Tasks — task CRUD (project, image, status, assignee). Annotate resolves the active task from the selected row.</span></li>
+          <li><span data-en="Annotate — opens the workspace. If no valid task context is loaded, return to Tasks or the Dashboard, select a task, then use Annotate." data-zh="标注 — 打开工作区。若未加载有效任务上下文，请返回任务或仪表盘选择任务后再进入标注。">Annotate — opens the workspace. If no valid task context is loaded, return to Tasks or the Dashboard, select a task, then use Annotate.</span></li>
+        </ul>
+
+        <h2 data-en="Top bar — account and preferences" data-zh="顶栏 — 账户与偏好">Top bar — account and preferences</h2>
+        <p data-en="Independent of the labeling workflow: the account menu provides profile settings and Logout. Theme accent, light/dark mode, and UI language are configured on the top bar."
+           data-zh="独立于标注流程：账户菜单提供个人资料与登出；主题色、浅色/深色模式及界面语言在顶栏配置。">
+          Independent of the labeling workflow: the account menu provides profile settings and Logout. Theme accent, light/dark mode, and UI language are configured on the top bar.
+        </p>
+
+        <hr>
+
+        <p class="laps-md-footer">
+          <a href="{% url 'index' %}" data-en="Dashboard" data-zh="仪表盘">Dashboard</a>
+          ·
+          <a href="https://github.com/Krisnile/LAPS-System" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </p>
+      </article>
+    </div>
+  </div>
+</div>
+{% endblock content %}

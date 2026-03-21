@@ -22,6 +22,17 @@
             {% block navigation %}
             {% include 'includes/navigation.html' %}
             {% endblock navigation %}
+            {% if messages %}
+            {# 勿用 .content，避免与下方 React 根节点内 .content 叠加双倍上边距 #}
+            <div class="laps-flash-messages">
+              {% for message in messages %}
+              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
             {% block content %}{% endblock content %}
             {% block footer %}
             {% include 'includes/footer.html' %}
@@ -29,7 +40,7 @@
         </div>
     </div>
     {% include 'includes/scripts.html' %}
-    <script src="{% static 'frontend/assets/main-9w6-qYzu.js' %}"></script>
+    <script src="{% static 'frontend/assets/main.js' %}"></script>
     {% block extrajs %}{% endblock extrajs %}
 </body>
 

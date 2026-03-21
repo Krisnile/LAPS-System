@@ -11,11 +11,27 @@
       "tasks": "{% url 'tasks' %}",
       "projects": "{% url 'projects' %}"
     },
+    "annotation_type_choices": [
+      {% for c in annotation_type_choice_list %}
+      {"value": "{{ c.value|escapejs }}", "label": "{{ c.label|escapejs }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ],
+    "datasets_for_project": [
+      {% for d in datasets_for_project %}
+      {"id": {{ d.id }}, "name": "{{ d.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ],
     "projects": [
       {% for p in projects %}
       {
         "id": {{ p.id }},
-        "name": "{{ p.name|escapejs }}"
+        "name": "{{ p.name|escapejs }}",
+        "annotation_type": "{{ p.annotation_type|escapejs }}",
+        "linked_dataset_ids": [
+          {% for ds in p.linked_datasets.all %}
+          {{ ds.id }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        ]
       }{% if not forloop.last %},{% endif %}
       {% endfor %}
     ],
@@ -23,7 +39,8 @@
       {% for d in datasets %}
       {
         "id": {{ d.id }},
-        "name": "{{ d.name|escapejs }}"
+        "name": "{{ d.name|escapejs }}",
+        "linked_project_names": "{% for lp in d.projects.all %}{{ lp.name|escapejs }}{% if not forloop.last %}, {% endif %}{% endfor %}"
       }{% if not forloop.last %},{% endif %}
       {% endfor %}
     ],

@@ -10,6 +10,11 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: resolve(__dirname, 'src/main.jsx'),
+      output: {
+        entryFileNames: 'assets/main.js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
     },
   },
   base: '/static/frontend/',

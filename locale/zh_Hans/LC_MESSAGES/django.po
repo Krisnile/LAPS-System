@@ -1,0 +1,61 @@
+# LAPS System - Chinese (Simplified) translations
+# Copyright (C) 2025
+# This file is distributed under the same license as the LAPS package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: LAPS System\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-18 00:00+0000\n"
+"PO-Revision-Date: 2025-03-18 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: apps/pages/apps.py:8
+msgid "Pages"
+msgstr "页面管理"
+
+#: apps/pages/models.py:36
+msgid "Project"
+msgstr "项目"
+
+#: apps/pages/models.py:37
+msgid "Projects"
+msgstr "项目"
+
+#: apps/pages/models.py:51
+msgid "Dataset"
+msgstr "数据集"
+
+#: apps/pages/models.py:52
+msgid "Datasets"
+msgstr "数据集"
+
+#: apps/pages/models.py:66
+msgid "Image"
+msgstr "图片"
+
+#: apps/pages/models.py:67
+msgid "Images"
+msgstr "图片"
+
+#: apps/pages/models.py:86
+msgid "Task"
+msgstr "任务"
+
+#: apps/pages/models.py:87
+msgid "Tasks"
+msgstr "任务"
+
+#: apps/pages/models.py:105
+msgid "Annotation"
+msgstr "标注"
+
+#: apps/pages/models.py:106
+msgid "Annotations"
+msgstr "标注"
