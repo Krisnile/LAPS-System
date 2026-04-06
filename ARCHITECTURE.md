@@ -41,7 +41,6 @@ flowchart TB
         subgraph Django["Django"]
             D1[apps.pages]
             D2[apps.dyn_api]
-            D3[apps.charts]
         end
         subgraph Admin["后台管理"]
             A1[django-unfold]
@@ -164,8 +163,7 @@ flowchart TB
 LAPS-System/
 ├── apps/
 │   ├── pages/          # 主应用：模型、视图、admin、SAM 推理
-│   ├── dyn_api/        # 动态 REST API
-│   └── charts/         # 图表
+│   └── dyn_api/        # 动态 REST API
 ├── config/             # Django 配置、URL
 ├── frontend/           # React 源码（Vite 构建）
 ├── static/             # 静态资源、构建产物
@@ -191,7 +189,7 @@ LAPS-System/
 │                 │  静态：lang-switcher、annotation.js、laps-theme            │
 ├─────────────────┼───────────────────────────────────────────────────────────┤
 │  ⚙️ 后端        │  apps.pages：核心业务  │  apps.dyn_api：REST API            │
-│                 │  apps.charts：图表    │  django-unfold：后台管理            │
+│                 │  django-unfold：后台管理                                  │
 ├─────────────────┼───────────────────────────────────────────────────────────┤
 │  🔬 引擎        │  SAM (Segment Anything)：点/框提示 → 分割 → 遮罩            │
 ├─────────────────┼───────────────────────────────────────────────────────────┤

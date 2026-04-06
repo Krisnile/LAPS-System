@@ -1,3 +1,7 @@
+/**
+ * 多页入口：仅当对应 root-* 存在时才动态 import 该页 React 包，减少首包体积与解析时间。
+ * 各页 props 来自 Django 模板内嵌 JSON（data-*-props）；解析失败时打日志并回退默认值。
+ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -15,37 +19,42 @@ function lapsScrollPageToTop() {
   document.documentElement.scrollTop = 0
   document.body.scrollTop = 0
 }
-import LoginApp from './LoginApp.jsx'
-import DashboardApp from './DashboardApp.jsx'
-import ProjectsApp from './ProjectsApp.jsx'
-import DatasetsApp from './DatasetsApp.jsx'
-import DatasetDetailApp from './DatasetDetailApp.jsx'
-import TasksApp from './TasksApp.jsx'
-import SignupApp from './SignupApp.jsx'
 
 function mountLogin() {
   const el = document.getElementById('root-login')
-  if (!el) return
-  createRoot(el).render(
-    <StrictMode>
-      <LoginApp />
-    </StrictMode>,
-  )
+  if (!el) return Promise.resolve()
+  return import('./LoginApp.jsx')
+    .then(({ default: LoginApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <LoginApp />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] LoginApp', err)
+    })
 }
 
 function mountSignup() {
   const el = document.getElementById('root-signup')
-  if (!el) return
-  createRoot(el).render(
-    <StrictMode>
-      <SignupApp />
-    </StrictMode>,
-  )
+  if (!el) return Promise.resolve()
+  return import('./SignupApp.jsx')
+    .then(({ default: SignupApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <SignupApp />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] SignupApp', err)
+    })
 }
 
 function mountDashboard() {
   const el = document.getElementById('root-dashboard')
-  if (!el) return
+  if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-dashboard')
   let parsed = {}
   if (dataAttr) {
@@ -55,16 +64,22 @@ function mountDashboard() {
       // ignore parse error
     }
   }
-  createRoot(el).render(
-    <StrictMode>
-      <DashboardApp {...parsed} />
-    </StrictMode>,
-  )
+  return import('./DashboardApp.jsx')
+    .then(({ default: DashboardApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <DashboardApp {...parsed} />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] DashboardApp', err)
+    })
 }
 
 function mountProjects() {
   const el = document.getElementById('root-projects')
-  if (!el) return
+  if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-projects-props')
   let parsed = {}
   if (dataAttr) {
@@ -74,16 +89,22 @@ function mountProjects() {
       // ignore
     }
   }
-  createRoot(el).render(
-    <StrictMode>
-      <ProjectsApp {...parsed} />
-    </StrictMode>,
-  )
+  return import('./ProjectsApp.jsx')
+    .then(({ default: ProjectsApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <ProjectsApp {...parsed} />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] ProjectsApp', err)
+    })
 }
 
 function mountDatasets() {
   const el = document.getElementById('root-datasets')
-  if (!el) return
+  if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-datasets-props')
   const defaults = { datasets: [], urls: { datasets: '' }, createdImages: [] }
   let parsed = { ...defaults }
@@ -94,16 +115,22 @@ function mountDatasets() {
       console.warn('[LAPS] data-datasets-props JSON parse failed', e)
     }
   }
-  createRoot(el).render(
-    <StrictMode>
-      <DatasetsApp {...parsed} />
-    </StrictMode>,
-  )
+  return import('./DatasetsApp.jsx')
+    .then(({ default: DatasetsApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <DatasetsApp {...parsed} />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] DatasetsApp', err)
+    })
 }
 
 function mountDatasetDetail() {
   const el = document.getElementById('root-dataset-detail')
-  if (!el) return
+  if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-dataset-detail-props')
   const defaults = {
     image_preview_limit: 120,
@@ -126,30 +153,43 @@ function mountDatasetDetail() {
       console.warn('[LAPS] data-dataset-detail-props JSON parse failed', e)
     }
   }
-  createRoot(el).render(
-    <StrictMode>
-      <DatasetDetailApp {...parsed} />
-    </StrictMode>,
-  )
+  return import('./DatasetDetailApp.jsx')
+    .then(({ default: DatasetDetailApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <DatasetDetailApp {...parsed} />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] DatasetDetailApp', err)
+    })
 }
 
 function mountTasks() {
   const el = document.getElementById('root-tasks')
-  if (!el) return
+  if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-tasks-props')
-  let parsed = {}
+  const defaults = { projects: [], datasets: [], tasks: [], urls: {} }
+  let parsed = { ...defaults }
   if (dataAttr) {
     try {
-      parsed = JSON.parse(dataAttr)
+      parsed = { ...defaults, ...JSON.parse(dataAttr) }
     } catch (e) {
-      // ignore
+      console.warn('[LAPS] data-tasks-props JSON parse failed', e)
     }
   }
-  createRoot(el).render(
-    <StrictMode>
-      <TasksApp {...parsed} />
-    </StrictMode>,
-  )
+  return import('./TasksApp.jsx')
+    .then(({ default: TasksApp }) => {
+      createRoot(el).render(
+        <StrictMode>
+          <TasksApp {...parsed} />
+        </StrictMode>,
+      )
+    })
+    .catch((err) => {
+      console.error('[LAPS] TasksApp', err)
+    })
 }
 
 function applyLangToPage() {
@@ -158,21 +198,28 @@ function applyLangToPage() {
   }
 }
 
-mountLogin()
-mountSignup()
-mountDashboard()
-mountProjects()
-mountDatasets()
-mountDatasetDetail()
-mountTasks()
+const mountFns = [
+  mountLogin,
+  mountSignup,
+  mountDashboard,
+  mountProjects,
+  mountDatasets,
+  mountDatasetDetail,
+  mountTasks,
+]
 
-// 确保 React 渲染后应用语言（解决 pages 中英文切换无效）
-if (document.getElementById('root-dashboard') || document.getElementById('root-projects') ||
-    document.getElementById('root-datasets') || document.getElementById('root-dataset-detail') ||
-    document.getElementById('root-tasks')) {
-  requestAnimationFrame(() => {
-    applyLangToPage()
-    lapsScrollPageToTop()
-  })
-  document.addEventListener('languageChanged', applyLangToPage)
-}
+Promise.all(mountFns.map((fn) => fn())).then(() => {
+  if (
+    document.getElementById('root-dashboard') ||
+    document.getElementById('root-projects') ||
+    document.getElementById('root-datasets') ||
+    document.getElementById('root-dataset-detail') ||
+    document.getElementById('root-tasks')
+  ) {
+    requestAnimationFrame(() => {
+      applyLangToPage()
+      lapsScrollPageToTop()
+    })
+    document.addEventListener('languageChanged', applyLangToPage)
+  }
+})

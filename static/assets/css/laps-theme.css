@@ -984,6 +984,365 @@ body.white-content .content .kpi .card:hover {
   gap: 10px;
 }
 
+/* ========== 仪表盘：紧凑布局 + 图表（SVG 环图 / 条形） ========== */
+#root-dashboard .content {
+  padding-top: 70px;
+  padding-bottom: 90px;
+}
+@media (min-width: 992px) {
+  #root-dashboard .content {
+    padding-top: 74px;
+    padding-bottom: 96px;
+  }
+}
+#root-dashboard .dashboard-root-card {
+  margin-bottom: 0;
+}
+#root-dashboard .dashboard-root-card-header {
+  padding: 12px 16px 8px;
+  margin-bottom: 0;
+}
+#root-dashboard .dashboard-root-card-header .card-title {
+  margin-bottom: 2px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+#root-dashboard .dashboard-root-card-category {
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+}
+#root-dashboard .dashboard-root-welcome {
+  font-size: 0.75rem;
+  margin-top: 2px !important;
+}
+#root-dashboard .dashboard-root-card-body {
+  padding: 10px 14px 14px;
+}
+#root-dashboard .dashboard-kpi-row {
+  gap: 8px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+#root-dashboard .dashboard-kpi-row .card .card-body {
+  padding: 10px 10px 12px;
+}
+#root-dashboard .dashboard-kpi-row .card h5 {
+  font-size: 0.65rem;
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+#root-dashboard .dashboard-kpi-row .card h2 {
+  font-size: 1.28rem;
+  margin-bottom: 4px;
+}
+#root-dashboard .dashboard-kpi-row .card p {
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+#root-dashboard .dashboard-kpi-row .card:hover {
+  transform: translateY(-1px);
+}
+
+/* 与 KPI 同排逻辑：三列等分，窄屏再折行 */
+.dashboard-charts-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: stretch;
+}
+.dashboard-charts-row .dashboard-chart-card {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-bottom: 0;
+}
+@media (max-width: 1199px) {
+  .dashboard-charts-row {
+    flex-wrap: wrap;
+  }
+  .dashboard-charts-row .dashboard-chart-card {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 200px;
+  }
+  .dashboard-charts-row .dashboard-recent-panel {
+    flex: 1 1 100%;
+  }
+}
+@media (max-width: 575px) {
+  .dashboard-charts-row .dashboard-chart-card {
+    flex: 1 1 100%;
+  }
+}
+
+.dashboard-recent-panel .dashboard-chart-card-header {
+  align-items: center;
+  padding-bottom: 6px !important;
+}
+.dashboard-recent-all-link {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--laps-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dashboard-recent-all-link:hover {
+  text-decoration: underline;
+  color: var(--laps-text);
+}
+body.white-content .dashboard-recent-all-link:hover {
+  color: var(--laps-accent);
+}
+.dashboard-recent-panel-body {
+  max-height: none;
+  overflow: visible;
+  padding-top: 4px !important;
+  padding-bottom: 8px !important;
+}
+.dashboard-recent-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dashboard-recent-cards--compact {
+  gap: 5px;
+}
+.dashboard-recent-card {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--laps-border);
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+body.white-content .dashboard-recent-card {
+  background: rgba(0, 0, 0, 0.025);
+}
+.dashboard-recent-card:hover {
+  border-color: rgba(229, 111, 174, 0.32);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.theme-blue .dashboard-recent-card:hover {
+  border-color: rgba(70, 90, 216, 0.35);
+}
+.theme-green .dashboard-recent-card:hover {
+  border-color: rgba(58, 197, 143, 0.38);
+}
+.dashboard-recent-card-main {
+  flex: 1;
+  min-width: 0;
+}
+.dashboard-recent-card-project {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--laps-text);
+  margin-bottom: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dashboard-recent-card-image {
+  font-size: 0.65rem;
+  color: var(--laps-text-muted);
+  max-width: 100%;
+  line-height: 1.2;
+}
+.dashboard-recent-card-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.dashboard-recent-card-actions .badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.2em 0.45em;
+}
+.dashboard-recent-card-actions .btn {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+.dashboard-recent-empty {
+  font-size: 0.75rem;
+  color: var(--laps-text-muted);
+  padding: 4px 0 2px;
+  line-height: 1.4;
+}
+
+.dashboard-chart-card .card-header.dashboard-chart-card-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 10px 12px 0 !important;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+.dashboard-chart-card .card-body.dashboard-chart-body {
+  padding: 8px 12px 10px !important;
+}
+.dashboard-chart-card-header h6 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--laps-text);
+  letter-spacing: 0.02em;
+}
+.dashboard-chart-hint {
+  font-size: 0.65rem;
+  color: var(--laps-text-muted);
+  font-weight: 400;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+.dashboard-chart-body--donut {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+}
+.dashboard-donut-svg {
+  width: 118px;
+  max-width: 42%;
+  height: auto;
+  flex-shrink: 0;
+}
+.dashboard-donut-segment {
+  transition: opacity 0.18s ease, filter 0.18s ease;
+  stroke: var(--laps-bg);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+body.white-content .dashboard-donut-segment {
+  stroke: var(--laps-bg-light);
+}
+.dashboard-donut-segment:hover {
+  opacity: 0.92;
+  filter: brightness(1.06);
+}
+.dashboard-donut-total {
+  fill: var(--laps-text);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.dashboard-donut-sub {
+  fill: var(--laps-text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.dashboard-donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  flex: 1;
+  font-size: 0.68rem;
+  color: var(--laps-text);
+}
+.dashboard-donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.dashboard-donut-legend li:last-child {
+  margin-bottom: 0;
+}
+.dashboard-legend-swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+body.white-content .dashboard-legend-swatch {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.dashboard-legend-val {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--laps-text-muted);
+  font-size: 0.68rem;
+}
+.dashboard-chart-empty {
+  text-align: center;
+  color: var(--laps-text-muted);
+  font-size: 0.75rem;
+  padding: 16px 8px;
+}
+.dashboard-resource-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dashboard-resource-bars li {
+  margin-bottom: 9px;
+}
+.dashboard-resource-bars li:last-child {
+  margin-bottom: 0;
+}
+.dashboard-resource-bar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--laps-text);
+}
+.dashboard-resource-bar-val {
+  font-variant-numeric: tabular-nums;
+  color: var(--laps-text-muted);
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+.dashboard-resource-bar-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--laps-border);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+body.white-content .dashboard-resource-bar-track {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.dashboard-resource-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--laps-accent) 0%, rgba(229, 111, 174, 0.55) 100%);
+  box-shadow: 0 0 8px rgba(229, 111, 174, 0.25);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.theme-blue .dashboard-resource-bar-fill {
+  background: linear-gradient(90deg, var(--laps-accent-blue) 0%, rgba(70, 90, 216, 0.55) 100%);
+  box-shadow: 0 0 8px rgba(70, 90, 216, 0.22);
+}
+.theme-green .dashboard-resource-bar-fill {
+  background: linear-gradient(90deg, var(--laps-accent-green) 0%, rgba(58, 197, 143, 0.55) 100%);
+  box-shadow: 0 0 8px rgba(58, 197, 143, 0.22);
+}
+
+.dashboard-actions--compact {
+  margin-top: 10px;
+  gap: 6px;
+}
+#root-dashboard .dashboard-actions--compact .btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+}
+
 /* ========== 快速开始引导（无背景） ========== */
 .content .card .card-body .dashboard-quick-start {
   background-color: transparent !important;
@@ -992,6 +1351,10 @@ body.white-content .content .kpi .card:hover {
   padding: 0 0 18px;
   margin-bottom: 24px;
   color: var(--laps-text);
+}
+#root-dashboard .dashboard-quick-start {
+  padding: 0 0 10px;
+  margin-bottom: 10px;
 }
 .content .card .card-body .dashboard-quick-start .dashboard-quick-start-heading {
   font-size: 0.9375rem;
@@ -1106,6 +1469,138 @@ body.white-content .form-control {
   background: #fff;
 }
 
+/* 表单行内主按钮（非项目 Grid；Grid 内见 .laps-pcg-btn-submit 以免 padding 撑破统一高度） */
+.form-row .laps-form-row-submit.btn {
+  font-size: 0.875rem;
+  padding: 10px 14px;
+  line-height: 1.5;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.laps-project-create-grid .laps-form-row-submit.btn {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 8px;
+  box-sizing: border-box;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* 项目页新建：宽屏为「标签一行 + 控件一行」；勿 stretch 第二行（select 在 grid 里拉伸易出现底部空洞） */
+.laps-project-create-grid {
+  display: grid;
+  /* 行间距为 0，提交按钮与上一行控件贴齐；列间距保留 */
+  gap: 0 1rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .laps-project-create-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+  }
+  .laps-pcg-label-name {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+  }
+  .laps-pcg-label-desc {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+  }
+  .laps-pcg-label-type {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+  }
+  .laps-pcg-spacer {
+    grid-column: 4;
+    grid-row: 1;
+    align-self: end;
+    visibility: hidden;
+    line-height: 1.5;
+  }
+  .laps-pcg-input-name {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .laps-pcg-input-desc {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .laps-pcg-select-type {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .laps-pcg-btn-submit {
+    grid-column: 4;
+    grid-row: 2;
+    align-self: start;
+    height: 2.625rem;
+    min-height: 2.625rem;
+    padding: 0 14px; /* 较 .laps-form-row-submit 默认更少竖向内边距，便于与 input 同高 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 第二行统一总高；select 勿用 line-height:normal，否则易出现控件下方「空一条」 */
+  .laps-project-create-grid .laps-pcg-input-name,
+  .laps-project-create-grid .laps-pcg-input-desc {
+    height: 2.625rem;
+    min-height: 2.625rem;
+    max-height: 2.625rem;
+    margin-bottom: 0;
+    padding: 0 14px;
+    line-height: calc(2.625rem - 2px);
+    box-sizing: border-box;
+  }
+
+  .laps-project-create-grid select.laps-pcg-select-type {
+    height: 2.625rem;
+    min-height: 2.625rem;
+    max-height: 2.625rem;
+    margin-bottom: 0;
+    padding: 0 2rem 0 14px;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+    line-height: calc(2.625rem - 2px);
+    display: block;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .laps-project-create-grid {
+    grid-template-columns: 1fr;
+  }
+  .laps-pcg-label-name {
+    grid-row: 1;
+  }
+  .laps-pcg-input-name {
+    grid-row: 2;
+  }
+  .laps-pcg-label-desc {
+    grid-row: 3;
+  }
+  .laps-pcg-input-desc {
+    grid-row: 4;
+  }
+  .laps-pcg-label-type {
+    grid-row: 5;
+  }
+  .laps-pcg-select-type {
+    grid-row: 6;
+  }
+  .laps-pcg-spacer {
+    display: none !important;
+  }
+  .laps-pcg-btn-submit {
+    grid-row: 7;
+  }
+}
+
 /* ========== 下拉与导航下拉 ========== */
 .dropdown-menu {
   border-radius: 10px;
@@ -1153,6 +1648,204 @@ body.white-content .content .annotation-canvas-card {
 }
 .content .card-sidebar .card {
   border-radius: 12px;
+}
+
+/* ========== 标注页：工作流卡片（.annotate-workflow-card）==========
+   折叠头 + 卡片体 + 三步进度 + 快捷按钮/徽章 + annotateFlowMessage；随 --laps-* / white-content 切换 */
+.content.content-annotation .annotate-workflow-card > .card-header.annotate-workflow-header {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--laps-border);
+}
+body.white-content .content.content-annotation .annotate-workflow-card > .card-header.annotate-workflow-header {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.content.content-annotation .annotate-workflow-card {
+  border-color: var(--laps-border);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+body.white-content .content.content-annotation .annotate-workflow-card {
+  background: #ffffff;
+  border-color: var(--laps-border);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+.content.content-annotation .annotate-workflow-card > .collapse .card-body {
+  border-color: var(--laps-border);
+}
+.content.content-annotation .annotate-workflow-card .annotate-workflow-toggle {
+  color: var(--laps-text-muted) !important;
+}
+.content.content-annotation .annotate-workflow-card .annotate-workflow-toggle:hover {
+  color: var(--laps-accent) !important;
+}
+.content.content-annotation .annotate-workflow-card .annotate-workflow-toggle .tim-icons {
+  color: inherit;
+}
+/* 三步进度卡片 */
+.content.content-annotation .annotate-steps .annotate-step {
+  border-color: var(--laps-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+body.white-content .content.content-annotation .annotate-steps .annotate-step {
+  background: var(--laps-bg);
+}
+.content.content-annotation .annotate-steps .annotate-step-done {
+  border-color: rgba(58, 197, 143, 0.45);
+  background: var(--laps-accent-green-soft);
+}
+body.white-content .content.content-annotation .annotate-steps .annotate-step-done {
+  border-color: rgba(58, 197, 143, 0.4);
+  background: rgba(58, 197, 143, 0.1);
+}
+.content.content-annotation .annotate-step-num {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--laps-text-muted);
+}
+body.white-content .content.content-annotation .annotate-step-num {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--laps-text-muted);
+}
+.content.content-annotation .annotate-step-done .annotate-step-num {
+  background: var(--laps-accent-green);
+  color: #ffffff;
+}
+/* 工作流内按钮：与顶栏主题强调色一致 */
+.content.content-annotation .annotate-workflow-card .btn-primary {
+  background: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+  color: #fff !important;
+}
+.content.content-annotation .annotate-workflow-card .btn-primary:hover {
+  filter: brightness(1.06);
+}
+.content.content-annotation .annotate-workflow-card .btn-warning {
+  background: rgba(241, 196, 15, 0.22) !important;
+  border-color: rgba(241, 196, 15, 0.55) !important;
+  color: var(--laps-text) !important;
+}
+body.white-content .content.content-annotation .annotate-workflow-card .btn-warning {
+  background: #f1c40f !important;
+  border-color: #e0b400 !important;
+  color: #1a1a2e !important;
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-secondary {
+  color: var(--laps-text-muted);
+  border-color: var(--laps-border);
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-secondary:hover {
+  color: var(--laps-text);
+  background: var(--laps-accent-soft);
+  border-color: var(--laps-accent);
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-primary {
+  color: var(--laps-accent);
+  border-color: var(--laps-accent);
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-primary:hover {
+  background: var(--laps-accent-soft);
+  color: var(--laps-accent);
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-info {
+  color: var(--laps-accent-blue);
+  border-color: rgba(70, 90, 216, 0.55);
+}
+.content.content-annotation .annotate-workflow-card .btn-outline-info:hover {
+  background: var(--laps-accent-blue-soft);
+  color: var(--laps-accent-blue);
+}
+
+/* 工作流卡片头右上角：深色模式下描边按钮用白字；浅色模式保持强调色以免糊在白底上 */
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-primary,
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-info {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-primary {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-info {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-primary:hover,
+.content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-info:hover {
+  color: #ffffff !important;
+  background: var(--laps-accent-soft) !important;
+  border-color: var(--laps-accent) !important;
+}
+body.white-content .content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-primary {
+  color: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+}
+body.white-content .content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-primary:hover {
+  color: var(--laps-accent) !important;
+  background: var(--laps-accent-soft) !important;
+  border-color: var(--laps-accent) !important;
+}
+body.white-content .content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-info {
+  color: var(--laps-accent-blue) !important;
+  border-color: rgba(70, 90, 216, 0.65) !important;
+}
+body.white-content .content.content-annotation .annotate-workflow-card > .card-header .btn.btn-outline-info:hover {
+  color: var(--laps-accent-blue) !important;
+  background: var(--laps-accent-blue-soft) !important;
+  border-color: var(--laps-accent-blue) !important;
+}
+
+.content.content-annotation .annotate-workflow-card .badge-success {
+  background: var(--laps-accent-green-soft) !important;
+  color: var(--laps-accent-green) !important;
+  border: 1px solid rgba(58, 197, 143, 0.35);
+  font-weight: 600;
+}
+body.white-content .content.content-annotation .annotate-workflow-card .badge-success {
+  color: #1a6b4a !important;
+  background: rgba(58, 197, 143, 0.2) !important;
+}
+/* 工作流内动态提示条 */
+.content.content-annotation .annotate-flow-message.alert-warning {
+  background: rgba(241, 196, 15, 0.14);
+  border: 1px solid rgba(241, 196, 15, 0.4);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-flow-message.alert-warning {
+  background: rgba(255, 193, 7, 0.18);
+  color: #664d03;
+}
+.content.content-annotation .annotate-flow-message.alert-info {
+  background: var(--laps-accent-blue-soft);
+  border: 1px solid rgba(70, 90, 216, 0.35);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-flow-message.alert-info {
+  color: #0b3d6d;
+}
+.content.content-annotation .annotate-flow-message.alert-success {
+  background: var(--laps-accent-green-soft);
+  border: 1px solid rgba(58, 197, 143, 0.35);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-flow-message.alert-success {
+  color: #155724;
+}
+
+/* 标注页右侧：任务目录 / 保存标签 Tab */
+.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link {
+  color: var(--laps-text-muted);
+  border-color: transparent;
+}
+.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link:hover {
+  color: var(--laps-text);
+  border-color: var(--laps-border);
+}
+.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link.active {
+  color: var(--laps-accent) !important;
+  font-weight: 600;
+  border-color: var(--laps-border) var(--laps-border) transparent !important;
+  background: transparent !important;
+}
+body.white-content .content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link.active {
+  background: #fff !important;
+  border-color: rgba(0, 0, 0, 0.08) rgba(0, 0, 0, 0.08) transparent !important;
 }
 
 /* 仪表盘最近任务：状态徽章与标注按钮统一高度与宽度 */
@@ -1320,4 +2013,198 @@ body.white-content .laps-dataset-list-thumb {
   font-size: 0.8125rem;
   font-weight: 600;
   border-bottom-width: 2px;
+}
+
+/* React 挂载前占位（避免主内容区长时间纯白） */
+.laps-react-shell {
+  padding: 1rem 1.25rem 2rem;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.laps-react-shell-bar {
+  height: 1.25rem;
+  width: 42%;
+  max-width: 280px;
+  border-radius: 8px;
+  background: var(--laps-border);
+  opacity: 0.45;
+  animation: laps-react-shell-pulse 1.15s ease-in-out infinite;
+}
+.laps-react-shell-block {
+  height: 4.25rem;
+  margin-top: 0.85rem;
+  border-radius: 12px;
+  background: var(--laps-border);
+  opacity: 0.32;
+  animation: laps-react-shell-pulse 1.15s ease-in-out infinite;
+  animation-delay: 0.07s;
+}
+.laps-react-shell-block--lg {
+  height: 6.5rem;
+  animation-delay: 0s;
+}
+.laps-react-shell-block--sm {
+  height: 2.25rem;
+  width: 58%;
+  animation-delay: 0.14s;
+}
+html.laps-initial-light .laps-react-shell-bar,
+html.laps-initial-light .laps-react-shell-block {
+  background: rgba(0, 0, 0, 0.07);
+}
+body.white-content .laps-react-shell-bar,
+body.white-content .laps-react-shell-block {
+  background: rgba(0, 0, 0, 0.07);
+}
+@keyframes laps-react-shell-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ========== 任务页：任务表选择器 + 主题化表格 ========== */
+.tasks-page .laps-task-sample-selected {
+  border-color: var(--laps-accent) !important;
+  box-shadow: 0 0 0 1px var(--laps-accent-soft);
+}
+.tasks-page .laps-task-sample-card .badge-primary {
+  background-color: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+}
+/* 任务列表表内预览：contain 避免上下被裁切；状态列顶对齐避免与上行挤在一起 */
+.tasks-page .laps-task-data-table .laps-task-thumb-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.75rem;
+}
+.tasks-page .laps-task-data-table .tasks-thumb {
+  width: auto;
+  max-width: 120px;
+  max-height: 72px;
+  height: auto;
+  object-fit: contain;
+  object-position: center center;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+.tasks-page .laps-task-data-table .laps-task-col-status {
+  min-width: 8rem;
+}
+.tasks-page .laps-task-data-table .laps-task-status-select {
+  min-height: 2.5rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  line-height: 1.45;
+}
+.tasks-page .laps-task-picker {
+  border: 1px solid var(--laps-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+}
+body.white-content .tasks-page .laps-task-picker {
+  background: rgba(0, 0, 0, 0.02);
+}
+.tasks-page .laps-task-picker-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+.tasks-page .laps-task-picker-badge {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--laps-accent-soft);
+  color: var(--laps-accent);
+  font-weight: 600;
+}
+.tasks-page .laps-task-picker-badge--muted {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--laps-text-muted);
+  font-weight: 500;
+}
+body.white-content .tasks-page .laps-task-picker-badge--muted {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--laps-text-muted);
+}
+body:not(.white-content) .tasks-page .laps-task-picker .form-control {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--laps-text);
+}
+body:not(.white-content) .tasks-page .laps-task-picker .form-control::placeholder {
+  color: var(--laps-text-muted);
+  opacity: 0.85;
+}
+body:not(.white-content) .tasks-page .laps-task-picker select.form-control option {
+  background: #1e2030;
+  color: var(--laps-text);
+}
+.tasks-page .laps-task-data-table {
+  background: transparent !important;
+  color: var(--laps-text);
+  border-color: var(--laps-border) !important;
+}
+.tasks-page .laps-task-data-table thead th {
+  background: transparent !important;
+  color: var(--laps-text-muted);
+  border-color: var(--laps-border) !important;
+  border-bottom-width: 2px;
+}
+.tasks-page .laps-task-data-table tbody td {
+  border-color: var(--laps-border) !important;
+  vertical-align: top;
+}
+.tasks-page .laps-task-data-table.table-hover tbody tr:hover {
+  background: var(--laps-accent-soft) !important;
+}
+.tasks-page .laps-task-data-table .form-control {
+  background: transparent;
+}
+body:not(.white-content) .tasks-page .laps-task-data-table .form-control {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--laps-text);
+  border-color: var(--laps-border);
+}
+body.white-content .tasks-page .laps-task-data-table .form-control {
+  background: #fff;
+}
+
+/* 任务页：删除按钮固定为警示红（避免被全局 text-danger / 主题强调色覆盖） */
+.tasks-page .btn-outline-danger {
+  color: #e74c3c !important;
+  border-color: #e74c3c !important;
+  background-color: transparent;
+}
+.tasks-page .btn-outline-danger:hover,
+.tasks-page .btn-outline-danger:focus {
+  color: #fff !important;
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+}
+.tasks-page .btn-outline-danger:disabled,
+.tasks-page .btn-outline-danger.disabled {
+  color: rgba(231, 76, 60, 0.45) !important;
+  border-color: rgba(231, 76, 60, 0.35) !important;
+  background-color: transparent !important;
+}
+
+.tasks-page .laps-task-pagination .btn-outline-secondary {
+  color: var(--laps-text-muted);
+  border-color: var(--laps-border);
+  background: transparent;
+}
+.tasks-page .laps-task-pagination .btn-outline-secondary:hover:not(:disabled) {
+  color: var(--laps-text);
+  background: var(--laps-accent-soft);
+  border-color: var(--laps-accent);
+}
+.tasks-page .laps-task-pagination .btn-outline-secondary:disabled {
+  opacity: 0.45;
 }

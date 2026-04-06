@@ -1,22 +1,13 @@
 {
   "name": "django-black-dashboard",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "LAPS 后端仓库：根目录脚本仅转发到 frontend/（React + Vite）。",
+  "private": true,
   "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "vite build --mode production && npm run minify-css",
-    "minify-css": "postcss static/assets/css/*.css --dir static/assets/css --no-map --ext .min.css"
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "cssnano": "^7.0.6",
-    "postcss": "^8.5.3",
-    "postcss-cli": "^11.0.0",
-    "sass": "^1.85.1",
-    "vite": "^6.2.0"
-  }
+  "license": "ISC"
 }

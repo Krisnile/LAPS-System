@@ -6,25 +6,10 @@
 {% block extrastyle %}{% endblock extrastyle %}
 
 {% block content %}
-{# 将原始 Django 模板内容迁移到 React，由下方 data-dashboard 传入数据 #}
-<div
-  id="root-dashboard"
-  data-dashboard='{
-    "projectsCount": {{ projects_count|default:0 }},
-    "datasetsCount": {{ datasets_count|default:0 }},
-    "tasksCount": {{ tasks_count|default:0 }},
-    "pendingTasks": {{ pending_tasks|default:0 }},
-    "completedTasks": {{ completed_tasks|default:0 }},
-    "isAuthenticated": {{ request.user.is_authenticated|yesno:"true,false" }},
-    "username": "{{ request.user.get_full_name|default:request.user.username|default_if_none:"" }}",
-    "urls": {
-      "projects": "{% url 'projects' %}",
-      "datasets": "{% url 'datasets' %}",
-      "tasks": "{% url 'tasks' %}",
-      "annotation": "{% url 'annotation' %}"
-    }
-  }'
-></div>
+{# React 仪表盘：整份 props 由后端 JSON 序列化，经 escape 写入属性，避免手写模板拼接出错 #}
+<div id="root-dashboard" data-dashboard="{{ dashboard_json|escape }}">
+{% include 'includes/react_root_shell.html' %}
+</div>
 {% endblock content %}
 
 {% block extrajs %}{% endblock extrajs %}

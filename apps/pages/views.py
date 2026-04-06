@@ -31,6 +31,7 @@ from . import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.contrib.auth.views import LoginView
+from django.db import IntegrityError
 from django.db.models import Count, Prefetch
 from django.urls import reverse
 
@@ -44,6 +45,122 @@ except Exception:
 def _is_manage_admin(user):
     """仅用户名 admin 可进入用户管理系统"""
     return user.is_authenticated and user.username == 'admin'
+
+
+_TASK_BADGE_BY_STATUS = {
+    'new': 'warning',
+    'assigned': 'info',
+    'in_review': 'primary',
+    'done': 'success',
+}
+
+
+def _dashboard_payload(user):
+    """
+    首页仪表盘 React 的 props 字典（序列化为 JSON 写入 data-dashboard）。
+    含 KPI、图表数据、最近任务列表。
+    """
+    urls = {
+        'projects': reverse('projects'),
+        'datasets': reverse('datasets'),
+        'tasks': reverse('tasks'),
+        'annotation': reverse('annotation'),
+    }
+    display_name = ((user.get_full_name() or '').strip() or (user.username or '')) if user.is_authenticated else ''
+
+    task_qs = models.Task.objects.filter(owner=user).select_related('project', 'image')
+    projects_count = models.Project.objects.filter(owner=user).count()
+    datasets_count = models.Dataset.objects.filter(owner=user).count()
+    tasks_count = task_qs.count()
+    pending_tasks = task_qs.filter(status='new').count()
+    assigned_tasks = task_qs.filter(status='assigned').count()
+    in_review_tasks = task_qs.filter(status='in_review').count()
+    completed_tasks = task_qs.filter(status='done').count()
+
+    task_status_chart = [
+        {
+            'key': 'new',
+            'name': 'New',
+            'nameZh': '待处理',
+            'value': pending_tasks,
+            'fill': '#fb6340',
+        },
+        {
+            'key': 'assigned',
+            'name': 'Assigned',
+            'nameZh': '已分配',
+            'value': assigned_tasks,
+            'fill': '#11cdef',
+        },
+        {
+            'key': 'in_review',
+            'name': 'In review',
+            'nameZh': '审核中',
+            'value': in_review_tasks,
+            'fill': '#5e72e4',
+        },
+        {
+            'key': 'done',
+            'name': 'Done',
+            'nameZh': '已完成',
+            'value': completed_tasks,
+            'fill': '#2dce89',
+        },
+    ]
+
+    resource_chart = [
+        {
+            'key': 'projects',
+            'name': 'Projects',
+            'nameZh': '项目',
+            'value': projects_count,
+        },
+        {
+            'key': 'datasets',
+            'name': 'Datasets',
+            'nameZh': '数据集',
+            'value': datasets_count,
+        },
+        {
+            'key': 'tasks',
+            'name': 'Tasks',
+            'nameZh': '任务',
+            'value': tasks_count,
+        },
+    ]
+
+    recent_tasks = []
+    for t in task_qs.order_by('-created_at')[:5]:
+        fn = ''
+        if t.image_id and t.image.file:
+            fn = os.path.basename(t.image.file.name)
+        short = (fn[:48] + '…') if len(fn) > 48 else fn
+        recent_tasks.append(
+            {
+                'id': t.id,
+                'project_name': t.project.name,
+                'image_short': short,
+                'image_name': fn,
+                'status_display': t.get_status_display(),
+                'badge': _TASK_BADGE_BY_STATUS.get(t.status, 'secondary'),
+            }
+        )
+
+    return {
+        'projectsCount': projects_count,
+        'datasetsCount': datasets_count,
+        'tasksCount': tasks_count,
+        'pendingTasks': pending_tasks,
+        'completedTasks': completed_tasks,
+        'assignedTasks': assigned_tasks,
+        'inReviewTasks': in_review_tasks,
+        'isAuthenticated': user.is_authenticated,
+        'username': display_name,
+        'urls': urls,
+        'taskStatusChart': task_status_chart,
+        'resourceChart': resource_chart,
+        'recentTasks': recent_tasks,
+    }
 
 
 class LAPSLoginView(LoginView):
@@ -161,30 +278,32 @@ def support_wiki(request):
 
 @login_required
 def index(request):
-    # Dashboard as the home page for data management
+    """数据管理首页：React 仪表盘（KPI、图表、最近任务）。"""
     context = {'segment': 'dashboard'}
     try:
-        projects_count = models.Project.objects.filter(owner=request.user).count()
-        datasets_count = models.Dataset.objects.filter(owner=request.user).count()
-        tasks_count = models.Task.objects.filter(owner=request.user).count()
-        pending_tasks = models.Task.objects.filter(owner=request.user, status='new').count()
-        completed_tasks = models.Task.objects.filter(owner=request.user, status='done').count()
-        recent_tasks = (
-            models.Task.objects.filter(owner=request.user)
-            .select_related('project', 'image')
-            .order_by('-created_at')[:8]
-        )
+        payload = _dashboard_payload(request.user)
     except Exception:
-        projects_count = datasets_count = tasks_count = pending_tasks = completed_tasks = 0
-        recent_tasks = []
-    context.update({
-        'projects_count': projects_count,
-        'datasets_count': datasets_count,
-        'tasks_count': tasks_count,
-        'pending_tasks': pending_tasks,
-        'completed_tasks': completed_tasks,
-        'recent_tasks': recent_tasks,
-    })
+        payload = {
+            'projectsCount': 0,
+            'datasetsCount': 0,
+            'tasksCount': 0,
+            'pendingTasks': 0,
+            'completedTasks': 0,
+            'assignedTasks': 0,
+            'inReviewTasks': 0,
+            'isAuthenticated': request.user.is_authenticated,
+            'username': (request.user.get_full_name() or '').strip() or request.user.username,
+            'urls': {
+                'projects': reverse('projects'),
+                'datasets': reverse('datasets'),
+                'tasks': reverse('tasks'),
+                'annotation': reverse('annotation'),
+            },
+            'taskStatusChart': [],
+            'resourceChart': [],
+            'recentTasks': [],
+        }
+    context['dashboard_json'] = json.dumps(payload, ensure_ascii=False)
     return render(request, 'pages/dashboard.html', context)
 
 
@@ -243,11 +362,6 @@ def user_manage_toggle_active(request, pk):
     user.save()
     messages.success(request, f'用户 {user.username} 已{"启用" if user.is_active else "禁用"}。')
     return redirect('user_manage')
-
-
-def image_processing(request):
-    """原图像处理页已归档，模板已移除，重定向到首页。"""
-    return redirect('index')
 
 
 def _is_xhr(request):
@@ -716,8 +830,11 @@ def tasks(request):
             created = []
             for img in dataset.images.all():
                 if not models.Task.objects.filter(owner=request.user, project=project, image=img).exists():
-                    t = models.Task.objects.create(owner=request.user, project=project, image=img)
-                    created.append(t)
+                    try:
+                        t = models.Task.objects.create(owner=request.user, project=project, image=img)
+                        created.append(t)
+                    except IntegrityError:
+                        pass
             context['created_tasks'] = created
             messages.success(request, f'Created {len(created)} task(s).')
 
@@ -728,22 +845,435 @@ def tasks(request):
         )[:200]
     )
     context['tasks'] = models.Task.objects.filter(owner=request.user).select_related('image', 'project').order_by('-created_at')[:500]
-    context['datasets_for_project'] = models.Dataset.objects.filter(owner=request.user).order_by('name')[:500]
-    context['annotation_type_choice_list'] = [
-        {'value': k, 'label': str(v)} for k, v in models.Project.ANNOTATION_TYPE_CHOICES
-    ]
     return render(request, 'pages/tasks.html', context)
+
+
+DEMO_TASK_IMAGE_COUNT = 2
+
+DEMO_SAMPLE_BY_TYPE = {
+    models.Project.ANNOTATION_SEGMENTATION_SAM: {
+        'dataset_name': 'LAPS 体验数据集（分割样例）',
+        'project_name': 'LAPS SAM 分割体验（样例）',
+        'dataset_desc': str(_('Sample images for segmentation demo; safe to delete.')),
+        'project_desc': str(_('Fixed sample SAM project; you may delete anytime.')),
+    },
+    models.Project.ANNOTATION_DETECTION_YOLO: {
+        'dataset_name': 'LAPS 体验数据集（检测样例）',
+        'project_name': 'LAPS YOLO 检测体验（样例）',
+        'dataset_desc': str(_('Sample images for detection demo; safe to delete.')),
+        'project_desc': str(_('Fixed sample detection project; you may delete anytime.')),
+    },
+}
+
+
+def _laps_demo_png_bytes_seg(card_index: int) -> bytes:
+    """分割示意：椭圆区域。"""
+    w, h = 640, 420
+    img = PILImage.new('RGB', (w, h), (245, 250, 255))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([28, 28, w - 28, h - 28], outline=(0, 105, 180), width=4)
+    draw.ellipse([130, 90, 500, 310], outline=(0, 137, 123), width=3)
+    draw.text((44, 40), f'LAPS Seg Demo {card_index}', fill=(33, 37, 41))
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    return buf.getvalue()
+
+
+def _laps_demo_png_bytes_det(card_index: int) -> bytes:
+    """检测示意：多个矩形框。"""
+    w, h = 640, 420
+    img = PILImage.new('RGB', (w, h), (255, 248, 240))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([30, 30, w - 30, h - 30], outline=(200, 80, 0), width=3)
+    draw.rectangle([80, 100, 280, 260], outline=(230, 81, 0), width=4)
+    draw.rectangle([380, 120, 560, 280], outline=(230, 81, 0), width=4)
+    draw.text((44, 40), f'LAPS Det Demo {card_index}', fill=(90, 40, 0))
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    return buf.getvalue()
+
+
+@login_required
+@require_http_methods(['POST'])
+def tasks_sample_demo(request):
+    """按请求体中的 annotation_type 创建（或补齐）固定名称的体验数据集、项目、示例图与任务。"""
+    try:
+        body = json.loads(request.body.decode() or '{}')
+    except Exception:
+        body = {}
+    atype = (body.get('annotation_type') or models.Project.ANNOTATION_SEGMENTATION_SAM).strip()
+    valid = {k for k, _ in models.Project.ANNOTATION_TYPE_CHOICES}
+    if atype not in valid:
+        return JsonResponse({'code': 0, 'msg': 'invalid annotation_type'})
+    meta = DEMO_SAMPLE_BY_TYPE.get(atype)
+    if not meta:
+        return JsonResponse({'code': 0, 'msg': 'unsupported type'})
+    user = request.user
+    png_fn = _laps_demo_png_bytes_seg if atype == models.Project.ANNOTATION_SEGMENTATION_SAM else _laps_demo_png_bytes_det
+
+    ds, _ = models.Dataset.objects.get_or_create(
+        owner=user,
+        name=meta['dataset_name'],
+        defaults={'description': meta['dataset_desc']},
+    )
+    for _attempt in range(12):
+        if ds.images.count() >= DEMO_TASK_IMAGE_COUNT:
+            break
+        idx = ds.images.count() + 1
+        raw = png_fn(idx)
+        im = models.Image(dataset=ds)
+        fname = f'laps_demo_{uuid.uuid4().hex[:12]}.png'
+        im.file.save(fname, ContentFile(raw), save=True)
+
+    proj, _ = models.Project.objects.get_or_create(
+        owner=user,
+        name=meta['project_name'],
+        defaults={
+            'description': meta['project_desc'],
+            'annotation_type': atype,
+        },
+    )
+    if proj.annotation_type != atype:
+        proj.annotation_type = atype
+        proj.save(update_fields=['annotation_type'])
+    proj.linked_datasets.add(ds)
+
+    for im in ds.images.all():
+        try:
+            models.Task.objects.get_or_create(
+                project=proj,
+                image=im,
+                defaults={'owner': user, 'status': 'new'},
+            )
+        except IntegrityError:
+            pass
+
+    n_tasks = models.Task.objects.filter(project=proj, owner=user).count()
+    return JsonResponse({
+        'code': 1,
+        'project_id': proj.id,
+        'dataset_id': ds.id,
+        'annotation_type': atype,
+        'image_count': ds.images.count(),
+        'task_count': n_tasks,
+        'annotate_url': reverse('annotation') + f'?project={proj.id}',
+    })
+
+
+@login_required
+@require_http_methods(['GET'])
+def tasks_json_list(request):
+    """当前用户任务表（便于前端表格 CRUD 后刷新）。"""
+    tasks = (
+        models.Task.objects.filter(owner=request.user)
+        .select_related('project', 'image', 'image__dataset')
+        .order_by('-created_at')[:1000]
+    )
+    out = []
+    for t in tasks:
+        url = ''
+        iname = ''
+        ds_name = ''
+        try:
+            if t.image and t.image.file:
+                url = t.image.file.url
+                iname = os.path.basename(t.image.file.name)
+            if t.image and t.image.dataset:
+                ds_name = t.image.dataset.name
+        except Exception:
+            pass
+        ds_id = None
+        try:
+            if t.image and t.image.dataset_id:
+                ds_id = t.image.dataset_id
+        except Exception:
+            pass
+        out.append({
+            'id': t.id,
+            'project_id': t.project_id,
+            'project_name': t.project.name if t.project else '',
+            'dataset_id': ds_id,
+            'image_id': t.image_id,
+            'image_url': url,
+            'image_name': iname,
+            'dataset_name': ds_name,
+            'status': t.status,
+            'created_at': t.created_at.isoformat(),
+        })
+    return JsonResponse({'code': 1, 'tasks': out})
+
+
+@login_required
+@require_http_methods(['POST'])
+def tasks_delete_group(request):
+    """删除当前用户下指定「项目 + 数据集」范围内全部任务（第二层任务表批量清空）。"""
+    try:
+        body = json.loads(request.body.decode() or '{}')
+    except Exception:
+        return JsonResponse({'code': 0, 'msg': 'invalid json'})
+    try:
+        pid = int(body.get('project_id'))
+        did = int(body.get('dataset_id'))
+    except (TypeError, ValueError):
+        return JsonResponse({'code': 0, 'msg': 'project_id and dataset_id required'})
+    get_object_or_404(models.Project, id=pid, owner=request.user)
+    get_object_or_404(models.Dataset, id=did, owner=request.user)
+    qs = models.Task.objects.filter(owner=request.user, project_id=pid, image__dataset_id=did)
+    n_deleted, _ = qs.delete()
+    return JsonResponse({'code': 1, 'deleted': n_deleted})
+
+
+def _dataset_allowed_for_project(project, dataset):
+    """与任务批量生成页一致：项目若已关联数据集，则仅允许这些集中的图建任务。"""
+    linked = project.linked_datasets.all()
+    if linked.exists() and not linked.filter(pk=dataset.pk).exists():
+        return False
+    return True
 
 
 @login_required
 def annotation(request):
-    """Annotation workspace page. This is a skeleton UI that will call into
-    the existing `segment_image` endpoint for SAM or the fallback.
-    """
-    context = {'segment': 'annotation'}
-    # Pass simple lists for project/task selection
-    context['projects'] = models.Project.objects.filter(owner=request.user)[:200]
+    """标注工作区：必选项目 + 任务目录选图；数据均在库中（项目—关联数据集—任务—图片）。"""
+    user = request.user
+    ds_count = models.Dataset.objects.filter(owner=user).count()
+    img_count = models.Image.objects.filter(dataset__owner=user).count()
+    proj_count = models.Project.objects.filter(owner=user).count()
+    task_total = models.Task.objects.filter(owner=user).count()
+    task_pending = models.Task.objects.filter(owner=user).exclude(status='done').count()
+
+    projects_qs = (
+        models.Project.objects.filter(owner=user)
+        .annotate(task_count=Count('tasks'), linked_count=Count('linked_datasets'))
+        .order_by('name')[:200]
+    )
+
+    initial_project_id = None
+    raw_pid = request.GET.get('project')
+    if raw_pid:
+        try:
+            cand = int(raw_pid)
+            if projects_qs.filter(pk=cand).exists():
+                initial_project_id = cand
+        except ValueError:
+            pass
+
+    annotate_stats = {
+        'datasets': ds_count,
+        'images': img_count,
+        'projects': proj_count,
+        'tasks_total': task_total,
+        'tasks_pending': task_pending,
+    }
+    task_detail_tpl = reverse('annotate_task_detail', kwargs={'pk': 0})
+    annotate_bootstrap = {
+        'urls': {
+            'datasets': reverse('datasets'),
+            'projects': reverse('projects'),
+            'tasks': reverse('tasks'),
+            'annotation': reverse('annotation'),
+            'catalog': reverse('annotate_catalog'),
+            'available_images': reverse('annotate_available_images'),
+            'task_create': reverse('annotate_task_create'),
+            'task_detail_tpl': task_detail_tpl,
+        },
+        'stats': annotate_stats,
+        'flags': {
+            'has_images': img_count > 0,
+            'has_projects': proj_count > 0,
+            'has_tasks': task_total > 0,
+            'has_pending_tasks': task_pending > 0,
+        },
+        'initial_project_id': initial_project_id,
+    }
+    context = {
+        'segment': 'annotation',
+        'annotate_stats': annotate_stats,
+        'annotate_bootstrap': annotate_bootstrap,
+        'annotate_projects': projects_qs,
+        'initial_project_id': initial_project_id,
+    }
     return render(request, 'pages/annotation.html', context)
+
+
+@login_required
+@require_http_methods(["GET"])
+def annotate_catalog(request):
+    """当前用户某项目下的任务目录（含图片 URL），用于标注页左侧列表。"""
+    pid = request.GET.get('project_id')
+    if not pid:
+        return JsonResponse({'code': 0, 'msg': 'project_id required'})
+    project = get_object_or_404(models.Project, id=int(pid), owner=request.user)
+    linked_ids = list(project.linked_datasets.values_list('id', flat=True))
+    tasks = (
+        models.Task.objects.filter(project=project, owner=request.user)
+        .select_related('image', 'image__dataset')
+        .order_by('-created_at')
+    )
+    task_list = []
+    for t in tasks:
+        url = ''
+        name = ''
+        ds_name = ''
+        try:
+            if t.image_id and t.image and t.image.file:
+                url = t.image.file.url
+                name = os.path.basename(t.image.file.name)
+                ds_name = t.image.dataset.name if t.image.dataset_id else ''
+        except Exception:
+            pass
+        task_list.append({
+            'id': t.id,
+            'status': t.status,
+            'image_id': t.image_id,
+            'image_url': url,
+            'image_name': name or (f'image #{t.image_id}' if t.image_id else ''),
+            'dataset_name': ds_name,
+            'created_at': t.created_at.isoformat(),
+        })
+    return JsonResponse({
+        'code': 1,
+        'project': {
+            'id': project.id,
+            'name': project.name,
+            'annotation_type': project.annotation_type,
+            'linked_dataset_ids': linked_ids,
+            'linked_count': len(linked_ids),
+        },
+        'tasks': task_list,
+    })
+
+
+@login_required
+@require_http_methods(["GET"])
+def annotate_available_images(request):
+    """可为该项目新建任务的图片（已排除已有任务的图）：来自关联数据集，或未关联时来自本人全部数据集。"""
+    pid = request.GET.get('project_id')
+    if not pid:
+        return JsonResponse({'code': 0, 'msg': 'project_id required'})
+    project = get_object_or_404(models.Project, id=int(pid), owner=request.user)
+    linked = project.linked_datasets.all()
+    if linked.exists():
+        ds_qs = linked
+    else:
+        ds_qs = models.Dataset.objects.filter(owner=request.user)
+    existing_ids = models.Task.objects.filter(project=project).values_list('image_id', flat=True)
+    images = (
+        models.Image.objects.filter(dataset__in=ds_qs)
+        .exclude(id__in=existing_ids)
+        .select_related('dataset')
+        .order_by('-uploaded_at')[:500]
+    )
+    out = []
+    for im in images:
+        if not _dataset_allowed_for_project(project, im.dataset):
+            continue
+        url = ''
+        try:
+            if im.file:
+                url = im.file.url
+        except Exception:
+            pass
+        out.append({
+            'id': im.id,
+            'dataset_name': im.dataset.name,
+            'image_url': url,
+            'caption': im.caption or '',
+        })
+    return JsonResponse({'code': 1, 'images': out})
+
+
+@login_required
+@require_http_methods(["POST"])
+def annotate_task_create(request):
+    """为项目 + 单张图片创建任务（一张图对应一个任务，存在联合业务约束）。"""
+    try:
+        data = json.loads(request.body.decode() or '{}')
+    except Exception:
+        return JsonResponse({'code': 0, 'msg': 'invalid json'})
+    project_id = data.get('project_id')
+    image_id = data.get('image_id')
+    if not project_id or not image_id:
+        return JsonResponse({'code': 0, 'msg': 'project_id and image_id required'})
+    project = get_object_or_404(models.Project, id=int(project_id), owner=request.user)
+    image = get_object_or_404(models.Image, id=int(image_id), dataset__owner=request.user)
+    if not _dataset_allowed_for_project(project, image.dataset):
+        return JsonResponse({'code': 0, 'msg': 'dataset not linked to this project'})
+    if models.Task.objects.filter(project=project, image=image).exists():
+        return JsonResponse({'code': 0, 'msg': 'task already exists for this image'})
+    try:
+        task = models.Task.objects.create(
+            owner=request.user,
+            project=project,
+            image=image,
+            status='new',
+        )
+    except IntegrityError:
+        return JsonResponse({'code': 0, 'msg': 'task already exists for this image'})
+    url = ''
+    try:
+        url = image.file.url if image.file else ''
+    except Exception:
+        pass
+    return JsonResponse({
+        'code': 1,
+        'task': {
+            'id': task.id,
+            'status': task.status,
+            'image_id': image.id,
+            'image_url': url,
+            'image_name': os.path.basename(image.file.name) if image.file else '',
+            'dataset_name': image.dataset.name,
+            'created_at': task.created_at.isoformat(),
+        },
+    })
+
+
+@login_required
+@require_http_methods(["GET", "PATCH", "DELETE"])
+def annotate_task_detail(request, pk):
+    """单任务查询 / 改状态 / 删除（owner 隔离）。"""
+    task = get_object_or_404(models.Task, pk=pk, owner=request.user)
+    if request.method == 'GET':
+        url = ''
+        name = ''
+        ds_name = ''
+        try:
+            if task.image and task.image.file:
+                url = task.image.file.url
+                name = os.path.basename(task.image.file.name)
+                ds_name = task.image.dataset.name if task.image.dataset_id else ''
+        except Exception:
+            pass
+        return JsonResponse({
+            'code': 1,
+            'task': {
+                'id': task.id,
+                'status': task.status,
+                'project_id': task.project_id,
+                'image_id': task.image_id,
+                'image_url': url,
+                'image_name': name,
+                'dataset_name': ds_name,
+            },
+        })
+    if request.method == 'DELETE':
+        task.delete()
+        return JsonResponse({'code': 1, 'msg': 'deleted'})
+    # PATCH
+    try:
+        data = json.loads(request.body.decode() or '{}')
+    except Exception:
+        return JsonResponse({'code': 0, 'msg': 'invalid json'})
+    status = data.get('status')
+    allowed = {c[0] for c in models.Task.STATUS_CHOICES}
+    if status not in allowed:
+        return JsonResponse({'code': 0, 'msg': 'invalid status'})
+    task.status = status
+    task.save(update_fields=['status'])
+    return JsonResponse({
+        'code': 1,
+        'task': {'id': task.id, 'status': task.status},
+    })
 
 
 @csrf_exempt
@@ -761,6 +1291,7 @@ def save_processed_image(request):
     return JsonResponse({"code": 0, "msg": "失败"})
 
 
+@login_required
 def save_annotation(request):
     """Save annotation for a task. Accepts multipart/form-data with task_id and mask file or mask_base64."""
     if request.method != 'POST':

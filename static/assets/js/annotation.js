@@ -1,40 +1,458 @@
-// Lightweight annotation UI glue code (skeleton)
-// - Upload image
-// - Display image in <img id="annot-image"> and overlay canvas
-// - Send image to /segment-image/ to get SAM mask (or fallback)
+/**
+ * 标注页 /annotate/：项目下拉 → 任务列表（API catalog）→ 加载图片 → SAM 交互 → 保存遮罩。
+ * 依赖：annotate-bootstrap JSON、Bootstrap 4 collapse/modal、与 tasks/projects 页相同的数据规则。
+ *
+ * 模块概览：
+ *  - 任务目录渲染 / 状态 PATCH / 删除 / 新建任务弹窗
+ *  - 画布：点/框提示、缩放、Run(Segment)、Save(Annotation)、Undo、Clear
+ *  - 工作流卡片折叠状态：localStorage laps_annotate_workflow_collapsed
+ */
+function getLangText(key, zhText, enText) {
+  try {
+    const lang = localStorage.getItem('site_lang') || 'zh';
+    return (lang === 'en') ? (enText || zhText) : (zhText || enText);
+  } catch (e) {
+    return zhText;
+  }
+}
+
+function getAnnotateBootstrap() {
+  const el = document.getElementById('annotate-bootstrap');
+  if (!el) return { urls: {}, stats: {}, flags: {} };
+  try {
+    return JSON.parse(el.textContent);
+  } catch (e) {
+    return { urls: {}, stats: {}, flags: {} };
+  }
+}
+
+function getCsrfToken() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+function fetchWithCsrf(url, options) {
+  const headers = new Headers((options && options.headers) || {});
+  const token = getCsrfToken();
+  if (token && !headers.has('X-CSRFToken')) {
+    headers.set('X-CSRFToken', token);
+  }
+  return fetch(url, Object.assign({}, options, { headers, credentials: 'same-origin' }));
+}
+
+function taskDetailUrl(annotateBoot, taskId) {
+  const tpl = (annotateBoot.urls && annotateBoot.urls.task_detail_tpl) || '/api/annotate/tasks/0/';
+  return tpl.replace(/\/0\/?$/, '/' + taskId + '/');
+}
 
 document.addEventListener('DOMContentLoaded', function () {
+  const annotateBoot = getAnnotateBootstrap();
   const imgEl = document.getElementById('annot-image');
   const canvas = document.getElementById('annot-overlay');
-  const fileInput = document.getElementById('imageUpload');
   const btnRun = document.getElementById('btnRunSAM');
   const btnSave = document.getElementById('btnSave');
   const btnUndo = document.getElementById('btnUndo');
   const btnClear = document.getElementById('btnClear');
   const promptListEl = document.getElementById('promptList');
-  const btnNext = document.getElementById('btnNextTask');
-  const btnPrev = document.getElementById('btnPrevTask');
   const zoomIn = document.getElementById('zoomIn');
   const zoomOut = document.getElementById('zoomOut');
   const zoomReset = document.getElementById('zoomReset');
   const zoomLevel = document.getElementById('zoomLevel');
   const maskOpacity = document.getElementById('maskOpacity');
   const labelsPanel = document.getElementById('labelsPanel');
-  const btnAssignNext = document.getElementById('btnAssignNext');
-  const btnSubmitReview = document.getElementById('btnSubmitReview');
-  const historyList = document.getElementById('historyList');
   const placeholder = document.getElementById('annot-placeholder');
+  const modePointBtn = document.getElementById('modePointBtn');
+  const modeBoxBtn = document.getElementById('modeBoxBtn');
+  const projectSelect = document.getElementById('annotateProjectSelect');
+  const taskListEl = document.getElementById('annotateTaskList');
+  const taskCountEl = document.getElementById('annotateTaskCount');
+  const btnNewTask = document.getElementById('btnAnnotateNewTask');
+  const btnRefreshList = document.getElementById('btnAnnotateRefreshList');
+  const linkedWarningEl = document.getElementById('annotateLinkedWarning');
+  const deleteModal = document.getElementById('annotateDeleteTaskModal');
+  const deleteConfirmBtn = document.getElementById('annotateDeleteTaskConfirm');
+  const newTaskModal = document.getElementById('annotateNewTaskModal');
 
+  let promptMode = 'point';
   let currentImageFile = null;
   let currentTaskId = null;
-  let prompts = [] // {x,y,positive}
-  let boxes = []   // {x1,y1,x2,y2}
+  let prompts = [];
+  let boxes = [];
   let selectedLabel = null;
   let zoom = 1.0;
   let maskAlpha = parseFloat(maskOpacity ? maskOpacity.value : 0.6);
-  let boxDrawing = null; // 当前正在拖拽的框（canvas 坐标）
-  let dragState = null;  // {button, startX, startY}（canvas 坐标）
-  let hasRealImage = false; // 是否已经加载了真正的任务/上传图片
+  let boxDrawing = null;
+  let dragState = null;
+  let hasRealImage = false;
+  let catalogTasks = [];
+  let pendingDeleteTaskId = null;
+
+  const TASK_STATUSES = ['new', 'assigned', 'in_review', 'done'];
+
+  function showFlowMessage(html, kind) {
+    const el = document.getElementById('annotateFlowMessage');
+    if (!el) return;
+    el.className = 'annotate-flow-message mt-2 ' + (kind || 'alert-info');
+    el.innerHTML = html;
+    el.classList.remove('d-none');
+  }
+
+  function hideFlowMessage() {
+    const el = document.getElementById('annotateFlowMessage');
+    if (!el) return;
+    el.classList.add('d-none');
+    el.innerHTML = '';
+  }
+
+  function statusLabel(st) {
+    const map = {
+      new: getLangText('st_new', '新建', 'New'),
+      assigned: getLangText('st_assigned', '已指派', 'Assigned'),
+      in_review: getLangText('st_review', '审核中', 'In review'),
+      done: getLangText('st_done', '已完成', 'Done'),
+    };
+    return map[st] || st;
+  }
+
+  function updateLinkedWarning(proj) {
+    if (!linkedWarningEl) return;
+    if (!proj || proj.linked_count > 0) {
+      linkedWarningEl.classList.add('d-none');
+      linkedWarningEl.textContent = '';
+      return;
+    }
+    linkedWarningEl.classList.remove('d-none');
+    linkedWarningEl.innerHTML = getLangText(
+      'warn_link',
+      '提示：该项目尚未在库中关联任何数据集。您仍可使用账号下任意数据集中的图片创建任务（规则与<a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">任务页</a>一致）。建议在<a href="' + (annotateBoot.urls.projects || '/projects/') + '">项目页</a>编辑并勾选关联数据集以便团队协作。',
+      'This project has no linked datasets in the database yet. You can still create tasks from any of your images (same rules as the <a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">Tasks</a> page). Consider linking datasets under <a href="' + (annotateBoot.urls.projects || '/projects/') + '">Projects</a>.'
+    );
+  }
+
+  function renderTaskList() {
+    if (!taskListEl) return;
+    taskListEl.innerHTML = '';
+    if (taskCountEl) taskCountEl.textContent = String(catalogTasks.length);
+
+    if (!projectSelect || !projectSelect.value) {
+      taskListEl.innerHTML = '<p class="small text-muted p-2 mb-0">' + getLangText('pick_proj', '请先选择项目。', 'Select a project first.') + '</p>';
+      return;
+    }
+    if (!catalogTasks.length) {
+      taskListEl.innerHTML = '<p class="small text-muted p-2 mb-0">' + getLangText(
+        'no_tasks',
+        '该项目下尚无任务。点击「新建任务」或前往任务页批量生成。',
+        'No tasks for this project. Use “New task” or the Tasks page.'
+      ) + '</p>';
+      return;
+    }
+
+    catalogTasks.forEach(function (t) {
+      const div = document.createElement('div');
+      div.className = 'annotate-task-item' + (currentTaskId === t.id ? ' active' : '');
+      div.dataset.taskId = String(t.id);
+
+      const title = document.createElement('div');
+      title.className = 'annotate-task-title';
+      title.textContent = '#' + t.id + ' · ' + (t.image_name || '—');
+
+      const meta = document.createElement('div');
+      meta.className = 'annotate-task-meta';
+      meta.textContent = (t.dataset_name || '') + ' · ' + statusLabel(t.status);
+
+      const actions = document.createElement('div');
+      actions.className = 'annotate-task-actions';
+
+      const sel = document.createElement('select');
+      sel.className = 'form-control form-control-sm';
+      TASK_STATUSES.forEach(function (st) {
+        const opt = document.createElement('option');
+        opt.value = st;
+        opt.textContent = statusLabel(st);
+        if (st === t.status) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('click', function (ev) { ev.stopPropagation(); });
+      sel.addEventListener('change', function (ev) {
+        ev.stopPropagation();
+        const newSt = sel.value;
+        patchTaskStatus(t.id, newSt, function (ok) {
+          if (ok) {
+            t.status = newSt;
+            showFlowMessage(
+              getLangText('status_upd', '任务状态已更新。', 'Task status updated.'),
+              'alert-success'
+            );
+            renderTaskList();
+          }
+        });
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn btn-sm btn-outline-danger';
+      delBtn.textContent = getLangText('del', '删除', 'Delete');
+      delBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        pendingDeleteTaskId = t.id;
+        const body = document.getElementById('annotateDeleteTaskBody');
+        if (body) {
+          body.textContent = getLangText('del_confirm', '确定删除任务 #' + t.id + '？（数据库中删除，不可恢复）', 'Delete task #' + t.id + '? This cannot be undone.');
+        }
+        if (window.jQuery && window.jQuery.fn.modal) {
+          window.jQuery('#annotateDeleteTaskModal').modal('show');
+        } else if (deleteModal) {
+          deleteModal.classList.add('show');
+        }
+      });
+
+      actions.appendChild(sel);
+      actions.appendChild(delBtn);
+      div.appendChild(title);
+      div.appendChild(meta);
+      div.appendChild(actions);
+
+      div.addEventListener('click', function (ev) {
+        if (ev.target.closest('select') || ev.target.closest('button')) return;
+        loadTaskFromRow(t);
+      });
+
+      taskListEl.appendChild(div);
+    });
+  }
+
+  function loadTaskFromRow(t) {
+    currentTaskId = t.id;
+    currentImageFile = null;
+    catalogTasks = catalogTasks.map(function (x) { return x; });
+    renderTaskList();
+    if (!t.image_url) {
+      alert(getLangText('no_url', '该任务没有可用的图片地址。', 'This task has no image URL.'));
+      return;
+    }
+    imgEl.src = t.image_url;
+    imgEl.onload = function () {
+      resizeCanvasToImage();
+      prompts = [];
+      boxes = [];
+      boxDrawing = null;
+      dragState = null;
+      hasRealImage = true;
+      if (placeholder) placeholder.style.display = 'none';
+      renderPrompts();
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+    const curEl = document.getElementById('currentTask');
+    if (curEl) {
+      curEl.textContent = getLangText('task_num', '任务 #' + t.id, 'Task #' + t.id);
+    }
+    const meta = document.getElementById('taskMeta');
+    if (meta) {
+      meta.textContent = (t.dataset_name ? t.dataset_name + ' · ' : '') + statusLabel(t.status);
+    }
+    hideFlowMessage();
+  }
+
+  function fetchCatalog() {
+    const pid = projectSelect && projectSelect.value;
+    if (!pid) {
+      catalogTasks = [];
+      renderTaskList();
+      return;
+    }
+    const base = annotateBoot.urls.catalog || '/api/annotate/catalog/';
+    const url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'project_id=' + encodeURIComponent(pid);
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.code !== 1) {
+          showFlowMessage((j.msg || '') || getLangText('catalog_err', '加载任务目录失败。', 'Failed to load catalog.'), 'alert-warning');
+          catalogTasks = [];
+          renderTaskList();
+          return;
+        }
+        catalogTasks = j.tasks || [];
+        updateLinkedWarning(j.project);
+        renderTaskList();
+        hideFlowMessage();
+      })
+      .catch(function (e) {
+        console.error(e);
+        showFlowMessage(getLangText('catalog_err', '加载任务目录失败。', 'Failed to load catalog.'), 'alert-warning');
+      });
+  }
+
+  function patchTaskStatus(taskId, status, cb) {
+    const url = taskDetailUrl(annotateBoot, taskId);
+    fetchWithCsrf(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: status }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.code === 1) {
+          if (cb) cb(true);
+        } else {
+          alert(j.msg || getLangText('patch_fail', '更新失败', 'Update failed'));
+          if (cb) cb(false);
+          fetchCatalog();
+        }
+      })
+      .catch(function (e) {
+        console.error(e);
+        alert(getLangText('patch_fail', '更新失败', 'Update failed'));
+        if (cb) cb(false);
+      });
+  }
+
+  function loadAvailableImagesForModal() {
+    const pid = projectSelect && projectSelect.value;
+    const grid = document.getElementById('annotateNewTaskGrid');
+    const emptyBox = document.getElementById('annotateNewTaskEmpty');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (emptyBox) {
+      emptyBox.classList.add('d-none');
+      emptyBox.textContent = '';
+    }
+    if (!pid) return;
+    const base = annotateBoot.urls.available_images || '/api/annotate/available-images/';
+    const url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'project_id=' + encodeURIComponent(pid);
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.code !== 1 || !j.images || !j.images.length) {
+          if (emptyBox) {
+            emptyBox.classList.remove('d-none');
+            emptyBox.textContent = getLangText(
+              'no_avail_img',
+              '没有可添加的图片：请先在数据集上传，或任务页批量生成；已建过任务的图不会重复出现。',
+              'No images available to add. Upload in Datasets or use Tasks page; images already in a task are hidden.'
+            );
+          }
+          return;
+        }
+        j.images.forEach(function (im) {
+          const cell = document.createElement('div');
+          cell.className = 'annotate-pick-cell';
+          if (im.image_url) {
+            const img = document.createElement('img');
+            img.src = im.image_url;
+            img.alt = '';
+            cell.appendChild(img);
+          }
+          const cap = document.createElement('div');
+          cap.textContent = im.dataset_name + ' · #' + im.id;
+          cell.appendChild(cap);
+          cell.addEventListener('click', function () {
+            createTask(im.id);
+          });
+          grid.appendChild(cell);
+        });
+      })
+      .catch(function (e) {
+        console.error(e);
+        if (emptyBox) {
+          emptyBox.classList.remove('d-none');
+          emptyBox.textContent = getLangText('load_img_fail', '加载可选图片失败。', 'Failed to load images.');
+        }
+      });
+  }
+
+  function createTask(imageId) {
+    const pid = projectSelect && projectSelect.value;
+    if (!pid) return;
+    const url = annotateBoot.urls.task_create || '/api/annotate/tasks/';
+    fetchWithCsrf(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_id: parseInt(pid, 10), image_id: imageId }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.code !== 1) {
+          alert(j.msg || getLangText('create_fail', '创建任务失败', 'Failed to create task'));
+          return;
+        }
+        if (window.jQuery && window.jQuery.fn.modal) {
+          window.jQuery('#annotateNewTaskModal').modal('hide');
+        }
+        fetchCatalog();
+        if (j.task) {
+          loadTaskFromRow(j.task);
+        }
+        showFlowMessage(getLangText('created', '任务已创建。', 'Task created.'), 'alert-success');
+      })
+      .catch(function (e) {
+        console.error(e);
+        alert(getLangText('create_fail', '创建任务失败', 'Failed to create task'));
+      });
+  }
+
+  if (projectSelect) {
+    projectSelect.addEventListener('change', function () {
+      currentTaskId = null;
+      catalogTasks = [];
+      hasRealImage = false;
+      if (placeholder) placeholder.style.display = '';
+      imgEl.removeAttribute('src');
+      const curEl = document.getElementById('currentTask');
+      if (curEl) curEl.textContent = getLangText('none', '未选择', 'None');
+      const meta = document.getElementById('taskMeta');
+      if (meta) meta.textContent = '';
+      const enabled = !!projectSelect.value;
+      if (btnNewTask) btnNewTask.disabled = !enabled;
+      if (btnRefreshList) btnRefreshList.disabled = !enabled;
+      if (enabled) {
+        fetchCatalog();
+      } else {
+        updateLinkedWarning(null);
+        renderTaskList();
+      }
+    });
+  }
+
+  if (btnRefreshList) {
+    btnRefreshList.addEventListener('click', function () {
+      fetchCatalog();
+    });
+  }
+
+  if (newTaskModal) {
+    newTaskModal.addEventListener('show.bs.modal', loadAvailableImagesForModal);
+  }
+
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.addEventListener('click', function () {
+      if (!pendingDeleteTaskId) return;
+      const url = taskDetailUrl(annotateBoot, pendingDeleteTaskId);
+      fetchWithCsrf(url, { method: 'DELETE' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j.code !== 1) {
+            alert(j.msg || getLangText('del_fail', '删除失败', 'Delete failed'));
+            return;
+          }
+          if (currentTaskId === pendingDeleteTaskId) {
+            currentTaskId = null;
+            hasRealImage = false;
+            if (placeholder) placeholder.style.display = '';
+            imgEl.removeAttribute('src');
+          }
+          pendingDeleteTaskId = null;
+          if (window.jQuery && window.jQuery.fn.modal) {
+            window.jQuery('#annotateDeleteTaskModal').modal('hide');
+          }
+          fetchCatalog();
+        })
+        .catch(function (e) {
+          console.error(e);
+          alert(getLangText('del_fail', '删除失败', 'Delete failed'));
+        });
+    });
+  }
 
   function renderPrompts() {
     promptListEl.innerHTML = '';
@@ -43,25 +461,25 @@ document.addEventListener('DOMContentLoaded', function () {
       hint.className = 'prompt-item';
       hint.textContent = getLangText(
         'prompt_hint',
-        '点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。',
-        'Click: left=positive, right=negative. In box mode, drag to draw a rectangle.'
+        '左键加点/拖框（框模式），右键负点。先点「运行」再「保存」。',
+        'Left: points or box (box mode). Right: negative. Run SAM, then Save.'
       );
       promptListEl.appendChild(hint);
       return;
     }
-    prompts.forEach((p, i) => {
+    prompts.forEach(function (p, i) {
       const el = document.createElement('div');
       el.className = 'prompt-item';
-      el.textContent = `${i + 1}. (${Math.round(p.x)}, ${Math.round(p.y)}) ${p.positive ? '＋' : '－'}`;
+      el.textContent = (i + 1) + '. (' + Math.round(p.x) + ', ' + Math.round(p.y) + ') ' + (p.positive ? '＋' : '－');
       promptListEl.appendChild(el);
     });
-    boxes.forEach((b, i) => {
+    boxes.forEach(function (b, i) {
       const el = document.createElement('div');
       el.className = 'prompt-item';
       el.textContent = getLangText(
         'box_item',
-        `框 ${i + 1}: (${Math.round(b.x1)}, ${Math.round(b.y1)}) → (${Math.round(b.x2)}, ${Math.round(b.y2)})`,
-        `Box ${i + 1}: (${Math.round(b.x1)}, ${Math.round(b.y1)}) → (${Math.round(b.x2)}, ${Math.round(b.y2)})`
+        '框 ' + (i + 1) + ': (' + Math.round(b.x1) + ', ' + Math.round(b.y1) + ') → (' + Math.round(b.x2) + ', ' + Math.round(b.y2) + ')',
+        'Box ' + (i + 1) + ': (' + Math.round(b.x1) + ', ' + Math.round(b.y1) + ') → (' + Math.round(b.x2) + ', ' + Math.round(b.y2) + ')'
       );
       promptListEl.appendChild(el);
     });
@@ -75,50 +493,28 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.style.height = imgEl.clientHeight + 'px';
   }
 
-  fileInput.addEventListener('change', function (ev) {
-    const f = ev.target.files[0];
-    if (!f) return;
-    currentImageFile = f;
-    const url = URL.createObjectURL(f);
-    imgEl.src = url;
-    imgEl.onload = function () {
-      resizeCanvasToImage();
-      // reset state
-      currentTaskId = null;
-      prompts = [];
-      boxes = [];
-      boxDrawing = null;
-      dragState = null;
-      hasRealImage = true;
-      if (placeholder) placeholder.style.display = 'none';
-      renderPrompts();
-    };
-  });
-
-    btnRun.addEventListener('click', function () {
+  btnRun.addEventListener('click', function () {
     if (!imgEl.src || !hasRealImage) {
-      alert(getLangText('please_upload', '请先上传或加载图片', 'Please upload or load an image first'));
+      alert(getLangText('please_load', '请先在右侧任务目录中点击一条任务加载图片。', 'Select a task from the list to load an image.'));
       return;
     }
 
-    // Build form: if we have a currentImageFile (uploaded locally) use it,
-    // otherwise fetch image from URL and send as blob.
-    const sendSegmentation = (fileBlob) => {
+    const sendSegmentation = function (fileBlob) {
       const form = new FormData();
       form.append('image', fileBlob, 'image.png');
       if (prompts.length) {
-        const pts = prompts.map(p => [p.x, p.y]);
+        const pts = prompts.map(function (p) { return [p.x, p.y]; });
         form.append('points', JSON.stringify(pts));
       }
       if (boxes.length) {
-        const bxs = boxes.map(b => [b.x1, b.y1, b.x2, b.y2]);
-        form.append('boxes', JSON.stringify(bxs));
+        const b = boxes[0];
+        form.append('box', JSON.stringify([b.x1, b.y1, b.x2, b.y2]));
       }
-      fetch('/segment-image/', { method: 'POST', body: form }).then(r => {
+      fetchWithCsrf('/segment-image/', { method: 'POST', body: form }).then(function (r) {
         if (!r.ok) throw new Error('segmentation failed');
         return r.blob();
-      }).then(blob => {
-        const url = URL.createObjectURL(blob);
+      }).then(function (blob) {
+        const u = URL.createObjectURL(blob);
         const maskImg = new Image();
         maskImg.onload = function () {
           const ctx = canvas.getContext('2d');
@@ -127,8 +523,8 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.drawImage(maskImg, 0, 0, canvas.width, canvas.height);
           ctx.globalAlpha = 1.0;
         };
-        maskImg.src = url;
-        }).catch(err => {
+        maskImg.src = u;
+      }).catch(function (err) {
         console.error(err);
         alert(getLangText('seg_error', '分割出错：', 'Segmentation error: ') + err.message);
       });
@@ -137,20 +533,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (currentImageFile) {
       sendSegmentation(currentImageFile);
     } else {
-      // fetch image from imgEl.src
-      fetch(imgEl.src).then(r => r.blob()).then(blob => {
+      fetch(imgEl.src).then(function (r) { return r.blob(); }).then(function (blob) {
         sendSegmentation(blob);
-      }).catch(e => {
+      }).catch(function (e) {
         console.error(e);
-        alert('无法获取图像用于分割 (cannot fetch image)');
+        alert(getLangText('fetch_img', '无法获取图片用于分割。', 'Cannot fetch image for segmentation.'));
       });
     }
   });
 
-    btnSave.addEventListener('click', function () {
-    // Save annotation: POST canvas as mask to /api/annotations/ with task_id
+  btnSave.addEventListener('click', function () {
     if (!currentTaskId) {
-      alert(getLangText('no_task', '未选择任务。请使用 下一张 按钮或上传绑定任务的图片。', 'No task selected. Use Next Task or upload an image tied to a task.'));
+      alert(getLangText('no_task', '未选择任务。请从右侧任务目录点击一条任务。', 'No task selected. Pick one from the task list.'));
       return;
     }
     canvas.toBlob(function (blob) {
@@ -158,26 +552,20 @@ document.addEventListener('DOMContentLoaded', function () {
       fd.append('mask', blob, 'mask.png');
       fd.append('task_id', currentTaskId);
       if (selectedLabel) fd.append('label', selectedLabel);
-          fetch('/api/annotations/', { method: 'POST', body: fd }).then(r => r.json()).then(j => {
+      fetchWithCsrf('/api/annotations/', { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (j) {
         if (j.code === 1) {
-          alert(getLangText('saved_ok', '注释已保存 (id=', 'Annotation saved (id=') + j.annotation_id + ')');
-          // append history
-          if (historyList) {
-            const h = document.createElement('div');
-            h.textContent = getLangText('history_saved', `保存注释 ${j.annotation_id} (${selectedLabel || '无标签'})`, `Saved annotation ${j.annotation_id} (${selectedLabel || 'no label'})`);
-            historyList.prepend(h);
-          }
+          alert(getLangText('saved_ok', '已保存标注 (id=', 'Saved (id=') + j.annotation_id + ')');
+          fetchCatalog();
         } else {
           alert(getLangText('save_failed', '保存失败：', 'Save failed: ') + j.msg);
         }
-      }).catch(e => {
+      }).catch(function (e) {
         console.error(e);
         alert(getLangText('save_error', '保存出错', 'Save error'));
       });
     }, 'image/png');
   });
 
-  // Mode toggles (point / box)
   function setPromptMode(mode) {
     promptMode = mode;
     if (modePointBtn && modeBoxBtn) {
@@ -185,31 +573,21 @@ document.addEventListener('DOMContentLoaded', function () {
       modeBoxBtn.classList.toggle('active', mode === 'box');
     }
   }
-  if (modePointBtn) {
-    modePointBtn.addEventListener('click', function () { setPromptMode('point'); });
-  }
-  if (modeBoxBtn) {
-    modeBoxBtn.addEventListener('click', function () { setPromptMode('box'); });
-  }
+  if (modePointBtn) modePointBtn.addEventListener('click', function () { setPromptMode('point'); });
+  if (modeBoxBtn) modeBoxBtn.addEventListener('click', function () { setPromptMode('box'); });
   setPromptMode('point');
 
-  // Helpers to convert between canvas coords and image coords
   function canvasToImageCoords(canvasX, canvasY) {
     const scaleX = imgEl.naturalWidth / imgEl.clientWidth;
     const scaleY = imgEl.naturalHeight / imgEl.clientHeight;
-    return {
-      x: canvasX * scaleX,
-      y: canvasY * scaleY,
-    };
+    return { x: canvasX * scaleX, y: canvasY * scaleY };
   }
 
-  // Draw current box overlay (for visual feedback)
   function redrawOverlay() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // existing boxes
     ctx.lineWidth = 2;
-    boxes.forEach(b => {
+    boxes.forEach(function (b) {
       const rect = imageBoxToCanvasRect(b);
       ctx.strokeStyle = 'rgba(0, 123, 255, 0.9)';
       ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -241,23 +619,18 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
-  // Click / drag events on canvas：根据鼠标轨迹自动判断点选或框选
   canvas.addEventListener('mousedown', function (ev) {
-    if (!hasRealImage) return; // 占位图时不允许标注
+    if (!hasRealImage) return;
     const rect = canvas.getBoundingClientRect();
     const cx = ev.clientX - rect.left;
     const cy = ev.clientY - rect.top;
-    dragState = {
-      button: ev.button,
-      startX: cx,
-      startY: cy,
-    };
+    dragState = { button: ev.button, startX: cx, startY: cy };
     boxDrawing = null;
   });
 
   canvas.addEventListener('mousemove', function (ev) {
     if (!dragState || !hasRealImage) return;
-    // 仅左键拖动才考虑成为框
+    if (promptMode !== 'box') return;
     if (dragState.button !== 0) return;
     const rect = canvas.getBoundingClientRect();
     const cx = ev.clientX - rect.left;
@@ -265,8 +638,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const dx = cx - dragState.startX;
     const dy = cy - dragState.startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    const threshold = 5; // 像素阈值，避免误判单击为框
-    if (dist >= threshold) {
+    if (dist >= 5) {
       boxDrawing = {
         startX: dragState.startX,
         startY: dragState.startY,
@@ -288,29 +660,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const threshold = 5;
 
     if (dragState.button === 0) {
-      // 左键：短距离认为是点，长距离认为是框
-      if (dist < threshold) {
-        const imgCoords = canvasToImageCoords(cx, cy);
-        prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: true });
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'rgba(0,255,0,0.9)';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-        ctx.fill();
+      if (promptMode === 'point') {
+        if (dist < threshold) {
+          const imgCoords = canvasToImageCoords(cx, cy);
+          prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: true });
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = 'rgba(0,255,0,0.9)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
       } else {
-        const startImg = canvasToImageCoords(dragState.startX, dragState.startY);
-        const endImg = canvasToImageCoords(cx, cy);
-        boxes.push({
-          x1: startImg.x,
-          y1: startImg.y,
-          x2: endImg.x,
-          y2: endImg.y,
-        });
+        if (dist >= threshold) {
+          const startImg = canvasToImageCoords(dragState.startX, dragState.startY);
+          const endImg = canvasToImageCoords(cx, cy);
+          boxes.push({
+            x1: startImg.x,
+            y1: startImg.y,
+            x2: endImg.x,
+            y2: endImg.y,
+          });
+        }
         boxDrawing = null;
         redrawOverlay();
       }
     } else if (dragState.button === 2) {
-      // 右键：始终作为负点（忽略拖拽）
       const imgCoords = canvasToImageCoords(cx, cy);
       prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: false });
       const ctx = canvas.getContext('2d');
@@ -325,12 +699,10 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   canvas.addEventListener('contextmenu', function (ev) {
-    // 统一屏蔽默认右键菜单，便于负点操作
     ev.preventDefault();
     return false;
   });
 
-  // Undo/clear
   btnUndo.addEventListener('click', function () {
     if (boxes.length) {
       boxes.pop();
@@ -352,92 +724,63 @@ document.addEventListener('DOMContentLoaded', function () {
     renderPrompts();
   });
 
-  // Next task
-  btnNext.addEventListener('click', function () {
-    fetch('/tasks/next/').then(r => r.json()).then(j => {
-      if (j.code !== 1) {
-        alert('No next task');
-        return;
-      }
-      currentTaskId = j.task;
-      // load image
-      imgEl.src = j.image_url;
-      imgEl.onload = function () {
-        resizeCanvasToImage();
-        prompts = [];
-        boxes = [];
-        boxDrawing = null;
-        dragState = null;
-        hasRealImage = true;
-        if (placeholder) placeholder.style.display = 'none';
-        renderPrompts();
-      };
-      document.getElementById('currentTask').textContent = 'Task #' + currentTaskId;
-    }).catch(e => { console.error(e); alert('Error fetching next task'); });
-  });
-
-    btnPrev.addEventListener('click', function () {
-    alert(getLangText('prev_not_impl', '上一项尚未实现', 'Previous task not implemented in MVP'));
-  });
-
-  // Zoom controls
   if (zoomIn) zoomIn.addEventListener('click', function () { zoom = Math.min(3, zoom + 0.1); applyZoom(); });
   if (zoomOut) zoomOut.addEventListener('click', function () { zoom = Math.max(0.2, zoom - 0.1); applyZoom(); });
   if (zoomReset) zoomReset.addEventListener('click', function () { zoom = 1.0; applyZoom(); });
 
   function applyZoom() {
-    imgEl.style.transform = `scale(${zoom})`;
-    canvas.style.transform = `scale(${zoom})`;
-    if (zoomLevel) zoomLevel.textContent = Math.round(zoom*100) + '%';
+    imgEl.style.transform = 'scale(' + zoom + ')';
+    canvas.style.transform = 'scale(' + zoom + ')';
+    if (zoomLevel) zoomLevel.textContent = Math.round(zoom * 100) + '%';
   }
 
-  // mask opacity control
   if (maskOpacity) {
     maskOpacity.addEventListener('input', function () {
       maskAlpha = parseFloat(maskOpacity.value);
     });
   }
 
-  // labels selection
   if (labelsPanel) {
     labelsPanel.addEventListener('click', function (ev) {
       const row = ev.target.closest('.label-row');
       if (!row) return;
-      // clear active
-      labelsPanel.querySelectorAll('.label-row').forEach(r => r.classList.remove('active'));
+      labelsPanel.querySelectorAll('.label-row').forEach(function (r) { r.classList.remove('active'); });
       row.classList.add('active');
       selectedLabel = row.dataset.label;
     });
   }
 
-  if (btnAssignNext) {
-    btnAssignNext.addEventListener('click', function () {
-      // simple alias to Next that also assigns on server side
-      btnNext.click();
-    });
-  }
-
-    if (btnSubmitReview) {
-    btnSubmitReview.addEventListener('click', function () {
-      alert(getLangText('submit_review', '提交审核：功能将在第二阶段实现', 'Submit for review: feature to be implemented in stage 2'));
-    });
-  }
-
-  // keyboard shortcuts
   window.addEventListener('keydown', function (ev) {
     if (ev.code === 'Space') { ev.preventDefault(); btnRun.click(); }
     if (ev.key === 's' || ev.key === 'S') { ev.preventDefault(); btnSave.click(); }
     if ((ev.ctrlKey || ev.metaKey) && ev.key === 'z') { ev.preventDefault(); btnUndo.click(); }
     if (ev.key === 'c' || ev.key === 'C') { ev.preventDefault(); btnClear.click(); }
   });
-});
 
-// Simple runtime i18n helper: prefers localStorage.site_lang ('zh'|'en'), default 'zh'
-function getLangText(key, zhText, enText) {
-  try {
-    const lang = localStorage.getItem('site_lang') || 'zh';
-    return (lang === 'en') ? (enText || zhText) : (zhText || enText);
-  } catch (e) {
-    return zhText;
+  renderPrompts();
+  if (projectSelect && projectSelect.value) {
+    if (btnNewTask) btnNewTask.disabled = false;
+    if (btnRefreshList) btnRefreshList.disabled = false;
+    fetchCatalog();
+  } else {
+    renderTaskList();
   }
-}
+
+  // 顶部「标注工作流」折叠：记住用户偏好，避免刷新后反复展开
+  var workflowCollapse = document.getElementById('annotateWorkflowCollapse');
+  var workflowToggle = document.querySelector('[data-target="#annotateWorkflowCollapse"]');
+  if (workflowCollapse && workflowToggle) {
+    try {
+      if (localStorage.getItem('laps_annotate_workflow_collapsed') === '1') {
+        workflowCollapse.classList.remove('show');
+        workflowToggle.setAttribute('aria-expanded', 'false');
+      }
+    } catch (e) { /* ignore */ }
+    workflowCollapse.addEventListener('hidden.bs.collapse', function () {
+      try { localStorage.setItem('laps_annotate_workflow_collapsed', '1'); } catch (e2) { /* ignore */ }
+    });
+    workflowCollapse.addEventListener('shown.bs.collapse', function () {
+      try { localStorage.removeItem('laps_annotate_workflow_collapsed'); } catch (e3) { /* ignore */ }
+    });
+  }
+});

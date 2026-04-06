@@ -1,23 +1,17 @@
 {% load static %}
-{# 全站脚本：jQuery/Bootstrap、Chart、themeSettings、lang-switcher；被 base / base_auth 引用 #}
+{# 全站脚本：jQuery/Bootstrap、themeSettings、lang-switcher；Chart.js/demo 已移出（仪表盘为 React，无旧版 Chart 画布） #}
 <!--   Core JS Files   -->
 <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.jquery.min.js' %}"></script>
-<!--  Google Maps: 仅地图页需要，已移出全局（需时在 map 页单独引入） -->
-<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
 <!--  Notifications Plugin    -->
 <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
 <!-- Control Center for Black Dashboard -->
 <script src="{% static 'assets/js/black-dashboard.min.js' %}?v=1.0.0"></script>
-<script src="{% static 'assets/demo/demo.js' %}"></script>
 <script src="{% static 'assets/js/themeSettings.js' %}"></script>
-<script>
-    $(document).ready(function () {
-        if (typeof demo !== 'undefined' && demo.initDashboardPageCharts) demo.initDashboardPageCharts();
-    });
-</script>
 <!-- Global language switcher (applies data-en / data-zh across pages) -->
 <script src="{% static 'assets/js/lang-switcher.js' %}"></script>
+<!-- 侧栏链接 hover 预取下一页 HTML，减轻整站 MPA 切换等待感 -->
+<script src="{% static 'assets/js/laps-nav-prefetch.js' %}"></script>
 <!-- TrackJS 已移除：第三方错误追踪会拖慢每次页面加载，需要时可仅在生产环境异步加载 -->

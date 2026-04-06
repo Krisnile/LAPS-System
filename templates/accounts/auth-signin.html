@@ -4,7 +4,9 @@
 {% block title %}登录{% endblock title %}
 
 {% block auth_card %}
-<div id="root-login"></div>
+<div id="root-login">
+{% include 'includes/react_root_shell.html' %}
+</div>
 {% endblock auth_card %}
 
 {% block extrahead %}

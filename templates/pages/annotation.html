@@ -9,39 +9,197 @@
 
 {% block content %}
 <div class="content content-annotation">
-  <div class="row annotate-row">
-    <div class="col-md-9 annotate-left">
-      <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <div>
-            <h4 class="card-title mb-0" data-en="Annotation Workspace" data-zh="标注工作区">标注工作区</h4>
-            <small class="text-muted" data-en="SAM-assisted interactive segmentation" data-zh="基于 SAM 的交互式分割">基于 SAM 的交互式分割</small>
+  {# 工作流：数据在库中 — 数据集(图) → 项目(关联数据集) → 任务(一图一项) → 标注 #}
+  <div class="card annotate-workflow-card mb-3">
+    <div class="card-header py-2 annotate-workflow-header d-flex flex-wrap align-items-center justify-content-between">
+      <div class="d-flex align-items-center mb-1 mb-sm-0">
+        <button
+          type="button"
+          class="btn btn-sm btn-link p-0 mr-2 annotate-workflow-toggle text-muted"
+          data-toggle="collapse"
+          data-target="#annotateWorkflowCollapse"
+          aria-expanded="true"
+          aria-controls="annotateWorkflowCollapse"
+          data-en="Collapse or expand workflow hints"
+          data-zh="收起或展开工作流说明"
+          title="收起/展开"
+        >
+          <span class="annotate-workflow-caret-icon tim-icons icon-minimal-down" aria-hidden="true"></span>
+        </button>
+        <h5 class="mb-0" data-en="Annotation workflow" data-zh="标注工作流">标注工作流</h5>
+      </div>
+      <div class="d-flex flex-wrap align-items-center">
+        <a class="btn btn-sm btn-outline-info mr-1 mb-1" href="{% url 'support' %}#annotate-workflow-help" role="button"
+           data-en="Help documentation" data-zh="帮助文档">帮助文档</a>
+        <a class="btn btn-sm btn-outline-primary mr-1 mb-1" href="{% url 'datasets' %}" data-en="Datasets" data-zh="数据集">数据集</a>
+        <a class="btn btn-sm btn-outline-primary mr-1 mb-1" href="{% url 'projects' %}" data-en="Projects" data-zh="项目">项目</a>
+        <a class="btn btn-sm btn-outline-primary mr-1 mb-1" href="{% url 'tasks' %}" data-en="Tasks" data-zh="任务">任务</a>
+      </div>
+    </div>
+    <div id="annotateWorkflowCollapse" class="collapse show">
+      <div class="card-body py-3 border-top-0">
+        <p class="small text-muted mb-3 mb-md-2">
+          <span data-en="Rules, layout, and step-by-step help:" data-zh="规则说明、界面布局与操作步骤见">规则说明、界面布局与操作步骤见</span>
+          <a href="{% url 'support' %}#annotate-workflow-help" data-en="User documentation — Annotate" data-zh="使用说明 · 标注页">使用说明 · 标注页</a>。
+        </p>
+      <div class="annotate-steps row text-center">
+        <div class="col-md-4 mb-2">
+          <div class="annotate-step {% if annotate_stats.images > 0 %}annotate-step-done{% endif %}">
+            <span class="annotate-step-num">1</span>
+            <p class="small font-weight-bold mb-1" data-en="Datasets &amp; images" data-zh="数据集与图片">数据集与图片</p>
+            <p class="small text-muted mb-2">{{ annotate_stats.images }} <span data-en="images" data-zh="张图">张图</span></p>
+            {% if annotate_stats.images == 0 %}
+            <a href="{% url 'datasets' %}" class="btn btn-sm btn-primary"
+               data-en="Upload images" data-zh="去上传图片">去上传图片</a>
+            {% else %}
+            <span class="badge badge-success" data-en="OK" data-zh="已有数据">已有数据</span>
+            {% endif %}
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <input type="file" id="imageUpload" accept="image/*" class="d-none" />
-            <label for="imageUpload" class="btn btn-outline-secondary btn-sm" data-en="Upload" data-zh="上传">上传</label>
-            <button id="btnPrevTask" class="btn btn-outline-secondary btn-sm" data-en="← Prev" data-zh="← 上一张">← 上一张</button>
-            <button id="btnNextTask" class="btn btn-outline-primary btn-sm" data-en="Next →" data-zh="下一张 →">下一张 →</button>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="annotate-step {% if annotate_stats.projects > 0 %}annotate-step-done{% endif %}">
+            <span class="annotate-step-num">2</span>
+            <p class="small font-weight-bold mb-1" data-en="Project + linked datasets" data-zh="项目并关联数据集">项目并关联数据集</p>
+            <p class="small text-muted mb-2">{{ annotate_stats.projects }} <span data-en="projects" data-zh="个项目">个项目</span></p>
+            {% if annotate_stats.projects == 0 %}
+            <a href="{% url 'projects' %}" class="btn btn-sm btn-warning"
+               data-en="Create project" data-zh="创建项目">创建项目</a>
+            {% else %}
+            <span class="badge badge-success" data-en="OK" data-zh="可继续">可继续</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="annotate-step {% if annotate_stats.tasks_total > 0 %}annotate-step-done{% endif %}">
+            <span class="annotate-step-num">3</span>
+            <p class="small font-weight-bold mb-1" data-en="Tasks (one per image)" data-zh="任务（一图一项）">任务（一图一项）</p>
+            <p class="small text-muted mb-2">
+              {{ annotate_stats.tasks_pending }} <span data-en="not done" data-zh="未完成">未完成</span>
+              / {{ annotate_stats.tasks_total }}
+            </p>
+            {% if annotate_stats.tasks_total == 0 %}
+            <p class="small text-muted mb-2"
+               data-en="Create tasks in this page or on the Tasks page (see documentation)."
+               data-zh="在本页「新建任务」或任务页批量生成，详见帮助文档。">在本页「新建任务」或任务页批量生成，详见帮助文档。</p>
+            {% endif %}
+            <a href="{% url 'tasks' %}" class="btn btn-sm btn-outline-secondary"
+               data-en="Batch on Tasks page" data-zh="任务页批量生成">任务页批量生成</a>
+          </div>
+        </div>
+      </div>
+      <div id="annotateFlowMessage" class="annotate-flow-message d-none mt-2" role="status"></div>
+      </div>
+    </div>
+  </div>
+
+  {{ annotate_bootstrap|json_script:"annotate-bootstrap" }}
+
+  <div class="row annotate-row">
+    <div class="col-lg-4 annotate-sidebar order-1 order-lg-2">
+      <div class="card card-sidebar annotate-sidebar-tabs-card mb-3">
+        <div class="card-header py-2 border-bottom-0 pb-0 px-2 pt-2">
+          <ul class="nav nav-tabs card-header-tabs annotate-sidebar-nav" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="annotate-tab-catalog" data-toggle="tab" href="#annotate-pane-catalog" role="tab" aria-controls="annotate-pane-catalog" aria-selected="true"
+                 data-en="Project &amp; tasks" data-zh="项目与任务目录">项目与任务目录</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="annotate-tab-labels" data-toggle="tab" href="#annotate-pane-labels" role="tab" aria-controls="annotate-pane-labels" aria-selected="false"
+                 data-en="Labels (save)" data-zh="保存用标签">保存用标签</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body py-3">
+          <div class="tab-content annotate-sidebar-tab-content">
+            <div class="tab-pane fade show active" id="annotate-pane-catalog" role="tabpanel" aria-labelledby="annotate-tab-catalog">
+              <label class="small font-weight-bold d-block" for="annotateProjectSelect" data-en="Project" data-zh="选择项目">选择项目</label>
+              <select id="annotateProjectSelect" class="form-control form-control-sm mb-2" {% if not annotate_projects %}disabled{% endif %}>
+                {% if not annotate_projects %}
+                <option value="" data-en="No projects yet" data-zh="暂无项目">暂无项目</option>
+                {% else %}
+                <option value="" data-en="Select…" data-zh="请选择项目…">请选择项目…</option>
+                {% for p in annotate_projects %}
+                <option value="{{ p.id }}"
+                        {% if initial_project_id == p.id %}selected{% endif %}
+                        data-linked="{{ p.linked_count }}"
+                        data-tasks="{{ p.task_count }}">
+                  {{ p.name }}（{{ p.task_count }} <span data-en="tasks" data-zh="任务">任务</span> · {{ p.linked_count }} <span data-en="datasets" data-zh="关联集">关联集</span>）
+                </option>
+                {% endfor %}
+                {% endif %}
+              </select>
+              <p class="small text-muted mb-2" id="annotateProjectHint"
+                 data-en="Choose a project to see its tasks. Each task is tied to one image in the database."
+                 data-zh="必选项目后加载库中任务列表；每条任务绑定一张图片。">必选项目后加载库中任务列表；每条任务绑定一张图片。</p>
+              <div id="annotateLinkedWarning" class="alert alert-warning small py-2 d-none" role="alert"></div>
+              <div class="d-flex flex-wrap mb-2">
+                <button type="button" class="btn btn-sm btn-primary mr-1 mb-1" id="btnAnnotateNewTask" disabled
+                        data-toggle="modal" data-target="#annotateNewTaskModal"
+                        data-en="New task" data-zh="新建任务">新建任务</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary mb-1" id="btnAnnotateRefreshList" disabled
+                        data-en="Refresh list" data-zh="刷新列表">刷新列表</button>
+              </div>
+              <div class="annotate-task-list-head small text-muted mb-1 d-flex justify-content-between">
+                <span data-en="Tasks" data-zh="任务">任务</span>
+                <span id="annotateTaskCount">0</span>
+              </div>
+              <div id="annotateTaskList" class="annotate-task-list">
+                <p class="small text-muted p-2 mb-0" id="annotateTaskListPlaceholder"
+                   data-en="Select a project first."
+                   data-zh="请先选择项目。">请先选择项目。</p>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="annotate-pane-labels" role="tabpanel" aria-labelledby="annotate-tab-labels">
+              <p class="small text-muted mb-2">
+                <span data-en="Pick a label before saving. Details:" data-zh="保存前选择标签；说明见">保存前选择标签；说明见</span>
+                <a href="{% url 'support' %}#annotate-labels-save" data-en="documentation" data-zh="帮助文档">帮助文档</a>。
+              </p>
+              <div id="labelsPanel" class="labels-panel">
+                <div class="label-row" data-label="foreground"><span class="label-swatch" style="background:#1abc9c"></span> <span data-en="Foreground" data-zh="前景">前景</span></div>
+                <div class="label-row" data-label="background"><span class="label-swatch" style="background:#e74c3c"></span> <span data-en="Background" data-zh="背景">背景</span></div>
+                <div class="label-row" data-label="other"><span class="label-swatch" style="background:#f1c40f"></span> <span data-en="Other" data-zh="其他">其他</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8 annotate-main order-2 order-lg-1">
+      <div class="card">
+        <div class="card-header py-2">
+          <div>
+            <h4 class="card-title mb-0" data-en="SAM segmentation" data-zh="SAM 分割标注">SAM 分割标注</h4>
+            <small class="text-muted"
+                   data-en="Toolbar: point/box prompts, Run, Save. Full guide:"
+                   data-zh="工具栏：点/框提示、运行、保存等完整说明见">工具栏：点/框提示、运行、保存等完整说明见</small>
+            <small class="text-muted"> <a href="{% url 'support' %}#annotate-workflow-help" data-en="documentation" data-zh="使用说明">使用说明</a>。</small>
           </div>
         </div>
         <div class="card-body" id="annotation-area">
-          <div class="annotation-toolbar row">
-            <div class="col-auto d-flex align-items-center">
-              <button id="btnRunSAM" class="btn btn-primary btn-sm mr-1" title="Space" data-en="Run" data-zh="运行">运行</button>
-              <button id="btnSave" class="btn btn-success btn-sm mr-1" title="S" data-en="Save" data-zh="保存">保存</button>
-              <button id="btnUndo" class="btn btn-secondary btn-sm mr-1" title="Z" data-en="Undo" data-zh="撤销">撤销</button>
-              <button id="btnClear" class="btn btn-danger btn-sm mr-3" title="C" data-en="Clear" data-zh="清除">清除</button>
+          <div class="annotation-toolbar row align-items-center">
+            <div class="col-12 col-xl-auto d-flex align-items-center flex-wrap mb-2 mb-xl-0">
+              <div class="btn-group btn-group-sm mr-2 mb-1" role="group">
+                <button type="button" class="btn btn-outline-secondary active" id="modePointBtn"
+                        data-en="Point" data-zh="点">点</button>
+                <button type="button" class="btn btn-outline-secondary" id="modeBoxBtn"
+                        data-en="Box" data-zh="框">框</button>
+              </div>
+              <button id="btnRunSAM" class="btn btn-primary btn-sm mr-1 mb-1" title="Space" data-en="Run SAM" data-zh="运行">运行</button>
+              <button id="btnSave" class="btn btn-success btn-sm mr-1 mb-1" title="S" data-en="Save" data-zh="保存">保存</button>
+              <button id="btnUndo" class="btn btn-secondary btn-sm mr-1 mb-1" title="Ctrl+Z" data-en="Undo" data-zh="撤销">撤销</button>
+              <button id="btnClear" class="btn btn-danger btn-sm mr-1 mb-1" title="C" data-en="Clear prompts" data-zh="清除提示">清除提示</button>
             </div>
-            <div class="col text-center">
+            <div class="col text-center mb-2 mb-xl-0">
               <div class="zoom-controls">
-                <button id="zoomOut" class="btn btn-light btn-sm">−</button>
+                <button type="button" id="zoomOut" class="btn btn-light btn-sm">−</button>
                 <span id="zoomLevel">100%</span>
-                <button id="zoomIn" class="btn btn-light btn-sm">+</button>
-                <button id="zoomReset" class="btn btn-light btn-sm" data-en="Reset" data-zh="重置">重置</button>
+                <button type="button" id="zoomIn" class="btn btn-light btn-sm">+</button>
+                <button type="button" id="zoomReset" class="btn btn-light btn-sm" data-en="Reset zoom" data-zh="重置缩放">重置</button>
               </div>
             </div>
-            <div class="col-auto d-flex align-items-center">
-              <label class="mr-2 mb-0" data-en="Mask opacity" data-zh="遮罩透明度">遮罩透明度</label>
+            <div class="col-12 col-xl-auto d-flex align-items-center mb-2 mb-xl-0">
+              <label class="mr-2 mb-0 small" data-en="Mask opacity" data-zh="遮罩透明度">遮罩透明度</label>
               <input id="maskOpacity" type="range" min="0" max="1" step="0.05" value="0.6" />
             </div>
           </div>
@@ -52,10 +210,9 @@
                 <div class="annot-placeholder-icon">
                   <i class="tim-icons icon-image-02"></i>
                 </div>
-                <p class="mb-1" data-en="No image loaded yet" data-zh="尚未加载图片">尚未加载图片</p>
-                <p class="small mb-0" data-en="Upload an image above or click 'Next' to load a task image. "
-                   data-zh="请在上方上传图片或点击“下一张”加载任务图片。">
-                  请在上方上传图片或点击“下一张”加载任务图片。
+                <p class="mb-1" data-en="No task image loaded" data-zh="未加载任务图片">未加载任务图片</p>
+                <p class="small mb-0">
+                  <a href="{% url 'support' %}#annotate-workflow-help" data-en="How to select a project and load a task" data-zh="如何选择项目并加载任务">如何选择项目并加载任务</a>
                 </p>
               </div>
               <img id="annot-image" src="" alt="" draggable="false" />
@@ -63,54 +220,65 @@
             </div>
           </div>
 
-          <div class="annotation-bottom d-flex justify-content-between align-items-start">
-            <div class="prompts w-75">
-              <h6 class="mb-1" data-en="Prompts" data-zh="提示点">提示点</h6>
-              <div id="promptList" class="prompt-list small">
-                <span data-en="Click on the image: left = positive, right = negative. In box mode, drag to create a rectangle."
-                      data-zh="点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。">
-                  点击图片：左键正点，右键负点。框选模式下按住拖拽即可画框。
-                </span>
-              </div>
+          <div class="annotation-bottom d-flex flex-wrap justify-content-between align-items-start mt-2">
+            <div class="prompts pr-md-2 mb-2 mb-md-0" style="min-width: 200px; flex: 1;">
+              <h6 class="mb-1" data-en="Prompts" data-zh="提示点/框">提示点/框</h6>
+              <div id="promptList" class="prompt-list small"></div>
             </div>
-            <div class="task-info text-right">
-              <p><strong data-en="Current task" data-zh="当前任务">当前任务</strong></p>
-              <p id="currentTask" data-en="No task selected" data-zh="未选择任务">未选择任务</p>
-              <p><small id="taskMeta"></small></p>
+            <div class="task-info text-md-right">
+              <p class="mb-1"><strong data-en="Current task" data-zh="当前任务">当前任务</strong></p>
+              <p class="mb-0" id="currentTask" data-en="None" data-zh="未选择">未选择</p>
+              <p class="mb-0"><small id="taskMeta"></small></p>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 annotate-right">
-      <div class="card card-sidebar">
-        <div class="card-header">
-          <h5 class="card-title mb-0" data-en="Labels" data-zh="标签">标签</h5>
-        </div>
-        <div class="card-body">
-          <div id="labelsPanel" class="labels-panel">
-            <!-- Sample labels: in full system these come from project label_config -->
-            <div class="label-row" data-label="foreground"><span class="label-swatch" style="background:#1abc9c"></span> <span data-en="Foreground" data-zh="前景">前景</span></div>
-            <div class="label-row" data-label="background"><span class="label-swatch" style="background:#e74c3c"></span> <span data-en="Background" data-zh="背景">背景</span></div>
-            <div class="label-row" data-label="other"><span class="label-swatch" style="background:#f1c40f"></span> <span data-en="Other" data-zh="其他">其他</span></div>
-          </div>
-          <hr />
-          <div>
-            <h6 data-en="Actions" data-zh="操作">操作</h6>
-            <button class="btn btn-primary btn-block mb-2" id="btnAssignNext" data-en="Assign and Open Next" data-zh="指派并打开下一项">指派并打开下一项</button>
-            <button class="btn btn-outline-secondary btn-block" id="btnSubmitReview" data-en="Submit for Review" data-zh="提交审核">提交审核</button>
-          </div>
-          <hr />
-          <div>
-            <h6 data-en="History" data-zh="历史">历史</h6>
-            <div id="historyList" class="prompt-list" data-en="No actions yet." data-zh="暂无操作">暂无操作</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- 新建任务：从可加入的图片中选一张，写入 Task 表 -->
+<div class="modal fade" id="annotateNewTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" data-en="New task for this project" data-zh="为本项目新建任务">为本项目新建任务</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted" id="annotateNewTaskExplain">
+          <span data-en="Each row is an image without a task in this project yet. Details:" data-zh="每行一幅尚未在本项目建任务的图片；规则见">每行一幅尚未在本项目建任务的图片；规则见</span>
+          <a href="{% url 'support' %}#annotate-new-task" data-en="documentation" data-zh="使用说明">使用说明</a>。
+        </p>
+        <div id="annotateNewTaskEmpty" class="alert alert-info small d-none"></div>
+        <div id="annotateNewTaskGrid" class="annotate-pick-grid"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-en="Close" data-zh="关闭">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 删除任务确认 -->
+<div class="modal fade" id="annotateDeleteTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" data-en="Delete task" data-zh="删除任务">删除任务</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0" id="annotateDeleteTaskBody" data-en="Delete this task from the database?" data-zh="确定从数据库中删除该任务？">确定从数据库中删除该任务？</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-en="Cancel" data-zh="取消">取消</button>
+        <button type="button" class="btn btn-danger btn-sm" id="annotateDeleteTaskConfirm" data-en="Delete" data-zh="删除">删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %}
 
 {% block extrajs %}

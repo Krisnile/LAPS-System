@@ -1,0 +1,92 @@
+{
+  "_datasetsShared-D7O-U2LJ.js": {
+    "file": "assets/datasetsShared-D7O-U2LJ.js",
+    "name": "datasetsShared",
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/DashboardApp.jsx": {
+    "file": "assets/DashboardApp-Dx3jZrFX.js",
+    "name": "DashboardApp",
+    "src": "src/DashboardApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/DatasetDetailApp.jsx": {
+    "file": "assets/DatasetDetailApp-Dp1Z1Zfu.js",
+    "name": "DatasetDetailApp",
+    "src": "src/DatasetDetailApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx",
+      "_datasetsShared-D7O-U2LJ.js"
+    ]
+  },
+  "src/DatasetsApp.jsx": {
+    "file": "assets/DatasetsApp-C55a_dis.js",
+    "name": "DatasetsApp",
+    "src": "src/DatasetsApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx",
+      "_datasetsShared-D7O-U2LJ.js"
+    ]
+  },
+  "src/LoginApp.jsx": {
+    "file": "assets/LoginApp-aU6AUQUl.js",
+    "name": "LoginApp",
+    "src": "src/LoginApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/ProjectsApp.jsx": {
+    "file": "assets/ProjectsApp-BRZ2Y1sR.js",
+    "name": "ProjectsApp",
+    "src": "src/ProjectsApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/SignupApp.jsx": {
+    "file": "assets/SignupApp-CnmHA49A.js",
+    "name": "SignupApp",
+    "src": "src/SignupApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/TasksApp.jsx": {
+    "file": "assets/TasksApp-QA4qq80i.js",
+    "name": "TasksApp",
+    "src": "src/TasksApp.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.jsx"
+    ]
+  },
+  "src/main.jsx": {
+    "file": "assets/main-D08yMo5r.js",
+    "name": "main",
+    "src": "src/main.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/LoginApp.jsx",
+      "src/SignupApp.jsx",
+      "src/DashboardApp.jsx",
+      "src/ProjectsApp.jsx",
+      "src/DatasetsApp.jsx",
+      "src/DatasetDetailApp.jsx",
+      "src/TasksApp.jsx"
+    ],
+    "css": [
+      "assets/main-nqMpL4T3.css"
+    ]
+  }
+}

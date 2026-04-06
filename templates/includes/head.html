@@ -1,7 +1,23 @@
-{% load static %}
-{# 全站 head：meta、favicon、字体、black-dashboard、laps-theme；被 base / base_auth / base_standalone 引用 #}
+{% load static laps_tags %}
+{# 全站 head：meta、favicon、图标字体（Nucleo）、black-dashboard、laps-theme；被 base / base_auth / base_standalone 引用 #}
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% vite_react_preload %}
+<style id="laps-critical-first-paint">
+  /* 外链 CSS 未到前避免整页纯白（与 laps-theme 深色/浅色默认一致） */
+  html { background-color: #141625; }
+  html.laps-initial-light { background-color: #f4f6fb; }
+  body { margin: 0; }
+</style>
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem('light_color') === 'true') {
+        document.documentElement.classList.add('laps-initial-light');
+      }
+    } catch (e) {}
+  })();
+</script>
 <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
 <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
 
@@ -18,20 +34,17 @@
   })();
 </script>
 
-<!--     Fonts and icons     -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:200,300,400,600,700,800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:200,300,400,600,700,800&display=swap" rel="stylesheet"></noscript>
-<link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+<!-- 字体：不引用 Google Fonts，避免墙/代理下 css2 连接重置与长时间挂起；使用系统字体栈（与 black-dashboard / laps-theme 一致） -->
+<!-- 图标：全站仅齿轮用图标，已改用下方 Nucleo，不再加载 Font Awesome CDN（all.css） -->
 <!-- Nucleo Icons -->
 <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
 <!-- CSS Files -->
-<link href="{% static 'assets/css/black-dashboard.css' %}?v=1.0.0" rel="stylesheet" />
+<link href="{% static 'assets/css/black-dashboard.min.css' %}?v=1.0.0" rel="stylesheet" />
 <link href="{% static 'assets/css/theme-switcher.css' %}" rel="stylesheet" />
 <!-- Make sure fixed-plugin (gear dropdown) is readable in light mode -->
 <link href="{% static 'assets/css/fixed-plugin-override.css' %}" rel="stylesheet" />
-<!-- CSS Just for demo purpose, don't include it in your project -->
-<link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
 <!-- LAPS 专业主题覆盖 -->
-<link href="{% static 'assets/css/laps-theme.css' %}?v=1.0.0" rel="stylesheet" />
+<link href="{% static 'assets/css/laps-theme.css' %}?v=1.0.8" rel="stylesheet" />
+{% vite_react_styles %}
+{# defer：解析完成后尽早执行，与 jQuery 等 body 底脚本并行下载 #}
+{% vite_react_script %}

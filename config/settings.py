@@ -54,9 +54,6 @@ INSTALLED_APPS = [
     # 动态 API：DYNAMIC_API 配置的模型 REST 接口
     "apps.dyn_api",
 
-    # 图表：/charts/
-    "apps.charts",
-
     # REST Framework
     'rest_framework',
 ]

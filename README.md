@@ -13,7 +13,7 @@
 
 ## 技术栈
 
-- **后端**：Django 4.x、`psycopg2-binary`、可选 REST（`apps.dyn_api` / `apps.charts`）
+- **后端**：Django 4.x、`psycopg2-binary`、可选 REST（`apps.dyn_api`）
 - **前端**：React + Vite（登录、Dashboard、Projects / Datasets / Tasks），主题 `laps-theme.css`
 - **推理**：`apps/pages/sam_inference.py`（权重见仓库说明，默认忽略 `sam/`）
 
@@ -46,7 +46,7 @@ python manage.py runserver
 # http://127.0.0.1:8000/
 ```
 
-开发中若改前端源码，需重新执行 `frontend` 目录下的 `npm run build`。
+开发中若改前端源码，需重新构建：在 `frontend/` 下执行 `npm run build`，或在仓库根目录执行 `npm run build`（脚本会转发到 `frontend`）。
 
 ## 配置说明
 

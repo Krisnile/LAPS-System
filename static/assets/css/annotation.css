@@ -1,4 +1,4 @@
-.annotation-canvas-wrapper{ position:relative; width:100%; background:#f8f9fb; display:flex; align-items:center; justify-content:center; min-height:420px; }
+.annotation-canvas-wrapper{ position:relative; width:100%; background:#f8f9fb; display:flex; align-items:flex-start; justify-content:flex-start; min-height:420px; }
 .annotation-canvas-wrapper img{ max-width:100%; height:auto; display:block; user-select:none; }
 .annotation-canvas-wrapper canvas{ position:absolute; left:0; top:0; pointer-events:auto; }
 .annot-placeholder{
@@ -63,7 +63,7 @@ body.white-content .annot-placeholder-icon{
 .annotate-left { padding-right: 6px; }
 .annotate-right { padding-left: 6px; }
 .annotation-canvas-card{ background:#fff; border:1px solid #eee; padding:12px; border-radius:6px; }
-.annotation-canvas-wrapper{ position:relative; width:100%; background:#ffffff; display:flex; align-items:center; justify-content:center; min-height:520px; }
+.annotation-canvas-wrapper{ position:relative; width:100%; background:#ffffff; display:flex; align-items:flex-start; justify-content:flex-start; min-height:520px; }
 .labels-panel .label-row{ display:flex; align-items:center; gap:8px; padding:8px; border-radius:4px; cursor:pointer; }
 .labels-panel .label-row:hover{ background:#f6f8fa; }
 .label-swatch{ width:18px; height:14px; display:inline-block; border-radius:3px; border:1px solid rgba(0,0,0,0.08); }
@@ -74,12 +74,150 @@ body.white-content .annot-placeholder-icon{
 .prompt-list.small{ font-size:13px; }
 
 /* Prevent right-side annotate panel from wrapping below on md+ screens */
-@media (min-width: 768px) {
-	.annotate-row { display:flex; flex-wrap:nowrap; }
-	.annotate-left { flex: 0 0 75%; max-width: 75%; }
-	.annotate-right { flex: 0 0 25%; max-width: 25%; }
-	/* ensure sidebar stays visible and doesn't collapse below due to padding/margins */
-	.annotate-right .card-sidebar { width:100%; }
+.annotate-workflow-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
+.annotate-workflow-header {
+  background: transparent;
+}
+.annotate-workflow-toggle {
+  text-decoration: none !important;
+  line-height: 1;
+}
+.annotate-workflow-toggle:focus {
+  box-shadow: none;
+}
+.annotate-workflow-caret-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  vertical-align: middle;
+}
+.annotate-workflow-toggle[aria-expanded='false'] .annotate-workflow-caret-icon {
+  transform: rotate(-90deg);
+}
+.annotate-steps .annotate-step {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px 8px;
+  height: 100%;
+  background: #fafbfc;
+}
+.annotate-steps .annotate-step-done {
+  border-color: rgba(39, 174, 96, 0.35);
+  background: rgba(39, 174, 96, 0.06);
+}
+.annotate-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #e9ecef;
+  color: #495057;
+  margin-bottom: 6px;
+}
+.annotate-step-done .annotate-step-num {
+  background: #27ae60;
+  color: #fff;
+}
+.annotate-flow-message {
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+.annotate-flow-message.alert-warning {
+  background: #fff8e6;
+  border: 1px solid #ffe0a3;
+  color: #856404;
+}
+.annotate-flow-message.alert-info {
+  background: #e7f4ff;
+  border: 1px solid #b8daff;
+  color: #004085;
+}
+.annotate-flow-message.alert-success {
+  background: #e8f8ef;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.annotate-task-list {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fff;
+}
+.annotate-task-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  font-size: 13px;
+}
+.annotate-task-item:last-child { border-bottom: none; }
+.annotate-task-item:hover { background: #f8f9fa; }
+.annotate-task-item.active {
+  background: #e7f4ff;
+  border-left: 3px solid #007bff;
+  padding-left: 7px;
+}
+.annotate-task-item .annotate-task-title { font-weight: 600; word-break: break-all; }
+.annotate-task-item .annotate-task-meta { color: #6c757d; font-size: 12px; }
+.annotate-task-actions {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.annotate-task-actions > * { margin-right: 6px; margin-bottom: 4px; }
+.annotate-task-actions select.form-control-sm {
+  max-width: 130px;
+  font-size: 12px;
+}
+.annotate-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.annotate-pick-cell {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+  background: #fafbfc;
+}
+.annotate-pick-cell:hover { border-color: #007bff; background: #eef7ff; }
+.annotate-pick-cell img {
+  width: 100%;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  background: #eee;
+}
+
+@media (min-width: 992px) {
+  .annotate-row { display: flex; flex-wrap: nowrap; }
+  .annotate-sidebar .card-sidebar { width: 100%; }
+}
+
+/* 右侧边栏：标签标题靠右；与 LAPS 变量兼容 */
+.annotate-sidebar-tabs-card .annotate-sidebar-nav.card-header-tabs {
+  justify-content: flex-end;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+.annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link {
+  font-size: 0.8125rem;
+  padding: 0.45rem 0.65rem;
+  white-space: nowrap;
+}
+.annotate-sidebar-tab-content .tab-pane { min-height: 0; }
 
 

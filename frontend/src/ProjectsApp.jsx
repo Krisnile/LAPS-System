@@ -40,42 +40,61 @@ function ProjectsApp({
               <form method="post" action={urls.projects || ''}>
                 <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
                 <input type="hidden" name="intent" value="create" />
-                <div className="form-row align-items-end">
-                  <div className="col-md-3 mb-2">
-                    <label className="small mb-0" data-en="Name" data-zh="名称">名称</label>
-                    <input
-                      className="form-control"
-                      name="name"
-                      placeholder="项目名称"
-                      data-en="Project name"
-                      data-zh="项目名称"
-                    />
-                  </div>
-                  <div className="col-md-3 mb-2">
-                    <label className="small mb-0" data-en="Description" data-zh="描述">描述</label>
-                    <input
-                      className="form-control"
-                      name="description"
-                      placeholder="简短描述"
-                      data-en="Short description"
-                      data-zh="简短描述"
-                    />
-                  </div>
-                  <div className="col-md-3 mb-2">
-                    <label className="small mb-0" data-en="Task type" data-zh="标注任务类型">标注任务类型</label>
-                    <select className="form-control" name="annotation_type" defaultValue="segmentation_sam">
-                      {annotation_type_choices.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-3 mb-2">
-                    <button className="btn btn-primary btn-block" type="submit" data-en="Create" data-zh="创建">
-                      创建
-                    </button>
-                  </div>
+                {/* 单一表单字段：宽屏为「标签行 + 控件行」Grid；窄屏为标签/控件交错（grid-row 见 laps-theme.css） */}
+                <div className="mb-2 laps-project-create-grid">
+                  <label
+                    className="small mb-0 laps-pcg-label laps-pcg-label-name"
+                    data-en="Name"
+                    data-zh="名称"
+                  >
+                    名称
+                  </label>
+                  <label
+                    className="small mb-0 laps-pcg-label laps-pcg-label-desc"
+                    data-en="Description"
+                    data-zh="描述"
+                  >
+                    描述
+                  </label>
+                  <label
+                    className="small mb-0 laps-pcg-label laps-pcg-label-type"
+                    data-en="Task type"
+                    data-zh="标注任务类型"
+                  >
+                    标注任务类型
+                  </label>
+                  <span className="small laps-pcg-spacer" aria-hidden="true">
+                    &nbsp;
+                  </span>
+                  <input
+                    className="form-control laps-pcg-input-name"
+                    name="name"
+                    placeholder="项目名称"
+                    data-en="Project name"
+                    data-zh="项目名称"
+                  />
+                  <input
+                    className="form-control laps-pcg-input-desc"
+                    name="description"
+                    placeholder="简短描述"
+                    data-en="Short description"
+                    data-zh="简短描述"
+                  />
+                  <select className="form-control laps-pcg-select-type" name="annotation_type" defaultValue="segmentation_sam">
+                    {annotation_type_choices.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-primary w-100 laps-form-row-submit laps-pcg-btn-submit"
+                    type="submit"
+                    data-en="Create"
+                    data-zh="创建"
+                  >
+                    创建
+                  </button>
                 </div>
                 {datasets_for_project.length > 0 ? (
                   <div className="form-group mb-0 mt-2">

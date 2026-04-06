@@ -4,6 +4,13 @@
  * 页脚等全局样式在 laps-theme.css 中统一定义。
  */
 
+/* 齿轮：Nucleo tim-icons，尺寸接近原 fa-2x */
+.fixed-plugin .dropdown.show-dropdown > a .laps-fixed-plugin-icon {
+  font-size: 2em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 /* Light theme (white-content) - make dropdown background light and text dark */
 body.white-content .fixed-plugin .dropdown-menu {
   background: #ffffff !important;

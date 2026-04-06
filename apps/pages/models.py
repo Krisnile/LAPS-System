@@ -145,6 +145,12 @@ class Task(models.Model):
     class Meta:
         verbose_name = _("Task")
         verbose_name_plural = _("Tasks")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "image"],
+                name="uniq_laps_task_project_image",
+            ),
+        ]
 
     def __str__(self):
         return f"Task {self.id} ({self.image.file.name})"
