@@ -10,6 +10,13 @@
                 </button>
             </div>
             <a class="navbar-brand" href="javascript:void(0)">{{segment}}</a>
+            <button type="button" class="btn btn-link laps-sidebar-toggle d-none d-lg-inline-flex align-items-center justify-content-center p-1 ml-1"
+                    aria-pressed="false" aria-controls="laps-sidebar"
+                    data-en-title="Fold or expand sidebar" data-zh-title="折叠或展开侧栏">
+                <span class="sr-only" data-en="Toggle sidebar" data-zh="切换侧栏">切换侧栏</span>
+                <i class="tim-icons icon-double-left laps-sidebar-toggle-icon laps-sidebar-toggle-icon--open" aria-hidden="true"></i>
+                <i class="tim-icons icon-double-right laps-sidebar-toggle-icon laps-sidebar-toggle-icon--closed" aria-hidden="true"></i>
+            </button>
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -73,19 +80,28 @@
                     </label>
                 </li>
 
-                <!-- 通知 -->
-                <li class="dropdown nav-item">
-                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                        <div class="notification d-none d-lg-block d-xl-block"></div>
-                        <i class="tim-icons icon-sound-wave"></i>
+                <!-- 系统通知（内容由管理员在后台「Site broadcasts」配置） -->
+                <li class="dropdown nav-item" id="laps-broadcast-root" data-version="{% if site_broadcast %}{{ site_broadcast.updated_at.isoformat }}{% endif %}">
+                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" id="laps-broadcast-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-en-title="Notifications" data-zh-title="通知">
+                        {% if site_broadcast %}<div class="notification d-none d-lg-block d-xl-block laps-broadcast-dot" aria-hidden="true"></div>{% endif %}
+                        <i class="tim-icons icon-bell-55"></i>
                         <p class="d-lg-none" data-en="Notifications" data-zh="通知">通知</p>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar">
-                        <li class="nav-link"><a href="#" class="nav-item dropdown-item" data-en="Mike John responded to your email" data-zh="Mike John 已回复你的邮件">Mike John 已回复你的邮件</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="You have 5 more tasks" data-zh="你还有 5 个任务">你还有 5 个任务</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Your friend Michael is in town" data-zh="你的朋友 Michael 在城里">你的朋友 Michael 在城里</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another notification" data-zh="其他通知">其他通知</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another one" data-zh="再一条">再一条</a></li>
+                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar laps-broadcast-menu">
+                        {% if site_broadcast %}
+                        <li class="dropdown-header px-3 text-wrap">{{ site_broadcast.display_title }}</li>
+                        {% if site_broadcast.body %}
+                        <li class="px-0">
+                            <div class="dropdown-item-text laps-broadcast-body text-wrap small">
+                                {{ site_broadcast.body|linebreaksbr }}
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="nav-link px-3 py-2">
+                            <span class="text-muted" data-en="No system messages." data-zh="暂无系统通知。">暂无系统通知。</span>
+                        </li>
+                        {% endif %}
                     </ul>
                 </li>
 
@@ -111,16 +127,4 @@
         </div>
     </div>
 </nav>
-<div class="modal modal-search fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="SEARCH">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="tim-icons icon-simple-remove"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'includes/nav-search-modal.html' %}

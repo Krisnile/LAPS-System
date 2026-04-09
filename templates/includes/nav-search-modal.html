@@ -1,0 +1,29 @@
+{# 与主题一致：仅 header + 单行输入框；回车跳转见 laps-nav-search.js #}
+<div class="modal modal-search fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="SEARCH">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="tim-icons icon-simple-remove"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+window.LAPS_NAV_SEARCH = {
+  authenticated: {% if request.user.is_authenticated %}true{% else %}false{% endif %},
+  apiUrl: "{% url 'nav_search_api' %}",
+  shortcuts: [
+    { "url": "{% url 'index' %}", "zh": "仪表盘", "en": "Dashboard", "k": "dashboard home index 仪表盘 首页 总览 overview" },
+    { "url": "{% url 'projects' %}", "zh": "项目", "en": "Projects", "k": "projects 项目 工程" },
+    { "url": "{% url 'datasets' %}", "zh": "数据集", "en": "Datasets", "k": "datasets 数据集 数据 图片集" },
+    { "url": "{% url 'tasks' %}", "zh": "任务", "en": "Tasks", "k": "tasks 任务 待办 next 下一 队列" },
+    { "url": "{% url 'annotation' %}", "zh": "标注", "en": "Annotate", "k": "annotate 标注 labeling 分割 sam 工作区" },
+    { "url": "{% url 'support' %}", "zh": "帮助文档", "en": "Support", "k": "support help wiki 帮助 文档 说明" },
+    { "url": "{% url 'profile' %}", "zh": "账户与设置", "en": "Account & settings", "k": "profile account 账户 设置 个人 头像" }
+  ]
+};
+</script>

@@ -122,6 +122,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $('body').removeClass('change-background');
                     $('body').removeClass('white-content');
+                    $('html').removeClass('laps-initial-light');
                 }, 900);
                 white_color = false;
             } else {
@@ -129,6 +130,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $('body').removeClass('change-background');
                     $('body').addClass('white-content');
+                    $('html').addClass('laps-initial-light');
                 }, 900);
                 white_color = true;
             }
@@ -136,12 +138,14 @@ $(document).ready(function() {
 
         $('.light-badge').click(function() {
             $('body').addClass('white-content');
+            $('html').addClass('laps-initial-light');
             localStorage.setItem("light_color", "true");
             $('.switch input').prop("checked", false);
         });
 
         $('.dark-badge').click(function() {
             $('body').removeClass('white-content');
+            $('html').removeClass('laps-initial-light');
             localStorage.setItem("light_color", "false");
             $('.switch input').prop("checked", true);
         });
@@ -153,8 +157,10 @@ $(document).ready(function () {
 
     if (light_color === "true") {
         $('body').addClass('white-content');
+        $('html').addClass('laps-initial-light');
         $('.switch input').prop("checked", false);
     } else {
+        $('html').removeClass('laps-initial-light');
         $('.switch input').prop("checked", true);
     }
 
@@ -163,6 +169,7 @@ $(document).ready(function () {
 
         if (light_color === "true") {
             localStorage.setItem("light_color", "false");
+            $('html').removeClass('laps-initial-light');
 
             $('body').addClass('change-background');
             setTimeout(function () {
@@ -172,6 +179,7 @@ $(document).ready(function () {
 
         } else {
             localStorage.setItem("light_color", "true");
+            $('html').addClass('laps-initial-light');
 
             $('body').addClass('change-background');
             setTimeout(function () {

@@ -11,7 +11,7 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 
 def dataset_image_upload_to(instance, filename):
@@ -129,17 +129,17 @@ class Image(models.Model):
 
 
 class Task(models.Model):
+    """单人标注场景：仅「待标注 / 已完成」，不含指派与审核流。"""
+
     STATUS_CHOICES = [
-        ('new', 'New'),
-        ('assigned', 'Assigned'),
-        ('in_review', 'In Review'),
-        ('done', 'Done'),
+        ('pending', _('Pending annotation')),
+        ('done', _('Done')),
     ]
     project = models.ForeignKey(Project, related_name='tasks', on_delete=models.CASCADE)
     image = models.ForeignKey(Image, related_name='tasks', on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='owned_tasks')
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -171,3 +171,42 @@ class Annotation(models.Model):
 
     def __str__(self):
         return f"Annotation {self.id} for Task {self.task_id}"
+
+
+class SiteBroadcast(models.Model):
+    """
+    面向全体用户的系统通知：由管理员在 Django 后台维护；标题与正文各一条，不区分语言。
+    同一时间建议仅一条 is_active；保存时会自动关闭其他启用项。
+    """
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        verbose_name=_("Title"),
+        help_text=_("Shown in the notification dropdown header."),
+    )
+    body = models.TextField(
+        blank=True,
+        default="",
+        verbose_name=_("Message"),
+        help_text=_("Optional detail text below the title."),
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_("Enabled"),
+        help_text=_("If enabled, other broadcasts are turned off automatically."),
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Site broadcast")
+        verbose_name_plural = _("Site broadcasts")
+
+    def __str__(self):
+        t = (self.title or "").strip()
+        return t or gettext("(no title)")
+
+    def display_title(self) -> str:
+        return (self.title or "").strip() or str(_("System notice"))

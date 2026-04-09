@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 {% vite_react_preload %}
 <style id="laps-critical-first-paint">
-  /* 外链 CSS 未到前避免整页纯白（与 laps-theme 深色/浅色默认一致） */
+  /* 外链 CSS 未到前：html 背景与主题一致；body.white-content 由各布局 body 后内联脚本尽早写入 */
   html { background-color: #141625; }
   html.laps-initial-light { background-color: #f4f6fb; }
   body { margin: 0; }

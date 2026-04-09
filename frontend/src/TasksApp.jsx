@@ -19,7 +19,7 @@ function taskDetailUrl(tpl, taskId) {
   return base.replace(/\/0\/?$/, '/' + taskId + '/')
 }
 
-const TASK_STATUSES = ['new', 'assigned', 'in_review', 'done']
+const TASK_STATUSES = ['pending', 'done']
 
 /** 表内任务表格分页大小 */
 const TASK_LIST_PAGE_SIZE = 10
@@ -139,9 +139,7 @@ function TaskTypeSample({ title, subtitle, variant, selected, onSelect, annotati
 
 function statusLabel(st) {
   const map = {
-    new: getLangText('新建', 'New'),
-    assigned: getLangText('已指派', 'Assigned'),
-    in_review: getLangText('审核中', 'In review'),
+    pending: getLangText('待标注', 'Pending'),
     done: getLangText('已完成', 'Done'),
   }
   return map[st] || st

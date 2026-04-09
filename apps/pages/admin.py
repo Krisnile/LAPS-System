@@ -12,6 +12,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from . import models
@@ -276,7 +277,7 @@ class TaskAdmin(AddLinkMixin, ModelAdmin):
     )
 
     list_per_page = 25
-    actions = ('mark_as_done', 'mark_as_new')
+    actions = ('mark_as_done', 'mark_as_pending')
 
     def get_queryset(self, request):
         self.request = request
@@ -289,9 +290,9 @@ class TaskAdmin(AddLinkMixin, ModelAdmin):
     def mark_as_done(self, request, queryset):
         queryset.update(status='done')
 
-    @admin.action(description='标记为新任务')
-    def mark_as_new(self, request, queryset):
-        queryset.update(status='new')
+    @admin.action(description='标记为待标注')
+    def mark_as_pending(self, request, queryset):
+        queryset.update(status='pending')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if not request.user.is_superuser:
@@ -361,6 +362,42 @@ class AnnotationAdmin(AddLinkMixin, ModelAdmin):
         if not change and not obj.user_id:
             obj.user = request.user
         super().save_model(request, obj, form, change)
+
+
+# ---------------------------------------------------------------------------
+# 全站系统通知（顶栏「通知」下拉）
+# ---------------------------------------------------------------------------
+@admin.register(models.SiteBroadcast)
+class SiteBroadcastAdmin(ModelAdmin):
+    """管理员编辑面向全体用户的系统消息；启用一条时会自动停用其余条目。"""
+
+    list_display = ("id", "title", "is_active", "updated_at")
+    list_display_links = ("id", "title")
+    list_filter = ("is_active", "updated_at")
+    search_fields = ("title", "body")
+    readonly_fields = ("created_at", "updated_at")
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": ("is_active",),
+                "description": _(
+                    "When enabled, other broadcast entries are turned off; only this one is visible to users."
+                ),
+            },
+        ),
+        (_("Content"), {"fields": ("title", "body")}),
+        (_("Timestamps"), {"fields": ("created_at", "updated_at")}),
+    )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.is_active:
+            (
+                models.SiteBroadcast.objects.exclude(pk=obj.pk).filter(is_active=True).update(
+                    is_active=False
+                )
+            )
 
 
 # ---------------------------------------------------------------------------

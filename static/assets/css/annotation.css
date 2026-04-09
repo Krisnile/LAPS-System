@@ -1,6 +1,7 @@
 .annotation-canvas-wrapper{ position:relative; width:100%; background:#f8f9fb; display:flex; align-items:flex-start; justify-content:flex-start; min-height:420px; }
 .annotation-canvas-wrapper img{ max-width:100%; height:auto; display:block; user-select:none; }
 .annotation-canvas-wrapper canvas{ position:absolute; left:0; top:0; pointer-events:auto; }
+/* 画布区固定浅色底，占位文案必须用深色，禁止继承 body 在深色模式下的浅色字 */
 .annot-placeholder{
   position:absolute;
   inset:0;
@@ -10,19 +11,15 @@
   justify-content:center;
   text-align:center;
   padding:24px;
-  color:var(--laps-text-muted);
+  color: rgba(23, 28, 40, 0.82);
   pointer-events:none;
-  z-index: 3; /* 保证文字在画布与图片之上 */
+  z-index: 5;
 }
-.annot-placeholder p{
+.annot-placeholder p,
+.annot-placeholder .annot-placeholder-title{
   font-size: 0.95rem;
-}
-.annot-placeholder p.small{
-  font-size: 0.85rem;
-}
-/* 深色模式下，画布背景是白色，为了对比度提升占位提示用更深的文字，并强制覆盖 */
-body:not(.white-content) .annot-placeholder{
-  color:#000000 !important;
+  color: inherit;
+  margin-bottom: 0;
 }
 .annot-placeholder-icon{
   width:72px;
@@ -32,13 +29,9 @@ body:not(.white-content) .annot-placeholder{
   align-items:center;
   justify-content:center;
   margin-bottom:12px;
-  background:rgba(255,255,255,0.06);
-  border:1px dashed rgba(255,255,255,0.12);
-  color:var(--laps-accent);
-}
-body.white-content .annot-placeholder-icon{
-  background:rgba(0,0,0,0.02);
-  border-color:rgba(0,0,0,0.08);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px dashed rgba(0, 0, 0, 0.14);
+  color: var(--laps-accent);
 }
 .annotation-toolbar{ display:flex; gap:8px; margin-bottom:12px; align-items:center; }
 .card-sidebar{
@@ -47,11 +40,68 @@ body.white-content .annot-placeholder-icon{
   top: auto;
 }
 .label-item{ margin-bottom:6px; }
-.annotation-hint{ margin-top:8px; color:#6c757d; }
-.prompt-list{ max-height:220px; overflow:auto; border:1px solid #eee; padding:8px; background:#fff; }
-.prompt-item{ padding:4px 6px; border-bottom:1px dashed #f0f0f0; font-size:13px; }
-.hint-inline{ color:#6c757d; margin-left:12px; }
-.annotation-bottom{ display:flex; justify-content:space-between; margin-top:12px; align-items:center; }
+.annotation-hint {
+  margin-top: 8px;
+}
+body:not(.white-content) .content.content-annotation .annotation-hint {
+  color: rgba(255, 255, 255, 0.55);
+}
+body.white-content .content.content-annotation .annotation-hint {
+  color: #6c757d;
+}
+
+/* 提示点/框列表：深色模式禁止白底+浅字；浅色模式用浅灰底与正文区分 */
+.content.content-annotation .prompt-list {
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 6px;
+}
+body:not(.white-content) .content.content-annotation .prompt-list {
+  background: rgba(22, 24, 38, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+}
+body.white-content .content.content-annotation .prompt-list {
+  background: #f1f3f9;
+  border: 1px solid rgba(50, 50, 93, 0.12);
+  color: #272b3a;
+}
+
+.content.content-annotation .prompt-item {
+  padding: 4px 6px;
+  font-size: 13px;
+  border-bottom: 1px dashed transparent;
+}
+body:not(.white-content) .content.content-annotation .prompt-item {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+body.white-content .content.content-annotation .prompt-item {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.hint-inline {
+  margin-left: 12px;
+}
+body:not(.white-content) .content.content-annotation .hint-inline {
+  color: rgba(255, 255, 255, 0.55);
+}
+body.white-content .content.content-annotation .hint-inline {
+  color: #6c757d;
+}
+
+.annotation-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  align-items: center;
+}
+body:not(.white-content) .content.content-annotation .annotation-bottom .prompts h6 {
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotation-bottom .prompts h6 {
+  color: #32325d;
+}
 
 /* New LabelStudio-like layout styles */
 .content.content-annotation {
@@ -59,7 +109,10 @@ body.white-content .annot-placeholder-icon{
   padding-left: 30px;
   padding-right: 24px;
 }
-.annotate-row { gap: 16px; }
+/* 窄屏折行时保留一点缝；大屏与 Bootstrap 列 padding 叠加会过宽，见下方 media */
+.annotate-row {
+  gap: 12px;
+}
 .annotate-left { padding-right: 6px; }
 .annotate-right { padding-left: 6px; }
 .annotation-canvas-card{ background:#fff; border:1px solid #eee; padding:12px; border-radius:6px; }
@@ -70,8 +123,25 @@ body.white-content .annot-placeholder-icon{
 .labels-panel .label-row.active{ outline:2px solid rgba(0,123,255,0.15); background:#eaf4ff; }
 .zoom-controls{ display:inline-flex; align-items:center; gap:6px; }
 .card-sidebar .btn-block{ width:100%; }
-.task-info{ font-size:13px; color:#444; }
-.prompt-list.small{ font-size:13px; }
+.content.content-annotation .task-info {
+  font-size: 13px;
+}
+body:not(.white-content) .content.content-annotation .task-info {
+  color: var(--laps-text-muted);
+}
+body:not(.white-content) .content.content-annotation .task-info strong {
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .task-info {
+  color: #525f7f;
+}
+body.white-content .content.content-annotation .task-info strong {
+  color: #32325d;
+}
+
+.prompt-list.small {
+  font-size: 13px;
+}
 
 /* Prevent right-side annotate panel from wrapping below on md+ screens */
 .annotate-workflow-card {
@@ -145,28 +215,27 @@ body.white-content .annot-placeholder-icon{
   color: #155724;
 }
 
+/* 任务列表颜色见 laps-theme.css（.content.content-annotation .annotate-task-list） */
 .annotate-task-list {
   max-height: 380px;
   overflow-y: auto;
-  border: 1px solid #eee;
   border-radius: 6px;
-  background: #fff;
 }
 .annotate-task-item {
   padding: 8px 10px;
-  border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
   font-size: 13px;
 }
-.annotate-task-item:last-child { border-bottom: none; }
-.annotate-task-item:hover { background: #f8f9fa; }
-.annotate-task-item.active {
-  background: #e7f4ff;
-  border-left: 3px solid #007bff;
-  padding-left: 7px;
+.annotate-task-item:last-child {
+  border-bottom: none !important;
 }
-.annotate-task-item .annotate-task-title { font-weight: 600; word-break: break-all; }
-.annotate-task-item .annotate-task-meta { color: #6c757d; font-size: 12px; }
+.annotate-task-item .annotate-task-title {
+  font-weight: 600;
+  word-break: break-all;
+}
+.annotate-task-item .annotate-task-meta {
+  font-size: 12px;
+}
 .annotate-task-actions {
   margin-top: 6px;
   display: flex;
@@ -203,21 +272,43 @@ body.white-content .annot-placeholder-icon{
 }
 
 @media (min-width: 992px) {
-  .annotate-row { display: flex; flex-wrap: nowrap; }
-  .annotate-sidebar .card-sidebar { width: 100%; }
+  .annotate-row {
+    display: flex;
+    flex-wrap: nowrap;
+    /* 去掉与 col 左右 padding 叠加的额外缝，避免右侧「项目与任务」离画布过远 */
+    gap: 0;
+  }
+  .annotate-sidebar .card-sidebar {
+    width: 100%;
+  }
+  /* 仅收紧两列相邻一侧的 gutter，外侧仍保留 Bootstrap 默认 padding 贴齐内容区 */
+  .content.content-annotation .annotate-row > .annotate-main.col-lg-8 {
+    padding-right: 8px;
+  }
+  .content.content-annotation .annotate-row > .annotate-sidebar.col-lg-4 {
+    padding-left: 8px;
+  }
 }
 
-/* 右侧边栏：标签标题靠右；与 LAPS 变量兼容 */
-.annotate-sidebar-tabs-card .annotate-sidebar-nav.card-header-tabs {
-  justify-content: flex-end;
-  margin-bottom: 0;
-  border-bottom: none;
+/* 侧栏上下两张卡片（项目与任务 / 保存用标签） */
+.annotate-sidebar-card,
+.annotate-labels-card {
+  border: 1px solid #eee;
+  border-radius: 8px;
 }
-.annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link {
-  font-size: 0.8125rem;
-  padding: 0.45rem 0.65rem;
-  white-space: nowrap;
+
+/* 项目下拉：占满侧栏宽度，避免闭合状态下文字被裁切；option 仅纯文本（见模板 data-en/data-zh） */
+#annotateProjectSelect.annotate-project-select,
+select.annotate-project-select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
-.annotate-sidebar-tab-content .tab-pane { min-height: 0; }
+.content.content-annotation .annotate-sidebar .annotate-sidebar-card .card-body,
+.content.content-annotation .annotate-sidebar .annotate-labels-card .card-body {
+  overflow-x: visible;
+  overflow-y: visible;
+}
 
 

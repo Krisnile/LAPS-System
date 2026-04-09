@@ -48,9 +48,7 @@ def _is_manage_admin(user):
 
 
 _TASK_BADGE_BY_STATUS = {
-    'new': 'warning',
-    'assigned': 'info',
-    'in_review': 'primary',
+    'pending': 'warning',
     'done': 'success',
 }
 
@@ -72,32 +70,16 @@ def _dashboard_payload(user):
     projects_count = models.Project.objects.filter(owner=user).count()
     datasets_count = models.Dataset.objects.filter(owner=user).count()
     tasks_count = task_qs.count()
-    pending_tasks = task_qs.filter(status='new').count()
-    assigned_tasks = task_qs.filter(status='assigned').count()
-    in_review_tasks = task_qs.filter(status='in_review').count()
+    pending_tasks = task_qs.filter(status='pending').count()
     completed_tasks = task_qs.filter(status='done').count()
 
     task_status_chart = [
         {
-            'key': 'new',
-            'name': 'New',
-            'nameZh': '待处理',
+            'key': 'pending',
+            'name': 'Pending',
+            'nameZh': '待标注',
             'value': pending_tasks,
             'fill': '#fb6340',
-        },
-        {
-            'key': 'assigned',
-            'name': 'Assigned',
-            'nameZh': '已分配',
-            'value': assigned_tasks,
-            'fill': '#11cdef',
-        },
-        {
-            'key': 'in_review',
-            'name': 'In review',
-            'nameZh': '审核中',
-            'value': in_review_tasks,
-            'fill': '#5e72e4',
         },
         {
             'key': 'done',
@@ -152,8 +134,6 @@ def _dashboard_payload(user):
         'tasksCount': tasks_count,
         'pendingTasks': pending_tasks,
         'completedTasks': completed_tasks,
-        'assignedTasks': assigned_tasks,
-        'inReviewTasks': in_review_tasks,
         'isAuthenticated': user.is_authenticated,
         'username': display_name,
         'urls': urls,
@@ -289,8 +269,6 @@ def index(request):
             'tasksCount': 0,
             'pendingTasks': 0,
             'completedTasks': 0,
-            'assignedTasks': 0,
-            'inReviewTasks': 0,
             'isAuthenticated': request.user.is_authenticated,
             'username': (request.user.get_full_name() or '').strip() or request.user.username,
             'urls': {
@@ -943,7 +921,7 @@ def tasks_sample_demo(request):
             models.Task.objects.get_or_create(
                 project=proj,
                 image=im,
-                defaults={'owner': user, 'status': 'new'},
+                defaults={'owner': user, 'status': 'pending'},
             )
         except IntegrityError:
             pass
@@ -1205,7 +1183,7 @@ def annotate_task_create(request):
             owner=request.user,
             project=project,
             image=image,
-            status='new',
+            status='pending',
         )
     except IntegrityError:
         return JsonResponse({'code': 0, 'msg': 'task already exists for this image'})
@@ -1336,22 +1314,20 @@ def save_annotation(request):
 
 
 def next_task(request):
-    """Return the next available task for the current user (simple FIFO). Assign it to the user."""
+    """单人使用：返回当前用户下第一个未完成任务（不改变指派与状态）。"""
     user = request.user if request.user.is_authenticated else None
     if not user:
         return JsonResponse({'code': 0, 'msg': 'not authenticated'})
 
-    # Strict owner isolation: only pick tasks owned by current user
-    task = models.Task.objects.filter(owner=user, status='new').exclude(assigned_to__isnull=False).first()
-    if not task:
-        task = models.Task.objects.filter(owner=user, assigned_to__isnull=True).first()
+    task = (
+        models.Task.objects.filter(owner=user)
+        .exclude(status='done')
+        .select_related('image', 'project')
+        .order_by('id')
+        .first()
+    )
     if not task:
         return JsonResponse({'code': 0, 'msg': 'no tasks'})
-
-    if user:
-        task.assigned_to = user
-        task.status = 'assigned'
-        task.save()
 
     image_url = task.image.file.url if task.image and hasattr(task.image, 'file') else ''
     return JsonResponse({
@@ -1403,3 +1379,35 @@ def segment_image(request):
         output.seek(0)
         return HttpResponse(output.getvalue(), content_type='image/png')
     return HttpResponse('Error', status=400)
+
+
+@require_http_methods(['GET'])
+def nav_search_api(request):
+    """
+    顶栏「快速跳转」：按关键词匹配当前用户拥有的项目、数据集名称（供搜索框异步展示）。
+    未登录返回空列表；q 为空时不查库，仅由前端展示固定快捷入口。
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'projects': [], 'datasets': []})
+    q = (request.GET.get('q') or '').strip()[:80]
+    if len(q) < 1:
+        return JsonResponse({'projects': [], 'datasets': []})
+    limit = 12
+    user = request.user
+    projects = [
+        {
+            'id': p.id,
+            'name': p.name,
+            'url': reverse('projects'),
+        }
+        for p in models.Project.objects.filter(owner=user, name__icontains=q).order_by('name')[:limit]
+    ]
+    datasets = [
+        {
+            'id': d.id,
+            'name': d.name,
+            'url': reverse('dataset_detail', kwargs={'pk': d.id}),
+        }
+        for d in models.Dataset.objects.filter(owner=user, name__icontains=q).order_by('name')[:limit]
+    ]
+    return JsonResponse({'projects': projects, 'datasets': datasets})

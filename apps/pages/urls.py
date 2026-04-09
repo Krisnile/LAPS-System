@@ -26,6 +26,7 @@ urlpatterns = [
     path('datasets/', views.datasets, name='datasets'),
     path('tasks/', views.tasks, name='tasks'),
     path('tasks/sample-demo/', views.tasks_sample_demo, name='tasks_sample_demo'),
+    path('api/nav-search/', views.nav_search_api, name='nav_search_api'),
     path('api/tasks/', views.tasks_json_list, name='tasks_json_list'),
     path('api/tasks/delete-group/', views.tasks_delete_group, name='tasks_delete_group'),
     path('tasks/next/', views.next_task, name='next_task'),

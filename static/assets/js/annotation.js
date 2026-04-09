@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let catalogTasks = [];
   let pendingDeleteTaskId = null;
 
-  const TASK_STATUSES = ['new', 'assigned', 'in_review', 'done'];
+  const TASK_STATUSES = ['pending', 'done'];
 
   function showFlowMessage(html, kind) {
     const el = document.getElementById('annotateFlowMessage');
@@ -106,9 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function statusLabel(st) {
     const map = {
-      new: getLangText('st_new', '新建', 'New'),
-      assigned: getLangText('st_assigned', '已指派', 'Assigned'),
-      in_review: getLangText('st_review', '审核中', 'In review'),
+      pending: getLangText('st_pending', '待标注', 'Pending'),
       done: getLangText('st_done', '已完成', 'Done'),
     };
     return map[st] || st;
@@ -124,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function () {
     linkedWarningEl.classList.remove('d-none');
     linkedWarningEl.innerHTML = getLangText(
       'warn_link',
-      '提示：该项目尚未在库中关联任何数据集。您仍可使用账号下任意数据集中的图片创建任务（规则与<a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">任务页</a>一致）。建议在<a href="' + (annotateBoot.urls.projects || '/projects/') + '">项目页</a>编辑并勾选关联数据集以便团队协作。',
-      'This project has no linked datasets in the database yet. You can still create tasks from any of your images (same rules as the <a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">Tasks</a> page). Consider linking datasets under <a href="' + (annotateBoot.urls.projects || '/projects/') + '">Projects</a>.'
+      '提示：该项目尚未在库中关联任何数据集。您仍可使用账号下任意数据集中的图片创建任务（规则与<a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">任务页</a>一致）。建议在<a href="' + (annotateBoot.urls.projects || '/projects/') + '">项目页</a>编辑并勾选关联数据集以便筛选图片来源。',
+      'This project has no linked datasets in the database yet. You can still create tasks from any of your images (same rules as the <a href="' + (annotateBoot.urls.tasks || '/tasks/') + '">Tasks</a> page). Consider linking datasets under <a href="' + (annotateBoot.urls.projects || '/projects/') + '">Projects</a> to narrow image sources.'
     );
   }
 
@@ -179,10 +177,6 @@ document.addEventListener('DOMContentLoaded', function () {
         patchTaskStatus(t.id, newSt, function (ok) {
           if (ok) {
             t.status = newSt;
-            showFlowMessage(
-              getLangText('status_upd', '任务状态已更新。', 'Task status updated.'),
-              'alert-success'
-            );
             renderTaskList();
           }
         });
@@ -583,10 +577,28 @@ document.addEventListener('DOMContentLoaded', function () {
     return { x: canvasX * scaleX, y: canvasY * scaleY };
   }
 
+  /** 图像坐标 → 画布像素坐标（与 canvasToImageCoords 互逆，供重绘提示点） */
+  function imageToCanvasCoords(ix, iy) {
+    if (!imgEl.naturalWidth || !imgEl.naturalHeight) {
+      return { x: ix, y: iy };
+    }
+    const scaleX = imgEl.clientWidth / imgEl.naturalWidth;
+    const scaleY = imgEl.clientHeight / imgEl.naturalHeight;
+    return { x: ix * scaleX, y: iy * scaleY };
+  }
+
+  /** 根据 prompts / boxes 完整重绘覆盖层；撤销一步后仍能显示剩余点/框（此前仅重绘框，点被 clear 后丢失） */
   function redrawOverlay() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2;
+    prompts.forEach(function (p) {
+      const c = imageToCanvasCoords(p.x, p.y);
+      ctx.fillStyle = p.positive ? 'rgba(0, 255, 0, 0.9)' : 'rgba(255, 0, 0, 0.9)';
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    });
     boxes.forEach(function (b) {
       const rect = imageBoxToCanvasRect(b);
       ctx.strokeStyle = 'rgba(0, 123, 255, 0.9)';
@@ -664,11 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (dist < threshold) {
           const imgCoords = canvasToImageCoords(cx, cy);
           prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: true });
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = 'rgba(0,255,0,0.9)';
-          ctx.beginPath();
-          ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-          ctx.fill();
+          redrawOverlay();
         }
       } else {
         if (dist >= threshold) {
@@ -687,11 +695,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (dragState.button === 2) {
       const imgCoords = canvasToImageCoords(cx, cy);
       prompts.push({ x: imgCoords.x, y: imgCoords.y, positive: false });
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'rgba(255,0,0,0.9)';
-      ctx.beginPath();
-      ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-      ctx.fill();
+      redrawOverlay();
     }
 
     dragState = null;
@@ -704,10 +708,14 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   btnUndo.addEventListener('click', function () {
-    if (boxes.length) {
+    if (promptMode === 'point' && prompts.length) {
+      prompts.pop();
+    } else if (promptMode === 'box' && boxes.length) {
       boxes.pop();
     } else if (prompts.length) {
       prompts.pop();
+    } else if (boxes.length) {
+      boxes.pop();
     } else {
       return;
     }
@@ -719,8 +727,7 @@ document.addEventListener('DOMContentLoaded', function () {
     prompts = [];
     boxes = [];
     boxDrawing = null;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    redrawOverlay();
     renderPrompts();
   });
 

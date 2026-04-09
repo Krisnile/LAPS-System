@@ -72,6 +72,16 @@
       }
     });
 
+    // 双语文案块（如系统通知标题/正文）：.laps-lang-zh / .laps-lang-en
+    document.querySelectorAll('.laps-lang-block').forEach(function(el){
+      var isZh = el.classList.contains('laps-lang-zh');
+      var isEn = el.classList.contains('laps-lang-en');
+      if(!isZh && !isEn) return;
+      var preferred = (lang === 'en') ? 'en' : 'zh';
+      var visible = (isEn && preferred === 'en') || (isZh && preferred === 'zh');
+      el.style.display = visible ? '' : 'none';
+    });
+
     // Emit an event so other scripts can react
     var ev;
     try{ ev = new CustomEvent('languageChanged', { detail: { lang: lang } }); }catch(e){ ev = document.createEvent('Event'); ev.initEvent('languageChanged', true, true); ev.detail = { lang: lang }; }

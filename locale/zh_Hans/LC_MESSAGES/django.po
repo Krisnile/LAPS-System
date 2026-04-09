@@ -59,3 +59,44 @@ msgstr "标注"
 #: apps/pages/models.py:106
 msgid "Annotations"
 msgstr "标注"
+
+#: apps/pages/models.py (SiteBroadcast)
+msgid "Site broadcast"
+msgstr "站点广播"
+
+msgid "Site broadcasts"
+msgstr "站点广播"
+
+msgid "Title"
+msgstr "标题"
+
+msgid "Shown in the notification dropdown header."
+msgstr "显示在顶栏通知下拉中的标题。"
+
+msgid "Message"
+msgstr "正文"
+
+msgid "Optional detail text below the title."
+msgstr "可选，显示在标题下方的详细说明。"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "If enabled, other broadcasts are turned off automatically."
+msgstr "启用后将自动关闭其他广播，仅保留本条生效。"
+
+msgid "Content"
+msgstr "内容"
+
+msgid "Timestamps"
+msgstr "时间"
+
+msgid "(no title)"
+msgstr "（无标题）"
+
+msgid "System notice"
+msgstr "系统通知"
+
+#: apps/pages/admin.py (SiteBroadcastAdmin)
+msgid "When enabled, other broadcast entries are turned off; only this one is visible to users."
+msgstr "启用后，其他广播条目会自动设为未启用，仅当前一条对用户可见。"

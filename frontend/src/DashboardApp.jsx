@@ -252,8 +252,8 @@ function DashboardApp(props) {
                     </h5>
                     <h2>{tasksCount}</h2>
                     <p>
-                      <span data-en="Pending" data-zh="待办">
-                        待办
+                      <span data-en="Pending annotation" data-zh="待标注">
+                        待标注
                       </span>
                       : {pendingTasks} ·{' '}
                       <span data-en="Done" data-zh="已完成">
@@ -281,10 +281,10 @@ function DashboardApp(props) {
                     </h6>
                     <span
                       className="dashboard-chart-hint"
-                      data-en="By workflow state"
-                      data-zh="按状态"
+                      data-en="Pending vs done"
+                      data-zh="待标注与已完成"
                     >
-                      按状态
+                      待标注与已完成
                     </span>
                   </div>
                   <div className="card-body dashboard-chart-body dashboard-chart-body--donut">

@@ -137,6 +137,86 @@ body.white-content .main-panel {
   }
 }
 
+/* ========== 侧栏折叠（仅大屏）：滑出视口左侧，主内容区占满宽度 ========== */
+@media (min-width: 992px) {
+  .sidebar {
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+  .content,
+  .laps-flash-messages {
+    transition: margin-left 0.3s ease;
+  }
+  body.laps-sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+    pointer-events: none;
+    box-shadow: none;
+  }
+  body.laps-sidebar-collapsed .content,
+  body.laps-sidebar-collapsed .laps-flash-messages {
+    margin-left: 0 !important;
+  }
+}
+
+.navbar .laps-sidebar-toggle {
+  color: var(--laps-text);
+  border: none;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: 8px;
+}
+.navbar .laps-sidebar-toggle:hover,
+.navbar .laps-sidebar-toggle:focus {
+  color: var(--laps-accent);
+  text-decoration: none;
+}
+.navbar .laps-sidebar-toggle .tim-icons {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+.laps-sidebar-toggle-icon--closed {
+  display: none !important;
+}
+body.laps-sidebar-collapsed .laps-sidebar-toggle-icon--open {
+  display: none !important;
+}
+body.laps-sidebar-collapsed .laps-sidebar-toggle-icon--closed {
+  display: inline-block !important;
+}
+
+/*
+ * 大屏顶栏：主题里 .navbar-brand 为 position:fixed，脱离 flex，易与侧栏折叠按钮叠字。
+ * 改为与按钮同一行 flex 排列，标题过长时省略号。
+ */
+@media (min-width: 992px) {
+  .navbar .navbar-wrapper {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    max-width: min(58vw, 640px);
+    min-width: 0;
+  }
+  .navbar.navbar-absolute .navbar-brand,
+  .navbar.navbar-transparent .navbar-brand {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .navbar .laps-sidebar-toggle {
+    flex-shrink: 0;
+    margin: 0 !important;
+  }
+}
+
 /* 页脚：固定在底部，左侧与 sidebar 对齐，背景不透明 */
 .footer {
   position: fixed;
@@ -282,6 +362,59 @@ body.white-content .sidebar .nav > li > a:hover {
 body.white-content .sidebar .nav > li.active > a {
   background: rgba(0, 0, 0, 0.02);
   color: var(--laps-accent);
+}
+
+/*
+ * 浅色侧栏可读性：Black Dashboard 将 tim-icons、Logo .simple-text、激活项 p/i 设为白色或半透明白，
+ * 在白色/浅渐变侧栏背景上会看不清，此处强制改为深灰字与主题色强调。
+ */
+body.white-content .sidebar .logo a.simple-text.logo-mini,
+body.white-content .sidebar .logo a.simple-text.logo-normal,
+body.white-content .sidebar .logo .simple-text {
+  color: #32325d !important;
+}
+
+body.white-content .sidebar .sidebar-wrapper .nav > li > a i,
+body.white-content .sidebar .sidebar-wrapper .nav > li > a .tim-icons {
+  color: #5b6275 !important;
+}
+body.white-content .sidebar .sidebar-wrapper .nav > li:hover:not(.active) > a i,
+body.white-content .sidebar .sidebar-wrapper .nav > li:hover:not(.active) > a .tim-icons,
+body.white-content .sidebar .sidebar-wrapper .nav > li:focus:not(.active) > a i,
+body.white-content .sidebar .sidebar-wrapper .nav > li:focus:not(.active) > a .tim-icons {
+  color: #32325d !important;
+}
+
+body.white-content .sidebar .sidebar-wrapper .nav > li.active > a i,
+body.white-content .sidebar .sidebar-wrapper .nav > li.active > a .tim-icons,
+body.white-content .sidebar .sidebar-wrapper .nav > li.active > a p,
+body.white-content .sidebar .sidebar-wrapper .nav > li.active > a:not([data-toggle='collapse']) p {
+  color: var(--laps-accent) !important;
+}
+
+body.white-content .sidebar .nav [data-toggle='collapse'] ~ div > ul > li > a .sidebar-mini-icon,
+body.white-content .sidebar .nav [data-toggle='collapse'] ~ div > ul > li > a .sidebar-normal {
+  color: #5b6275 !important;
+}
+body.white-content .sidebar .nav [data-toggle='collapse'] ~ div > ul > li:hover > a .sidebar-mini-icon,
+body.white-content .sidebar .nav [data-toggle='collapse'] ~ div > ul > li:hover > a .sidebar-normal {
+  color: #32325d !important;
+}
+
+body.white-content .sidebar .nav > li > a .caret {
+  border-top-color: #8898aa !important;
+}
+
+body.white-content .sidebar .nav > li > a[data-toggle='collapse'] {
+  color: #32325d !important;
+}
+body.white-content .sidebar .nav > li > a[data-toggle='collapse'] i,
+body.white-content .sidebar .nav > li > a[data-toggle='collapse'] .tim-icons {
+  color: #5b6275 !important;
+}
+body.white-content .sidebar .nav > li.active > a[data-toggle='collapse'],
+body.white-content .sidebar .nav > li.active > a[data-toggle='collapse'] i {
+  color: var(--laps-accent) !important;
 }
 
 /* ========== 按钮 / 选择控件：随主题变化（登录 / 注册等页面一起生效） ========== */
@@ -608,6 +741,16 @@ body.white-content .navbar.navbar-absolute.navbar-transparent {
   display: none;
 }
 
+/* 系统通知下拉：限制宽度、长文可滚动 */
+.navbar .dropdown-menu.laps-broadcast-menu {
+  max-width: min(560px, 94vw);
+}
+.navbar .laps-broadcast-body {
+  max-height: 50vh;
+  overflow-y: auto;
+  white-space: normal;
+}
+
 .navbar .navbar-brand {
   color: var(--laps-text);
   font-weight: 600;
@@ -699,23 +842,103 @@ body.white-content .navbar .navbar-brand {
   }
 }
 
-/* ========== Support 页 Markdown 文档（/support/） ========== */
-.content .laps-md {
-  color: var(--laps-text);
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  padding: 0 0 32px;
-  width: 100%;
-  max-width: 100%;
+/* ========== Support 帮助文档（/support/）：卡片分区 + 正文排版 ========== */
+.content.laps-support-page {
+  padding-bottom: 2.5rem;
 }
-/* 超宽屏时略限行长并居中，避免一行过长；其余宽度跟满主内容区 */
+
+.content.laps-support-page .laps-support-article {
+  padding-top: 0;
+}
+
 @media (min-width: 1800px) {
-  .content .laps-md {
-    max-width: min(100%, 90rem);
+  .content.laps-support-page .col-xl-10 {
+    max-width: min(100%, 52rem);
+    flex: 0 0 auto;
+    width: min(100%, 52rem);
     margin-left: auto;
     margin-right: auto;
   }
 }
+
+.content.laps-support-page .laps-support-card {
+  border-radius: 12px;
+  border: 1px solid var(--laps-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+
+body.white-content .content.laps-support-page .laps-support-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.content.laps-support-page .laps-support-card[id] {
+  scroll-margin-top: 96px;
+}
+
+.content.laps-support-page .laps-support-card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--laps-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.white-content .content.laps-support-page .laps-support-card-header {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.content.laps-support-page .laps-support-card-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--laps-text);
+  line-height: 1.4;
+}
+
+.content.laps-support-page .laps-support-card-body {
+  padding: 20px 22px 22px;
+}
+
+.content.laps-support-page .laps-support-card--hero .laps-support-card-body {
+  padding: 22px 24px 26px;
+  border-top: 3px solid var(--laps-accent);
+}
+
+.content.laps-support-page .laps-support-card--footer .laps-support-footer-hr {
+  margin: 0 0 12px;
+  border: 0;
+  height: 1px;
+  background: var(--laps-border);
+}
+
+.content.laps-support-page .laps-support-h3 {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin: 1.35rem 0 0.5rem;
+  padding: 8px 0 6px;
+  color: var(--laps-text);
+  border-bottom: 1px solid var(--laps-border);
+  letter-spacing: 0.01em;
+}
+
+.content.laps-support-page .laps-support-card-body .laps-support-h3:first-of-type {
+  margin-top: 1rem;
+}
+
+/* 卡片内正文：与全局 .laps-md 列表/代码等规则共用类名 */
+.content .laps-md {
+  color: var(--laps-text);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
 .content .laps-md h1 {
   font-size: 1.65rem;
   font-weight: 700;
@@ -725,37 +948,47 @@ body.white-content .navbar .navbar-brand {
   border-bottom: 1px solid var(--laps-border);
   color: var(--laps-text);
 }
-.content .laps-md h2 {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin: 1.5rem 0 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--laps-border);
-  color: var(--laps-text);
-}
-.content .laps-md h2:first-of-type {
-  margin-top: 1rem;
-}
+
 .content .laps-md .laps-md-lead {
-  margin: 0 0 0.25rem;
+  margin: 0;
   color: var(--laps-text-muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
+
 .content .laps-md ul,
 .content .laps-md ol.laps-md-ol {
   margin: 0.35rem 0 0.5rem;
   padding-left: 1.35rem;
 }
+
 .content .laps-md ol.laps-md-ol li {
   margin: 0.45rem 0;
 }
+
 .content .laps-md li {
   margin: 0.3rem 0;
 }
+
 .content .laps-md li::marker {
   color: var(--laps-text-muted);
 }
+
+.content .laps-md p + ul,
+.content .laps-md p + ol.laps-md-ol {
+  margin-top: 0.5rem;
+}
+
+.content .laps-md a:not(.btn) {
+  color: var(--laps-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.content .laps-md a:not(.btn):hover {
+  text-decoration: underline;
+}
+
 .content .laps-md code {
   font-size: 0.86em;
   padding: 0.12em 0.4em;
@@ -764,24 +997,29 @@ body.white-content .navbar .navbar-brand {
   border: 1px solid var(--laps-border);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
 body.white-content .content .laps-md code {
   background: rgba(0, 0, 0, 0.05);
 }
+
 .content .laps-md hr {
   margin: 1.75rem 0 1.25rem;
   border: 0;
   height: 1px;
   background: var(--laps-border);
 }
+
 .content .laps-md .laps-md-footer {
   margin: 0;
   font-size: 0.875rem;
   color: var(--laps-text-muted);
 }
+
 .content .laps-md .laps-md-footer a {
   color: var(--laps-accent);
   font-weight: 500;
 }
+
 .content .laps-md .laps-md-footer a:hover {
   text-decoration: underline;
 }
@@ -975,6 +1213,215 @@ body.white-content .content .kpi .card:hover {
 }
 .btn:active {
   transform: translateY(0);
+}
+
+/*
+ * 浅色模式：Black Dashboard 将 .btn 基类设为深色渐变，会盖住 Bootstrap 的 btn-secondary / btn-light 等。
+ * 在主内容区、侧栏卡片、弹窗内统一改回浅底深字，避免白卡片上出现「深色块」按钮。
+ */
+html.laps-initial-light body .wrapper .btn-secondary, body.white-content .wrapper .btn-secondary,
+html.laps-initial-light body .wrapper .btn.btn-secondary,
+body.white-content .wrapper .btn.btn-secondary {
+  background: #ebeef2 !important;
+  background-image: none !important;
+  border-color: rgba(50, 50, 93, 0.14) !important;
+  color: #32325d !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-secondary:hover, body.white-content .wrapper .btn-secondary:hover,
+html.laps-initial-light body .wrapper .btn-secondary:focus, body.white-content .wrapper .btn-secondary:focus,
+html.laps-initial-light body .wrapper .btn.btn-secondary:hover, body.white-content .wrapper .btn.btn-secondary:hover,
+html.laps-initial-light body .wrapper .btn.btn-secondary:focus,
+body.white-content .wrapper .btn.btn-secondary:focus {
+  background: #dee2e8 !important;
+  background-image: none !important;
+  border-color: rgba(50, 50, 93, 0.22) !important;
+  color: #1a1d2e !important;
+  box-shadow: 0 2px 6px rgba(50, 50, 93, 0.08) !important;
+}
+html.laps-initial-light body .wrapper .btn-secondary:active, body.white-content .wrapper .btn-secondary:active,
+html.laps-initial-light body .wrapper .btn-secondary.active, body.white-content .wrapper .btn-secondary.active,
+html.laps-initial-light body .wrapper .btn.btn-secondary:active, body.white-content .wrapper .btn.btn-secondary:active,
+html.laps-initial-light body .wrapper .btn.btn-secondary.active,
+body.white-content .wrapper .btn.btn-secondary.active {
+  background: #d3d8e0 !important;
+  background-image: none !important;
+  color: #1a1d2e !important;
+  box-shadow: none !important;
+  transform: translateY(0);
+}
+
+html.laps-initial-light body .wrapper .btn-light, body.white-content .wrapper .btn-light,
+html.laps-initial-light body .wrapper .btn.btn-light,
+body.white-content .wrapper .btn.btn-light {
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(50, 50, 93, 0.12) !important;
+  color: #32325d !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-light:hover, body.white-content .wrapper .btn-light:hover,
+html.laps-initial-light body .wrapper .btn-light:focus, body.white-content .wrapper .btn-light:focus,
+html.laps-initial-light body .wrapper .btn.btn-light:hover, body.white-content .wrapper .btn.btn-light:hover,
+html.laps-initial-light body .wrapper .btn.btn-light:focus,
+body.white-content .wrapper .btn.btn-light:focus {
+  background: #f4f6fb !important;
+  background-image: none !important;
+  border-color: rgba(50, 50, 93, 0.2) !important;
+  color: #1a1d2e !important;
+}
+html.laps-initial-light body .wrapper .btn-light:active, body.white-content .wrapper .btn-light:active,
+html.laps-initial-light body .wrapper .btn.btn-light:active,
+body.white-content .wrapper .btn.btn-light:active {
+  background: #e9ecf3 !important;
+  background-image: none !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-secondary,
+body.white-content .wrapper .btn-outline-secondary {
+  background: transparent !important;
+  background-image: none !important;
+  color: #525f7f !important;
+  border-color: rgba(50, 50, 93, 0.2) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-secondary:hover, body.white-content .wrapper .btn-outline-secondary:hover,
+html.laps-initial-light body .wrapper .btn-outline-secondary:focus,
+body.white-content .wrapper .btn-outline-secondary:focus {
+  background: rgba(50, 50, 93, 0.06) !important;
+  background-image: none !important;
+  color: #32325d !important;
+  border-color: rgba(50, 50, 93, 0.28) !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-secondary:active, body.white-content .wrapper .btn-outline-secondary:active,
+html.laps-initial-light body .wrapper .btn-outline-secondary.active, body.white-content .wrapper .btn-outline-secondary.active,
+html.laps-initial-light body .wrapper .btn-group > .btn-outline-secondary.active,
+body.white-content .wrapper .btn-group > .btn-outline-secondary.active {
+  background: rgba(70, 90, 216, 0.1) !important;
+  background-image: none !important;
+  color: #3a4bb8 !important;
+  border-color: rgba(70, 90, 216, 0.45) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-default,
+body.white-content .wrapper .btn-outline-default {
+  background: transparent !important;
+  background-image: none !important;
+  color: #525f7f !important;
+  border-color: rgba(50, 50, 93, 0.2) !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-default:hover, body.white-content .wrapper .btn-outline-default:hover,
+html.laps-initial-light body .wrapper .btn-outline-default:focus,
+body.white-content .wrapper .btn-outline-default:focus {
+  background: rgba(50, 50, 93, 0.06) !important;
+  color: #32325d !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-primary,
+body.white-content .wrapper .btn-outline-primary {
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-primary:hover, body.white-content .wrapper .btn-outline-primary:hover,
+html.laps-initial-light body .wrapper .btn-outline-primary:focus,
+body.white-content .wrapper .btn-outline-primary:focus {
+  background: var(--laps-accent-soft) !important;
+  background-image: none !important;
+  color: var(--laps-accent) !important;
+  border-color: var(--laps-accent) !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-primary:active, body.white-content .wrapper .btn-outline-primary:active,
+html.laps-initial-light body .wrapper .btn-outline-primary.active,
+body.white-content .wrapper .btn-outline-primary.active {
+  background: var(--laps-accent-soft) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-info,
+body.white-content .wrapper .btn-outline-info {
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--laps-accent-blue) !important;
+  border-color: rgba(70, 90, 216, 0.55) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-info:hover, body.white-content .wrapper .btn-outline-info:hover,
+html.laps-initial-light body .wrapper .btn-outline-info:focus,
+body.white-content .wrapper .btn-outline-info:focus {
+  background: var(--laps-accent-blue-soft) !important;
+  background-image: none !important;
+  color: var(--laps-accent-blue) !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-info:active, body.white-content .wrapper .btn-outline-info:active,
+html.laps-initial-light body .wrapper .btn-outline-info.active,
+body.white-content .wrapper .btn-outline-info.active {
+  background: var(--laps-accent-blue-soft) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-success,
+body.white-content .wrapper .btn-outline-success {
+  background: transparent !important;
+  background-image: none !important;
+  color: #1a6b4a !important;
+  border-color: rgba(45, 206, 137, 0.65) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-success:hover, body.white-content .wrapper .btn-outline-success:hover,
+html.laps-initial-light body .wrapper .btn-outline-success:focus,
+body.white-content .wrapper .btn-outline-success:focus {
+  background: rgba(45, 206, 137, 0.12) !important;
+  background-image: none !important;
+  color: #145a3e !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-success:active, body.white-content .wrapper .btn-outline-success:active,
+html.laps-initial-light body .wrapper .btn-outline-success.active,
+body.white-content .wrapper .btn-outline-success.active {
+  background: rgba(45, 206, 137, 0.18) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-warning,
+body.white-content .wrapper .btn-outline-warning {
+  background: transparent !important;
+  background-image: none !important;
+  color: #b45309 !important;
+  border-color: rgba(245, 158, 11, 0.65) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-warning:hover, body.white-content .wrapper .btn-outline-warning:hover,
+html.laps-initial-light body .wrapper .btn-outline-warning:focus,
+body.white-content .wrapper .btn-outline-warning:focus {
+  background: rgba(245, 158, 11, 0.14) !important;
+  background-image: none !important;
+  color: #92400e !important;
+}
+
+html.laps-initial-light body .wrapper .btn-outline-danger,
+body.white-content .wrapper .btn-outline-danger {
+  background: transparent !important;
+  background-image: none !important;
+  color: #c0392b !important;
+  border-color: rgba(231, 76, 60, 0.65) !important;
+  box-shadow: none !important;
+}
+html.laps-initial-light body .wrapper .btn-outline-danger:hover, body.white-content .wrapper .btn-outline-danger:hover,
+html.laps-initial-light body .wrapper .btn-outline-danger:focus,
+body.white-content .wrapper .btn-outline-danger:focus {
+  background: rgba(231, 76, 60, 0.1) !important;
+  background-image: none !important;
+  color: #a93226 !important;
 }
 
 .dashboard-actions {
@@ -1469,6 +1916,31 @@ body.white-content .form-control {
   background: #fff;
 }
 
+/*
+ * 原生 <select>：全局 .form-control 的 10px 竖向内边距会与 Bootstrap 的 height:calc(...) 叠加
+ *（border-box 下挤压内容区），Chrome/Safari 常表现为选项文字只露出上半截。
+ */
+select.form-control {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+  padding-left: 0.75rem;
+  padding-right: 2rem;
+  line-height: 1.5;
+  height: auto;
+  min-height: 2.375rem;
+  box-sizing: border-box;
+}
+select.form-control.form-control-sm {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  padding-left: 0.55rem;
+  padding-right: 1.75rem;
+  font-size: 0.875rem;
+  min-height: 2rem;
+  line-height: 1.5;
+  height: auto;
+}
+
 /* 表单行内主按钮（非项目 Grid；Grid 内见 .laps-pcg-btn-submit 以免 padding 撑破统一高度） */
 .form-row .laps-form-row-submit.btn {
   font-size: 0.875rem;
@@ -1828,24 +2300,147 @@ body.white-content .content.content-annotation .annotate-flow-message.alert-succ
   color: #155724;
 }
 
-/* 标注页右侧：任务目录 / 保存标签 Tab */
-.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link {
-  color: var(--laps-text-muted);
-  border-color: transparent;
+/* 标注页工具栏：点/框切换 — 选中项主题色底 + 白字；未选描边 + 次要色字（与原先「选中仅淡底+深色字」相反） */
+body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active) {
+  background: transparent !important;
+  background-image: none !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: none !important;
 }
-.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link:hover {
-  color: var(--laps-text);
+body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active):hover {
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
+}
+body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active,
+body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:focus {
+  background: var(--laps-accent) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: var(--laps-accent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:hover {
+  filter: brightness(1.07);
+  color: #ffffff !important;
+}
+
+body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active) {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #525f7f !important;
+  border-color: rgba(50, 50, 93, 0.22) !important;
+  box-shadow: none !important;
+}
+body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active):hover {
+  background: rgba(50, 50, 93, 0.06) !important;
+  color: #32325d !important;
+  border-color: rgba(50, 50, 93, 0.3) !important;
+}
+body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active,
+body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:focus {
+  background: var(--laps-accent) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: var(--laps-accent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:hover {
+  filter: brightness(1.05);
+  color: #ffffff !important;
+}
+
+/* 标注页侧栏：上下两张独立卡片（项目与任务目录 / 保存用标签） */
+.content.content-annotation .annotate-sidebar-card,
+.content.content-annotation .annotate-labels-card {
   border-color: var(--laps-border);
 }
-.content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link.active {
-  color: var(--laps-accent) !important;
-  font-weight: 600;
-  border-color: var(--laps-border) var(--laps-border) transparent !important;
-  background: transparent !important;
+body.white-content .content.content-annotation .annotate-sidebar-card,
+body.white-content .content.content-annotation .annotate-labels-card {
+  border-color: rgba(0, 0, 0, 0.08);
 }
-body.white-content .content.content-annotation .annotate-sidebar-tabs-card .annotate-sidebar-nav .nav-link.active {
-  background: #fff !important;
-  border-color: rgba(0, 0, 0, 0.08) rgba(0, 0, 0, 0.08) transparent !important;
+.content.content-annotation .annotate-sidebar-card > .card-header,
+.content.content-annotation .annotate-labels-card > .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--laps-border);
+}
+.content.content-annotation .annotate-sidebar-card > .card-header h6,
+.content.content-annotation .annotate-labels-card > .card-header h6 {
+  color: var(--laps-text);
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+}
+
+/* 标注页任务列表：与深浅色主题一致（避免深色模式下白底+浅色字或反差不敷） */
+.content.content-annotation .annotate-task-list-head {
+  color: var(--laps-text-muted);
+}
+.content.content-annotation .annotate-task-list {
+  max-height: 380px;
+  overflow-y: auto;
+  border-radius: 6px;
+}
+body:not(.white-content) .content.content-annotation .annotate-task-list {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--laps-border);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-task-list {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--laps-text);
+}
+body:not(.white-content) .content.content-annotation .annotate-task-item {
+  border-bottom: 1px solid var(--laps-border);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-task-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--laps-text);
+}
+body:not(.white-content) .content.content-annotation .annotate-task-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+body.white-content .content.content-annotation .annotate-task-item:hover {
+  background: #f1f3f9;
+}
+body:not(.white-content) .content.content-annotation .annotate-task-item.active {
+  background: var(--laps-accent-soft);
+  border-left: 3px solid var(--laps-accent);
+  padding-left: 7px;
+}
+body.white-content .content.content-annotation .annotate-task-item.active {
+  background: rgba(29, 140, 248, 0.12);
+  border-left: 3px solid var(--laps-accent);
+  padding-left: 7px;
+}
+.content.content-annotation .annotate-task-item .annotate-task-title {
+  color: var(--laps-text);
+}
+.content.content-annotation .annotate-task-item .annotate-task-meta {
+  color: var(--laps-text-muted);
+}
+.content.content-annotation .annotate-task-list > p.small,
+.content.content-annotation .annotate-task-list > p.text-muted {
+  color: var(--laps-text-muted) !important;
+}
+/* 行内状态下拉：与列表背景区分 */
+body:not(.white-content) .content.content-annotation .annotate-task-actions select.form-control {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: var(--laps-border);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annotate-task-actions select.form-control {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: var(--laps-text);
+}
+body:not(.white-content) .content.content-annotation .annotate-task-actions select.form-control option {
+  background: #1e2130;
+  color: #f0f2f8;
 }
 
 /* 仪表盘最近任务：状态徽章与标注按钮统一高度与宽度 */

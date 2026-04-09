@@ -13,7 +13,8 @@
     {% block extrastyle %}{% endblock extrastyle %}
 </head>
 
-<body class="{% block bodyclass %}{% endblock bodyclass %}">
+<body class="{% block bodyclass %}{% endblock bodyclass %}" id="laps-body">
+    {% include 'includes/laps-body-initial-script.html' %}
     <div class="wrapper">
         {% block sidebar %}
         {% include 'includes/sidebar.html' %}

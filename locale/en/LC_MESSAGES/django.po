@@ -59,3 +59,44 @@ msgstr "Annotation"
 #: apps/pages/models.py:106
 msgid "Annotations"
 msgstr "Annotations"
+
+#: apps/pages/models.py (SiteBroadcast)
+msgid "Site broadcast"
+msgstr "Site broadcast"
+
+msgid "Site broadcasts"
+msgstr "Site broadcasts"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Shown in the notification dropdown header."
+msgstr "Shown in the notification dropdown header."
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Optional detail text below the title."
+msgstr "Optional detail text below the title."
+
+msgid "Enabled"
+msgstr "Enabled"
+
+msgid "If enabled, other broadcasts are turned off automatically."
+msgstr "If enabled, other broadcasts are turned off automatically."
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Timestamps"
+msgstr "Timestamps"
+
+msgid "(no title)"
+msgstr "(no title)"
+
+msgid "System notice"
+msgstr "System notice"
+
+#: apps/pages/admin.py (SiteBroadcastAdmin)
+msgid "When enabled, other broadcast entries are turned off; only this one is visible to users."
+msgstr "When enabled, other broadcast entries are turned off; only this one is visible to users."

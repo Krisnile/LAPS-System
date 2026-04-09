@@ -33,6 +33,7 @@
 </head>
 
 <body class="manage-page" id="manage-body">
+{% include 'includes/laps-body-initial-script.html' %}
     <header class="manage-topbar">
         <span class="topbar-left" data-en="User Management System" data-zh="用户管理系统">用户管理系统</span>
         <a href="{% url 'logout' %}?next=/accounts/auth-signin/" data-en="Logout" data-zh="退出">退出</a>

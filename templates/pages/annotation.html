@@ -96,34 +96,26 @@
 
   <div class="row annotate-row">
     <div class="col-lg-4 annotate-sidebar order-1 order-lg-2">
-      <div class="card card-sidebar annotate-sidebar-tabs-card mb-3">
-        <div class="card-header py-2 border-bottom-0 pb-0 px-2 pt-2">
-          <ul class="nav nav-tabs card-header-tabs annotate-sidebar-nav" role="tablist">
-            <li class="nav-item">
-              <a class="nav-link active" id="annotate-tab-catalog" data-toggle="tab" href="#annotate-pane-catalog" role="tab" aria-controls="annotate-pane-catalog" aria-selected="true"
-                 data-en="Project &amp; tasks" data-zh="项目与任务目录">项目与任务目录</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" id="annotate-tab-labels" data-toggle="tab" href="#annotate-pane-labels" role="tab" aria-controls="annotate-pane-labels" aria-selected="false"
-                 data-en="Labels (save)" data-zh="保存用标签">保存用标签</a>
-            </li>
-          </ul>
+      <div class="card card-sidebar annotate-sidebar-card mb-3">
+        <div class="card-header py-2">
+          <h6 class="mb-0 font-weight-bold" data-en="Project &amp; tasks" data-zh="项目与任务目录">项目与任务目录</h6>
         </div>
         <div class="card-body py-3">
-          <div class="tab-content annotate-sidebar-tab-content">
-            <div class="tab-pane fade show active" id="annotate-pane-catalog" role="tabpanel" aria-labelledby="annotate-tab-catalog">
               <label class="small font-weight-bold d-block" for="annotateProjectSelect" data-en="Project" data-zh="选择项目">选择项目</label>
-              <select id="annotateProjectSelect" class="form-control form-control-sm mb-2" {% if not annotate_projects %}disabled{% endif %}>
+              <select id="annotateProjectSelect" class="form-control form-control-sm mb-2 annotate-project-select" {% if not annotate_projects %}disabled{% endif %}>
                 {% if not annotate_projects %}
                 <option value="" data-en="No projects yet" data-zh="暂无项目">暂无项目</option>
                 {% else %}
-                <option value="" data-en="Select…" data-zh="请选择项目…">请选择项目…</option>
+                <option value="" data-en="Select a project…" data-zh="请选择项目…">请选择项目…</option>
                 {% for p in annotate_projects %}
+                {# option 内不可嵌套标签，否则浏览器解析异常、文字显示不全；双语整段放在 data-en/data-zh #}
                 <option value="{{ p.id }}"
                         {% if initial_project_id == p.id %}selected{% endif %}
                         data-linked="{{ p.linked_count }}"
-                        data-tasks="{{ p.task_count }}">
-                  {{ p.name }}（{{ p.task_count }} <span data-en="tasks" data-zh="任务">任务</span> · {{ p.linked_count }} <span data-en="datasets" data-zh="关联集">关联集</span>）
+                        data-tasks="{{ p.task_count }}"
+                        data-en="{{ p.name|escape }} ({{ p.task_count }} tasks · {{ p.linked_count }} linked)"
+                        data-zh="{{ p.name|escape }}（{{ p.task_count }} 任务 · {{ p.linked_count }} 关联集）">
+                  {{ p.name }}（{{ p.task_count }} 任务 · {{ p.linked_count }} 关联集）
                 </option>
                 {% endfor %}
                 {% endif %}
@@ -148,8 +140,14 @@
                    data-en="Select a project first."
                    data-zh="请先选择项目。">请先选择项目。</p>
               </div>
-            </div>
-            <div class="tab-pane fade" id="annotate-pane-labels" role="tabpanel" aria-labelledby="annotate-tab-labels">
+        </div>
+      </div>
+
+      <div class="card card-sidebar annotate-labels-card mb-3">
+        <div class="card-header py-2">
+          <h6 class="mb-0 font-weight-bold" data-en="Labels (save)" data-zh="保存用标签">保存用标签</h6>
+        </div>
+        <div class="card-body py-3">
               <p class="small text-muted mb-2">
                 <span data-en="Pick a label before saving. Details:" data-zh="保存前选择标签；说明见">保存前选择标签；说明见</span>
                 <a href="{% url 'support' %}#annotate-labels-save" data-en="documentation" data-zh="帮助文档">帮助文档</a>。
@@ -159,8 +157,6 @@
                 <div class="label-row" data-label="background"><span class="label-swatch" style="background:#e74c3c"></span> <span data-en="Background" data-zh="背景">背景</span></div>
                 <div class="label-row" data-label="other"><span class="label-swatch" style="background:#f1c40f"></span> <span data-en="Other" data-zh="其他">其他</span></div>
               </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -210,10 +206,7 @@
                 <div class="annot-placeholder-icon">
                   <i class="tim-icons icon-image-02"></i>
                 </div>
-                <p class="mb-1" data-en="No task image loaded" data-zh="未加载任务图片">未加载任务图片</p>
-                <p class="small mb-0">
-                  <a href="{% url 'support' %}#annotate-workflow-help" data-en="How to select a project and load a task" data-zh="如何选择项目并加载任务">如何选择项目并加载任务</a>
-                </p>
+                <p class="mb-0 annot-placeholder-title" data-en="No task image loaded" data-zh="未加载任务图片">未加载任务图片</p>
               </div>
               <img id="annot-image" src="" alt="" draggable="false" />
               <canvas id="annot-overlay"></canvas>

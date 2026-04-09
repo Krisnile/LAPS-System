@@ -1,0 +1,15 @@
+{# 必须紧接在各布局 <body> 标签之后：首帧绘制前恢复浅色模式，避免切换页面时先闪深色再变白 #}
+<script>
+(function () {
+  try {
+    var b = document.body;
+    if (!b) return;
+    if (localStorage.getItem('light_color') === 'true') {
+      b.classList.add('white-content');
+    }
+    if (b.id === 'laps-body' && localStorage.getItem('laps_sidebar_collapsed') === '1' && window.innerWidth >= 992) {
+      b.classList.add('laps-sidebar-collapsed');
+    }
+  } catch (e) {}
+})();
+</script>

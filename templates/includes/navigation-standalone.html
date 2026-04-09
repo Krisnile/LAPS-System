@@ -32,18 +32,27 @@
                         <span class="d-lg-none d-md-block" data-en="Search" data-zh="搜索">搜索</span>
                     </button>
                 </li>
-                <li class="dropdown nav-item">
-                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                        <div class="notification d-none d-lg-block d-xl-block"></div>
-                        <i class="tim-icons icon-sound-wave"></i>
+                <li class="dropdown nav-item" id="laps-broadcast-root" data-version="{% if site_broadcast %}{{ site_broadcast.updated_at.isoformat }}{% endif %}">
+                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" id="laps-broadcast-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-en-title="Notifications" data-zh-title="通知">
+                        {% if site_broadcast %}<div class="notification d-none d-lg-block d-xl-block laps-broadcast-dot" aria-hidden="true"></div>{% endif %}
+                        <i class="tim-icons icon-bell-55"></i>
                         <p class="d-lg-none" data-en="Notifications" data-zh="通知">通知</p>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar">
-                        <li class="nav-link"><a href="#" class="nav-item dropdown-item" data-en="Mike John responded to your email" data-zh="Mike John 已回复你的邮件">Mike John 已回复你的邮件</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="You have 5 more tasks" data-zh="你还有 5 个任务">你还有 5 个任务</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Your friend Michael is in town" data-zh="你的朋友 Michael 在城里">你的朋友 Michael 在城里</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another notification" data-zh="其他通知">其他通知</a></li>
-                        <li class="nav-link"><a href="javascript:void(0)" class="nav-item dropdown-item" data-en="Another one" data-zh="再一条">再一条</a></li>
+                    <ul class="dropdown-menu dropdown-menu-right dropdown-navbar laps-broadcast-menu">
+                        {% if site_broadcast %}
+                        <li class="dropdown-header px-3 text-wrap">{{ site_broadcast.display_title }}</li>
+                        {% if site_broadcast.body %}
+                        <li class="px-0">
+                            <div class="dropdown-item-text laps-broadcast-body text-wrap small">
+                                {{ site_broadcast.body|linebreaksbr }}
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="nav-link px-3 py-2">
+                            <span class="text-muted" data-en="No system messages." data-zh="暂无系统通知。">暂无系统通知。</span>
+                        </li>
+                        {% endif %}
                     </ul>
                 </li>
                 <li class="dropdown nav-item">
@@ -67,16 +76,4 @@
         </div>
     </div>
 </nav>
-<div class="modal modal-search fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="SEARCH">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="tim-icons icon-simple-remove"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'includes/nav-search-modal.html' %}
