@@ -5,7 +5,7 @@ apps.pages.views
 登录重定向、API（segment-image、annotations 等）。
 """
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import Http404, JsonResponse, HttpResponse
+from django.http import Http404, JsonResponse, HttpResponse, FileResponse
 from django.core.files.storage import default_storage
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -28,6 +28,17 @@ from urllib.parse import urlparse
 
 from django.core.files.base import ContentFile
 from . import models
+from .coco_mask import binary_mask_bbox_and_area, build_coco_document, resize_mask_bytes_to_size
+from .annotation_export import (
+    EXPORT_FORMATS,
+    build_merged_coco_project,
+    build_project_export_zip_bytes,
+    build_project_simple_export_dict,
+    build_simple_export_dict,
+    build_voc_xml_string,
+    build_yolo_bbox_line,
+    load_annotation_binary_mask,
+)
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.contrib.auth.views import LoginView
@@ -35,11 +46,12 @@ from django.db import IntegrityError
 from django.db.models import Count, Prefetch
 from django.urls import reverse
 
-# SAM 分割推理（可选）：apps/pages/sam_inference.run_segmentation_on_bytes
+# SAM / YOLO-seg：两者均返回灰度掩码 PNG bytes
 try:
-    from .sam_inference import run_segmentation_on_bytes
+    from .sam_inference import run_segmentation_on_bytes, run_yolo_segmentation_on_bytes
 except Exception:
     run_segmentation_on_bytes = None
+    run_yolo_segmentation_on_bytes = None
 
 
 def _is_manage_admin(user):
@@ -544,22 +556,30 @@ def _datasets_react_props(datasets_list, created_images=None):
     )
 
 
-def _dataset_detail_react_props(ds, preview_images, image_preview_limit):
-    imgs = [
-        {
-            'id': im.id,
-            'url': im.file.url,
-            'short': im.file.name,
-            'caption': im.caption or '',
-        }
-        for im in preview_images
-    ]
+def _image_to_json(im: models.Image) -> dict:
+    return {
+        'id': im.id,
+        'url': im.file.url,
+        'short': im.file.name,
+        'caption': im.caption or '',
+    }
+
+
+def _dataset_detail_react_props(ds, page_images, *, page: int, page_size: int, total_count: int):
+    imgs = [_image_to_json(im) for im in page_images]
+    total_pages = (total_count + page_size - 1) // page_size if total_count else 0
     return json.dumps(
         {
-            'image_preview_limit': image_preview_limit,
             'urls': {
                 'datasets': reverse('datasets'),
                 'datasets_list': reverse('datasets'),
+                'dataset_images': reverse('dataset_images_api', kwargs={'pk': ds.id}),
+            },
+            'pagination': {
+                'page': page,
+                'page_size': page_size,
+                'total': total_count,
+                'total_pages': total_pages,
             },
             'dataset': {
                 'id': ds.id,
@@ -779,14 +799,51 @@ def dataset_detail(request, pk):
     )
     if ds is None:
         raise Http404(_('Dataset not found'))
-    _PREVIEW_IMAGES = 120
-    ds.preview_images = list(
-        models.Image.objects.filter(dataset_id=pk).order_by('-uploaded_at')[:_PREVIEW_IMAGES]
-    )
+    _PAGE_SIZE = 48
+    img_qs = models.Image.objects.filter(dataset_id=pk).order_by('-uploaded_at')
+    total_count = img_qs.count()
+    page_images = list(img_qs[:_PAGE_SIZE])
+    ds.preview_images = page_images
     context['dataset'] = ds
-    context['dataset_image_preview_limit'] = _PREVIEW_IMAGES
-    context['dataset_detail_props_json'] = _dataset_detail_react_props(ds, ds.preview_images, _PREVIEW_IMAGES)
+    context['dataset_detail_props_json'] = _dataset_detail_react_props(
+        ds, page_images, page=1, page_size=_PAGE_SIZE, total_count=total_count
+    )
     return render(request, 'pages/dataset_detail.html', context)
+
+
+@login_required
+@require_http_methods(['GET'])
+def dataset_images_api(request, pk):
+    """数据集图片分页 JSON，供详情页表格翻页（与详情首屏排序一致：上传时间倒序）。"""
+    get_object_or_404(models.Dataset, pk=pk, owner=request.user)
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        page_size = int(request.GET.get('page_size', 48))
+    except (TypeError, ValueError):
+        page_size = 48
+    page_size = min(100, max(8, page_size))
+
+    qs = models.Image.objects.filter(dataset_id=pk).order_by('-uploaded_at')
+    total = qs.count()
+    total_pages = (total + page_size - 1) // page_size if total else 0
+    if total_pages and page > total_pages:
+        page = total_pages
+    start = (page - 1) * page_size
+    images = [_image_to_json(im) for im in qs[start : start + page_size]]
+
+    return JsonResponse(
+        {
+            'ok': True,
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': total_pages,
+            'images': images,
+        }
+    )
 
 
 @login_required
@@ -835,11 +892,11 @@ DEMO_SAMPLE_BY_TYPE = {
         'dataset_desc': str(_('Sample images for segmentation demo; safe to delete.')),
         'project_desc': str(_('Fixed sample SAM project; you may delete anytime.')),
     },
-    models.Project.ANNOTATION_DETECTION_YOLO: {
-        'dataset_name': 'LAPS 体验数据集（检测样例）',
-        'project_name': 'LAPS YOLO 检测体验（样例）',
-        'dataset_desc': str(_('Sample images for detection demo; safe to delete.')),
-        'project_desc': str(_('Fixed sample detection project; you may delete anytime.')),
+    models.Project.ANNOTATION_SEGMENTATION_YOLO: {
+        'dataset_name': 'LAPS 体验数据集（YOLO分割样例）',
+        'project_name': 'LAPS YOLO 分割体验（样例）',
+        'dataset_desc': str(_('Sample images for YOLO segmentation demo; safe to delete.')),
+        'project_desc': str(_('Fixed sample YOLO segmentation project; you may delete anytime.')),
     },
 }
 
@@ -1043,6 +1100,10 @@ def annotation(request):
         'tasks_pending': task_pending,
     }
     task_detail_tpl = reverse('annotate_task_detail', kwargs={'pk': 0})
+    annotation_export_tpl = reverse('annotation_export', kwargs={'pk': 0})
+    task_annotations_tpl = reverse('annotate_task_annotations', kwargs={'pk': 0})
+    project_export_tpl = reverse('annotate_project_export', kwargs={'pk': 0})
+    delete_annotation_tpl = reverse('delete_annotation', kwargs={'pk': 0})
     annotate_bootstrap = {
         'urls': {
             'datasets': reverse('datasets'),
@@ -1053,6 +1114,10 @@ def annotation(request):
             'available_images': reverse('annotate_available_images'),
             'task_create': reverse('annotate_task_create'),
             'task_detail_tpl': task_detail_tpl,
+            'annotation_export_tpl': annotation_export_tpl,
+            'task_annotations_tpl': task_annotations_tpl,
+            'project_export_tpl': project_export_tpl,
+            'delete_annotation_tpl': delete_annotation_tpl,
         },
         'stats': annotate_stats,
         'flags': {
@@ -1062,6 +1127,11 @@ def annotation(request):
             'has_pending_tasks': task_pending > 0,
         },
         'initial_project_id': initial_project_id,
+        'segmentation_models': [
+            {'id': 'sam', 'label_zh': 'SAM（提示驱动分割）', 'label_en': 'SAM (prompt segmentation)'},
+            {'id': 'yolo', 'label_zh': 'YOLO11（实例分割）', 'label_en': 'YOLO11 (instance segmentation)'},
+        ],
+        'default_segmentation_model': 'sam',
     }
     context = {
         'segment': 'annotation',
@@ -1076,19 +1146,40 @@ def annotation(request):
 @login_required
 @require_http_methods(["GET"])
 def annotate_catalog(request):
-    """当前用户某项目下的任务目录（含图片 URL），用于标注页左侧列表。"""
+    """当前用户某项目下的任务目录（含图片 URL），用于标注页侧栏任务列表；支持分页，每页最多 6 条。"""
     pid = request.GET.get('project_id')
     if not pid:
         return JsonResponse({'code': 0, 'msg': 'project_id required'})
     project = get_object_or_404(models.Project, id=int(pid), owner=request.user)
     linked_ids = list(project.linked_datasets.values_list('id', flat=True))
-    tasks = (
+
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        page_size = int(request.GET.get('page_size', 6))
+    except (TypeError, ValueError):
+        page_size = 6
+    page_size = max(1, min(page_size, 6))
+
+    tasks_qs = (
         models.Task.objects.filter(project=project, owner=request.user)
         .select_related('image', 'image__dataset')
         .order_by('-created_at')
     )
+    total = tasks_qs.count()
+    if total == 0:
+        total_pages = 1
+        page = 1
+        start = 0
+    else:
+        total_pages = (total + page_size - 1) // page_size
+        page = min(max(1, page), total_pages)
+        start = (page - 1) * page_size
+
     task_list = []
-    for t in tasks:
+    for t in tasks_qs[start : start + page_size]:
         url = ''
         name = ''
         ds_name = ''
@@ -1116,8 +1207,16 @@ def annotate_catalog(request):
             'annotation_type': project.annotation_type,
             'linked_dataset_ids': linked_ids,
             'linked_count': len(linked_ids),
+            'task_count': total,
+            'label_config': project.label_config if isinstance(project.label_config, dict) else {},
         },
         'tasks': task_list,
+        'pagination': {
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+        },
     })
 
 
@@ -1254,6 +1353,87 @@ def annotate_task_detail(request, pk):
     })
 
 
+@login_required
+@require_http_methods(["GET"])
+def annotate_task_annotations(request, pk):
+    """某任务下已保存的标注列表（用于前端恢复遮罩与列表）。"""
+    task = get_object_or_404(models.Task, pk=pk, owner=request.user)
+    anns = (
+        models.Annotation.objects.filter(task=task, owner=request.user)
+        .order_by('id')
+    )
+    out = []
+    for a in anns:
+        url = ''
+        try:
+            if a.mask_file:
+                url = a.mask_file.url
+        except Exception:
+            pass
+        out.append({
+            'id': a.id,
+            'category_name': a.label or 'default',
+            'segment_role': (a.segment_role or 'foreground').strip().lower() or 'foreground',
+            'mask_url': url,
+        })
+    return JsonResponse({'code': 1, 'annotations': out})
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_annotation(request, pk):
+    """删除单条标注；若任务下已无标注则任务状态改回 pending。"""
+    ann = get_object_or_404(models.Annotation, pk=pk, owner=request.user)
+    task = ann.task
+    ann.delete()
+    if not models.Annotation.objects.filter(task=task).exists():
+        task.status = 'pending'
+        task.save(update_fields=['status'])
+    return JsonResponse({'code': 1, 'msg': 'deleted'})
+
+
+@login_required
+@require_http_methods(["GET"])
+def export_project_annotations(request, pk):
+    """导出当前用户该项目下全部已保存标注（所选格式）。"""
+    project = get_object_or_404(models.Project, pk=pk, owner=request.user)
+    fmt = (request.GET.get('format') or 'coco').strip().lower()
+    if fmt not in EXPORT_FORMATS:
+        return JsonResponse({
+            'code': 0,
+            'msg': 'invalid format',
+            'formats': sorted(EXPORT_FORMATS),
+        }, status=400)
+
+    anns = list(
+        models.Annotation.objects.filter(task__project=project, owner=request.user)
+        .select_related('task', 'task__image')
+        .order_by('task_id', 'id')
+    )
+
+    if fmt == 'coco':
+        doc = build_merged_coco_project(anns)
+        body = json.dumps(doc, ensure_ascii=False, indent=2)
+        resp = HttpResponse(body, content_type='application/json; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="project_{pk}_coco.json"'
+        return resp
+
+    if fmt == 'simple':
+        doc = build_project_simple_export_dict(anns)
+        body = json.dumps(doc, ensure_ascii=False, indent=2)
+        resp = HttpResponse(body, content_type='application/json; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="project_{pk}_simple.json"'
+        return resp
+
+    if fmt in ('voc', 'yolo_bbox', 'mask_png'):
+        raw = build_project_export_zip_bytes(fmt, anns)
+        resp = HttpResponse(raw, content_type='application/zip')
+        resp['Content-Disposition'] = f'attachment; filename="project_{pk}_{fmt}.zip"'
+        return resp
+
+    return JsonResponse({'code': 0, 'msg': 'unsupported'}, status=400)
+
+
 @csrf_exempt
 def save_processed_image(request):
     if request.method == 'POST' and request.FILES.get('image'):
@@ -1269,48 +1449,213 @@ def save_processed_image(request):
     return JsonResponse({"code": 0, "msg": "失败"})
 
 
+_ALLOWED_SEGMENT_ROLES = frozenset({'foreground', 'background', 'other'})
+
+
 @login_required
 def save_annotation(request):
-    """Save annotation for a task. Accepts multipart/form-data with task_id and mask file or mask_base64."""
+    """
+    保存分割掩罩与 COCO 风格 JSON。
+    multipart：task_id、mask 或 mask_base64、segment_role（前景/背景/其他，仅元数据）、
+    category_name（字符串，本条分割对应的唯一 COCO 类别名）。
+    """
     if request.method != 'POST':
         return JsonResponse({'code': 0, 'msg': 'only POST'})
 
     task_id = request.POST.get('task_id')
-    label = request.POST.get('label', '')
-    task = None
     try:
-        task = models.Task.objects.get(id=int(task_id), owner=request.user)
+        task = models.Task.objects.select_related('image', 'project').get(
+            id=int(task_id), owner=request.user
+        )
     except Exception:
         return JsonResponse({'code': 0, 'msg': 'task not found'})
 
-    ann = models.Annotation(
-        task=task,
-        owner=request.user,
-        user=request.user if request.user.is_authenticated else None,
-        label=label,
-    )
-    ann.created_at = timezone.now()
-    ann.save()
-    # mask 经 FileField 写入 MEDIA_ROOT（upload_to=annotations/...）
+    segment_role = (request.POST.get('segment_role') or '').strip().lower()
+    if not segment_role:
+        legacy = (request.POST.get('label') or '').strip().lower()
+        if legacy in _ALLOWED_SEGMENT_ROLES:
+            segment_role = legacy
+        else:
+            segment_role = 'foreground'
+    if segment_role not in _ALLOWED_SEGMENT_ROLES:
+        return JsonResponse({'code': 0, 'msg': 'invalid segment_role'})
+
+    category_name = (request.POST.get('category_name') or '').strip()
+    if not category_name:
+        legacy_label = (request.POST.get('label') or '').strip()
+        if legacy_label and legacy_label.lower() not in _ALLOWED_SEGMENT_ROLES:
+            category_name = legacy_label
+    if not category_name:
+        category_name = 'default'
+    category_name = category_name[:200]
+
+    mask_bytes = None
     if request.FILES.get('mask'):
-        mask = request.FILES['mask']
-        fname = f"{uuid.uuid4().hex}.png"
-        ann.mask_file.save(fname, mask, save=True)
+        mask_bytes = request.FILES['mask'].read()
     else:
         mask_b64 = request.POST.get('mask_base64', '')
         if mask_b64:
             try:
                 _header, data = mask_b64.split(',', 1) if ',' in mask_b64 else ('', mask_b64)
-                b = base64.b64decode(data)
-                fname = f"{uuid.uuid4().hex}.png"
-                ann.mask_file.save(fname, ContentFile(b), save=True)
+                mask_bytes = base64.b64decode(data)
             except Exception:
-                pass
-    # mark task as done
-    task.status = 'done'
-    task.save()
+                mask_bytes = None
 
-    return JsonResponse({'code': 1, 'msg': 'saved', 'annotation_id': ann.id})
+    if not mask_bytes:
+        return JsonResponse({'code': 0, 'msg': 'mask or mask_base64 required'})
+
+    image = task.image
+    if not image or not image.file:
+        return JsonResponse({'code': 0, 'msg': 'task has no image'})
+
+    iw, ih = image.width, image.height
+    if not iw or not ih:
+        try:
+            image.file.seek(0)
+            with PILImage.open(image.file) as im:
+                iw, ih = im.size
+            models.Image.objects.filter(pk=image.pk).update(width=iw, height=ih)
+        except Exception:
+            return JsonResponse({'code': 0, 'msg': 'cannot read image dimensions'})
+
+    try:
+        binary = resize_mask_bytes_to_size(mask_bytes, iw, ih)
+    except Exception as exc:
+        return JsonResponse({'code': 0, 'msg': f'invalid mask: {exc}'})
+
+    if int(binary.sum()) < 1:
+        return JsonResponse({'code': 0, 'msg': 'empty mask — run segmentation before save'})
+
+    ann = models.Annotation(
+        task=task,
+        owner=request.user,
+        user=request.user if request.user.is_authenticated else None,
+        label=category_name,
+        segment_role=segment_role,
+    )
+    ann.created_at = timezone.now()
+    ann.save()
+
+    fname = f"{uuid.uuid4().hex}.png"
+    ann.mask_file.save(fname, ContentFile(mask_bytes), save=True)
+
+    rel_path = ann.mask_file.name
+    try:
+        file_basename = os.path.basename(image.file.name)
+    except Exception:
+        file_basename = f'image_{image.id}.png'
+
+    coco_doc = build_coco_document(
+        image_id=image.id,
+        image_file_name=file_basename,
+        image_width=int(iw),
+        image_height=int(ih),
+        annotation_id=ann.id,
+        category_name=category_name,
+        segment_role=segment_role,
+        binary_mask=binary,
+        mask_relative_path=rel_path,
+    )
+    ann.coco_json = coco_doc
+    ann.save(update_fields=['coco_json'])
+
+    proj = task.project
+    lc = proj.label_config if isinstance(proj.label_config, dict) else {}
+    lc = dict(lc)
+    lc['coco_last_category_name'] = category_name
+    proj.label_config = lc
+    proj.save(update_fields=['label_config'])
+
+    task.status = 'done'
+    task.save(update_fields=['status'])
+
+    return JsonResponse({
+        'code': 1,
+        'msg': 'saved',
+        'annotation_id': ann.id,
+        'coco': coco_doc,
+        'category_name': category_name,
+        'segment_role': segment_role,
+        'export_formats': sorted(EXPORT_FORMATS),
+    })
+
+
+@login_required
+@require_http_methods(["GET"])
+def export_annotation(request, pk):
+    """已保存标注的多格式下载：?format=coco|simple|voc|yolo_bbox|mask_png"""
+    ann = get_object_or_404(models.Annotation, pk=pk, owner=request.user)
+    fmt = (request.GET.get('format') or 'coco').strip().lower()
+    if fmt not in EXPORT_FORMATS:
+        return JsonResponse({
+            'code': 0,
+            'msg': 'invalid format',
+            'formats': sorted(EXPORT_FORMATS),
+        }, status=400)
+
+    if fmt == 'mask_png':
+        if not ann.mask_file:
+            return JsonResponse({'code': 0, 'msg': 'no mask file'}, status=404)
+        return FileResponse(
+            ann.mask_file.open('rb'),
+            as_attachment=True,
+            filename=f'annotation_{pk}_mask.png',
+            content_type='image/png',
+        )
+
+    loaded = load_annotation_binary_mask(ann)
+    if loaded is None:
+        return JsonResponse({'code': 0, 'msg': 'no mask file'}, status=404)
+    binary, iw, ih = loaded
+    if int(binary.sum()) < 1:
+        return JsonResponse({'code': 0, 'msg': 'empty mask'}, status=400)
+
+    task = ann.task
+    image = task.image
+    try:
+        file_basename = os.path.basename(image.file.name)
+    except Exception:
+        file_basename = f'image_{image.id}.png'
+
+    if fmt == 'coco':
+        rel_path = ann.mask_file.name if ann.mask_file else ''
+        doc = build_coco_document(
+            image_id=image.id,
+            image_file_name=file_basename,
+            image_width=iw,
+            image_height=ih,
+            annotation_id=ann.id,
+            category_name=ann.label or 'object',
+            segment_role=ann.segment_role or 'foreground',
+            binary_mask=binary,
+            mask_relative_path=rel_path,
+        )
+        body = json.dumps(doc, ensure_ascii=False, indent=2)
+        resp = HttpResponse(body, content_type='application/json; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="annotation_{pk}_coco.json"'
+        return resp
+
+    if fmt == 'simple':
+        doc = build_simple_export_dict(ann, binary, iw, ih)
+        body = json.dumps(doc, ensure_ascii=False, indent=2)
+        resp = HttpResponse(body, content_type='application/json; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="annotation_{pk}_simple.json"'
+        return resp
+
+    bbox, _ = binary_mask_bbox_and_area(binary)
+    if fmt == 'voc':
+        xml = build_voc_xml_string(ann, bbox, iw, ih)
+        resp = HttpResponse(xml, content_type='application/xml; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="annotation_{pk}_voc.xml"'
+        return resp
+
+    if fmt == 'yolo_bbox':
+        txt = build_yolo_bbox_line(ann, bbox, iw, ih)
+        resp = HttpResponse(txt, content_type='text/plain; charset=utf-8')
+        resp['Content-Disposition'] = f'attachment; filename="annotation_{pk}_yolo.txt"'
+        return resp
+
+    return JsonResponse({'code': 0, 'msg': 'unsupported'}, status=400)
 
 
 def next_task(request):
@@ -1341,10 +1686,12 @@ def next_task(request):
 def segment_image(request):
     if request.method == 'POST' and request.FILES.get('image'):
         uploaded_file = request.FILES['image']
-        # Accept optional prompt data: points (JSON array of [x,y]) and box (x0,y0,x1,y1)
+        # Accept optional prompt data: points (JSON [[x,y],…])、point_labels（JSON [1|0,…] 与 points 等长，1=前景点 0=背景点）、box [x0,y0,x1,y1]
         points_raw = request.POST.get('points', '')
+        labels_raw = request.POST.get('point_labels', '')
         box_raw = request.POST.get('box', '')
         points = None
+        point_labels = None
         box = None
         try:
             if points_raw:
@@ -1355,6 +1702,14 @@ def segment_image(request):
         except Exception:
             points = None
         try:
+            if labels_raw and points:
+                import json
+                labs = json.loads(labels_raw)
+                if isinstance(labs, list) and len(labs) == len(points):
+                    point_labels = [int(x) for x in labs]
+        except Exception:
+            point_labels = None
+        try:
             if box_raw:
                 import json
                 bx = json.loads(box_raw)
@@ -1364,11 +1719,24 @@ def segment_image(request):
         except Exception:
             box = None
 
-        # If SAM helper is available, use it; otherwise fallback to red border
+        model_key = (request.POST.get('model') or 'sam').strip().lower()
+        if model_key not in ('sam', 'yolo'):
+            model_key = 'sam'
         from io import BytesIO
+        img_bytes = uploaded_file.read()
+
+        if model_key == 'yolo':
+            if callable(run_yolo_segmentation_on_bytes):
+                output_bytes = run_yolo_segmentation_on_bytes(
+                    img_bytes, points=points, point_labels=point_labels, box=box
+                )
+                return HttpResponse(output_bytes, content_type='image/png')
+            return HttpResponse(b'', status=400)
+
         if callable(run_segmentation_on_bytes):
-            img_bytes = uploaded_file.read()
-            output_bytes = run_segmentation_on_bytes(img_bytes, points=points, box=box)
+            output_bytes = run_segmentation_on_bytes(
+                img_bytes, points=points, point_labels=point_labels, box=box, model='sam'
+            )
             return HttpResponse(output_bytes, content_type='image/png')
 
         img = PILImage.open(uploaded_file)

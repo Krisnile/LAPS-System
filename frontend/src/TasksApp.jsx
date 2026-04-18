@@ -26,7 +26,7 @@ const TASK_LIST_PAGE_SIZE = 10
 
 /** 与后端 Project.annotation_type 一致，用于样例演示 POST */
 const TYPE_SEG = 'segmentation_sam'
-const TYPE_DET = 'detection_yolo'
+const TYPE_DET = 'segmentation_yolo'
 
 function getLangText(zhText, enText) {
   try {
@@ -36,9 +36,9 @@ function getLangText(zhText, enText) {
   }
 }
 
-/** 快速样例区：分割 / 检测 类型示意卡片（仅 UI 选择，提交时带 annotation_type） */
+/** 快速样例区：SAM / YOLO 类型示意卡片（仅 UI 选择，提交时带 annotation_type） */
 function TaskTypeSample({ title, subtitle, variant, selected, onSelect, annotationType }) {
-  const isSeg = variant === 'seg'
+  const isSam = variant === 'seg'
   return (
     <div
       role="button"
@@ -57,13 +57,13 @@ function TaskTypeSample({ title, subtitle, variant, selected, onSelect, annotati
         className="laps-task-sample-visual"
         style={{
           height: 140,
-          background: isSeg
+          background: isSam
             ? 'linear-gradient(135deg, #1a237e22 0%, #7b1fa244 50%, #00897b33 100%)'
-            : 'linear-gradient(135deg, #e6510022 0%, #ff6f0044 100%)',
+            : 'linear-gradient(135deg, #e6510022 0%, #ff980044 50%, #ff6f0033 100%)',
           position: 'relative',
         }}
       >
-        {isSeg ? (
+        {isSam ? (
           <>
             <div
               style={{
@@ -81,45 +81,48 @@ function TaskTypeSample({ title, subtitle, variant, selected, onSelect, annotati
             <span
               className="badge badge-success"
               style={{ position: 'absolute', right: 8, bottom: 8, fontSize: 11 }}
-              data-en="Mask / polygon"
-              data-zh="掩码区域"
+              data-en="Prompt-driven mask"
+              data-zh="提示驱动掩码"
             >
-              掩码区域
+              提示驱动掩码
             </span>
           </>
         ) : (
           <>
+            {/* 多实例掩码示意：两个不规则形状代表自动分割出的不同实例 */}
             <div
               style={{
                 position: 'absolute',
-                left: '15%',
-                top: '25%',
-                width: '28%',
-                height: '38%',
-                border: '3px solid #e65100',
-                borderRadius: 4,
-                background: 'rgba(230, 81, 0, 0.12)',
+                left: '10%',
+                top: '20%',
+                width: '35%',
+                height: '48%',
+                border: '3px solid rgba(230, 81, 0, 0.8)',
+                borderRadius: '50% 35% 45% 60%',
+                transform: 'rotate(5deg)',
+                background: 'rgba(230, 81, 0, 0.13)',
               }}
             />
             <div
               style={{
                 position: 'absolute',
-                right: '18%',
-                top: '30%',
-                width: '22%',
-                height: '35%',
-                border: '3px solid #e65100',
-                borderRadius: 4,
-                background: 'rgba(230, 81, 0, 0.12)',
+                right: '12%',
+                top: '24%',
+                width: '30%',
+                height: '44%',
+                border: '3px solid rgba(255, 152, 0, 0.8)',
+                borderRadius: '45% 55% 40% 50%',
+                transform: 'rotate(-6deg)',
+                background: 'rgba(255, 152, 0, 0.13)',
               }}
             />
             <span
               className="badge badge-warning text-dark"
               style={{ position: 'absolute', right: 8, bottom: 8, fontSize: 11 }}
-              data-en="Bounding boxes"
-              data-zh="检测框"
+              data-en="Instance masks"
+              data-zh="实例掩码"
             >
-              检测框
+              实例掩码
             </span>
           </>
         )}
@@ -463,8 +466,8 @@ function TasksApp({
                     annotationType={TYPE_SEG}
                     selected={selectedAnnotationType === TYPE_SEG}
                     onSelect={setSelectedAnnotationType}
-                    title="图像分割（SAM）"
-                    subtitle="像素级掩码示意，样例项目类型为 segmentation_sam。"
+                    title="SAM"
+                    subtitle="提示驱动分割：通过点/框提示生成像素级掩码。"
                   />
                 </div>
                 <div className="col-md-6 mb-3">
@@ -473,8 +476,8 @@ function TasksApp({
                     annotationType={TYPE_DET}
                     selected={selectedAnnotationType === TYPE_DET}
                     onSelect={setSelectedAnnotationType}
-                    title="目标检测（YOLO）"
-                    subtitle="检测框示意，样例项目类型为 detection_yolo。"
+                    title="YOLO"
+                    subtitle="自动实例分割：一次推理输出全图实例掩码，可用提示筛选。"
                   />
                 </div>
               </div>

@@ -2108,6 +2108,124 @@ body.white-content .modal-content {
   border-radius: 8px;
 }
 
+/* ========== 标注页：新建任务弹窗（主题一致，仅保留标题栏 × 关闭）========== */
+.annotate-new-task-modal .modal-dialog {
+  max-width: 720px;
+}
+.annotate-new-task-modal__panel.modal-content {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--laps-border);
+  color: var(--laps-text);
+  overflow: hidden;
+}
+body.white-content .annotate-new-task-modal__panel.modal-content {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--laps-text);
+}
+.annotate-new-task-modal__header.modal-header {
+  align-items: center;
+  border-bottom: 1px solid var(--laps-border);
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+body.white-content .annotate-new-task-modal__header.modal-header {
+  background: rgba(0, 0, 0, 0.02);
+}
+.annotate-new-task-modal__title.modal-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--laps-text);
+  line-height: 1.35;
+  padding-right: 0.5rem;
+}
+.annotate-new-task-modal__close.close {
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  font-size: 1.35rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--laps-text-muted);
+  text-shadow: none;
+  opacity: 1;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.annotate-new-task-modal__close.close:hover,
+.annotate-new-task-modal__close.close:focus {
+  color: var(--laps-accent);
+  background: var(--laps-accent-soft);
+  outline: none;
+}
+.annotate-new-task-modal__body.modal-body {
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+.annotate-new-task-modal__intro {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--laps-text-muted);
+}
+.annotate-new-task-modal__link {
+  color: var(--laps-accent);
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.annotate-new-task-modal__link:hover {
+  color: var(--laps-accent);
+  border-bottom-color: var(--laps-accent-soft);
+  text-decoration: none;
+}
+.annotate-new-task-modal__empty {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 8px;
+  border: 1px solid var(--laps-border);
+  background: var(--laps-accent-soft);
+  color: var(--laps-text);
+}
+body.white-content .annotate-new-task-modal__empty {
+  background: rgba(29, 140, 248, 0.08);
+  border-color: rgba(29, 140, 248, 0.2);
+  color: var(--laps-text);
+}
+.annotate-new-task-modal__grid.annotate-pick-grid {
+  gap: 12px;
+}
+.annotate-new-task-modal .annotate-pick-cell {
+  border: 1px solid var(--laps-border);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--laps-text);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+body.white-content .annotate-new-task-modal .annotate-pick-cell {
+  background: #f8f9fc;
+  color: var(--laps-text);
+}
+.annotate-new-task-modal .annotate-pick-cell:hover {
+  border-color: var(--laps-accent);
+  background: var(--laps-accent-soft);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+body.white-content .annotate-new-task-modal .annotate-pick-cell:hover {
+  box-shadow: 0 4px 14px rgba(50, 50, 93, 0.08);
+}
+.annotate-new-task-modal .annotate-pick-cell img {
+  border-radius: 6px;
+  border: 1px solid var(--laps-border);
+}
+
 /* ========== 标注工作区（保持功能与可读性） ========== */
 .content .annotation-canvas-card {
   border-radius: 12px;
@@ -2154,6 +2272,29 @@ body.white-content .content.content-annotation .annotate-workflow-card {
 .content.content-annotation .annotate-workflow-card .annotate-workflow-toggle .tim-icons {
   color: inherit;
 }
+
+/* 标注工具栏卡片：标题栏 + 其下 card-body（类别/角色/模型/导出） */
+.content.content-annotation .annotate-toolbar-card > .card-header.annotate-toolbar-header {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--laps-border);
+}
+body.white-content .content.content-annotation .annotate-toolbar-card > .card-header.annotate-toolbar-header {
+  background: rgba(0, 0, 0, 0.02);
+}
+.content.content-annotation .annotate-toolbar-card > .card-body.annotate-toolbar-body,
+.content.content-annotation .annotate-toolbar-card > .collapse .card-body.annotate-toolbar-body {
+  border-color: var(--laps-border);
+}
+.content.content-annotation .annotate-toolbar-card .annotate-toolbar-toggle {
+  color: var(--laps-text-muted) !important;
+}
+.content.content-annotation .annotate-toolbar-card .annotate-toolbar-toggle:hover {
+  color: var(--laps-accent) !important;
+}
+.content.content-annotation .annotate-toolbar-card .annotate-toolbar-toggle .tim-icons {
+  color: inherit;
+}
+
 /* 三步进度卡片 */
 .content.content-annotation .annotate-steps .annotate-step {
   border-color: var(--laps-border);
@@ -2300,21 +2441,21 @@ body.white-content .content.content-annotation .annotate-flow-message.alert-succ
   color: #155724;
 }
 
-/* 标注页工具栏：点/框切换 — 选中项主题色底 + 白字；未选描边 + 次要色字（与原先「选中仅淡底+深色字」相反） */
-body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active) {
+/* 标注页：画布下点/框切换 — 选中项主题色底 + 白字 */
+body:not(.white-content) .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary:not(.active) {
   background: transparent !important;
   background-image: none !important;
   color: rgba(255, 255, 255, 0.58) !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow: none !important;
 }
-body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active):hover {
+body:not(.white-content) .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary:not(.active):hover {
   color: rgba(255, 255, 255, 0.92) !important;
   background: rgba(255, 255, 255, 0.07) !important;
   border-color: rgba(255, 255, 255, 0.32) !important;
 }
-body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active,
-body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:focus {
+body:not(.white-content) .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active,
+body:not(.white-content) .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active:focus {
   background: var(--laps-accent) !important;
   background-image: none !important;
   color: #ffffff !important;
@@ -2322,25 +2463,25 @@ body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-gr
   box-shadow: none !important;
   transform: none !important;
 }
-body:not(.white-content) .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:hover {
+body:not(.white-content) .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active:hover {
   filter: brightness(1.07);
   color: #ffffff !important;
 }
 
-body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active) {
+body.white-content .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary:not(.active) {
   background: #ffffff !important;
   background-image: none !important;
   color: #525f7f !important;
   border-color: rgba(50, 50, 93, 0.22) !important;
   box-shadow: none !important;
 }
-body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary:not(.active):hover {
+body.white-content .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary:not(.active):hover {
   background: rgba(50, 50, 93, 0.06) !important;
   color: #32325d !important;
   border-color: rgba(50, 50, 93, 0.3) !important;
 }
-body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active,
-body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:focus {
+body.white-content .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active,
+body.white-content .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active:focus {
   background: var(--laps-accent) !important;
   background-image: none !important;
   color: #ffffff !important;
@@ -2348,12 +2489,12 @@ body.white-content .content.content-annotation .annotation-toolbar .btn-group > 
   box-shadow: none !important;
   transform: none !important;
 }
-body.white-content .content.content-annotation .annotation-toolbar .btn-group > .btn-outline-secondary.active:hover {
+body.white-content .content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn-outline-secondary.active:hover {
   filter: brightness(1.05);
   color: #ffffff !important;
 }
 
-/* 标注页侧栏：上下两张独立卡片（项目与任务目录 / 保存用标签） */
+/* 标注页：侧栏「项目与任务」；页顶「标注工具栏」卡片（与 annotate-labels-card 同套边框） */
 .content.content-annotation .annotate-sidebar-card,
 .content.content-annotation .annotate-labels-card {
   border-color: var(--laps-border);
@@ -2368,10 +2509,27 @@ body.white-content .content.content-annotation .annotate-labels-card {
   border-bottom: 1px solid var(--laps-border);
 }
 .content.content-annotation .annotate-sidebar-card > .card-header h6,
+.content.content-annotation .annotate-labels-card > .card-header h5,
 .content.content-annotation .annotate-labels-card > .card-header h6 {
   color: var(--laps-text);
   font-size: 0.9375rem;
   letter-spacing: 0.02em;
+}
+.content.content-annotation .annotate-board-canvas-title {
+  color: var(--laps-text-muted) !important;
+}
+.content.content-annotation .annotate-toolbar-card label[for="annotSegmentModel"] {
+  color: var(--laps-text-muted);
+}
+body:not(.white-content) .content.content-annotation .annot-segment-model-select {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--laps-border);
+  color: var(--laps-text);
+}
+body.white-content .content.content-annotation .annot-segment-model-select {
+  background-color: #fff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: var(--laps-text);
 }
 
 /* 标注页任务列表：与深浅色主题一致（避免深色模式下白底+浅色字或反差不敷） */
@@ -2441,6 +2599,41 @@ body.white-content .content.content-annotation .annotate-task-actions select.for
 body:not(.white-content) .content.content-annotation .annotate-task-actions select.form-control option {
   background: #1e2130;
   color: #f0f2f8;
+}
+body:not(.white-content) .content.content-annotation .annotate-task-thumb-wrap {
+  border-color: var(--laps-border);
+  background: rgba(0, 0, 0, 0.22);
+}
+body:not(.white-content) .content.content-annotation .annotate-task-thumb-wrap.annotate-task-thumb--empty {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(255, 255, 255, 0.06) 4px,
+    rgba(255, 255, 255, 0.06) 5px
+  );
+}
+body.white-content .content.content-annotation .annotate-task-thumb-wrap {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: #e2e5eb;
+}
+body.white-content .content.content-annotation .annotate-task-thumb-wrap.annotate-task-thumb--empty {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.05) 4px,
+    rgba(0, 0, 0, 0.05) 5px
+  );
+}
+body:not(.white-content) .content.content-annotation .annotate-task-pagination {
+  border-top-color: var(--laps-border);
+}
+body:not(.white-content) .content.content-annotation .annotate-task-pagination__info {
+  color: var(--laps-text-muted);
+}
+body.white-content .content.content-annotation .annotate-task-pagination__info {
+  color: #6c757d;
 }
 
 /* 仪表盘最近任务：状态徽章与标注按钮统一高度与宽度 */

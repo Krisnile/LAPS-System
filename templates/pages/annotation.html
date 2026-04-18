@@ -92,11 +92,88 @@
     </div>
   </div>
 
+  <div class="card annotate-toolbar-card annotate-labels-card mb-3">
+    <div class="card-header py-2 annotate-toolbar-header d-flex flex-wrap align-items-center justify-content-between">
+      <div class="d-flex align-items-center mb-1 mb-sm-0">
+        <button
+          type="button"
+          class="btn btn-sm btn-link p-0 mr-2 annotate-toolbar-toggle text-muted"
+          data-toggle="collapse"
+          data-target="#annotateToolbarCollapse"
+          aria-expanded="true"
+          aria-controls="annotateToolbarCollapse"
+          data-en="Collapse or expand annotation toolbar"
+          data-zh="收起或展开标注工具栏"
+          title="收起/展开"
+        >
+          <span class="annotate-toolbar-caret-icon tim-icons icon-minimal-down" aria-hidden="true"></span>
+        </button>
+        <h5 class="mb-0 font-weight-bold" data-en="Annotation toolbar" data-zh="标注工具栏">标注工具栏</h5>
+      </div>
+      <div class="d-flex flex-wrap align-items-center mt-1 mt-sm-0">
+        <a class="small text-muted mr-3" href="{% url 'support' %}#annotate-role-category" data-en="Role &amp; category guide" data-zh="角色与类别 · 说明">角色与类别 · 说明</a>
+        <a class="small text-muted" href="{% url 'support' %}#annotate-workflow-help" data-en="Annotate workflow" data-zh="标注流程 · 使用说明">标注流程 · 使用说明</a>
+      </div>
+    </div>
+    <div id="annotateToolbarCollapse" class="collapse show">
+    <div class="card-body py-2 annotate-toolbar-body border-top-0">
+      {# ── Row 1: 类别 · 角色 | 模型 | 导出 ── #}
+      <div class="annotate-toolbar-row annotate-toolbar-row--top d-flex flex-wrap align-items-center mb-1">
+        <div class="d-inline-flex align-items-center mr-2 annotate-toolbar-field annotate-toolbar-field--category">
+          <label class="small font-weight-bold mb-0 mr-1 text-nowrap" for="annotCategoryName" data-en="Category" data-zh="类别">类别</label>
+          <input type="text" class="form-control form-control-sm annotate-toolbar-category-input" id="annotCategoryName" maxlength="200"
+                 placeholder="person / car …" autocomplete="off" style="width:160px" />
+        </div>
+        <div class="d-inline-flex align-items-center mr-2 annotate-toolbar-field annotate-toolbar-field--roles">
+          <div id="labelsPanel" class="labels-panel labels-panel--horizontal mb-0">
+            <div class="label-row" data-label="foreground"><span class="label-swatch" style="background:#1abc9c"></span><span class="d-none d-sm-inline" data-en="FG" data-zh="前景">前景</span></div>
+            <div class="label-row" data-label="background"><span class="label-swatch" style="background:#e74c3c"></span><span class="d-none d-sm-inline" data-en="BG" data-zh="背景">背景</span></div>
+            <div class="label-row" data-label="other"><span class="label-swatch" style="background:#f1c40f"></span><span class="d-none d-sm-inline" data-en="Other" data-zh="其他">其他</span></div>
+          </div>
+        </div>
+        <div class="d-inline-flex align-items-center mr-2 annotate-toolbar-field annotate-toolbar-field--model">
+          <label class="small font-weight-bold text-muted mb-0 mr-1 text-nowrap" for="annotSegmentModel" data-en="Model" data-zh="模型">模型</label>
+          <select id="annotSegmentModel" class="custom-select custom-select-sm annot-segment-model-select" style="width:auto;min-width:100px"
+                  aria-label="Segmentation model">
+          </select>
+        </div>
+        <div class="d-inline-flex align-items-center ml-lg-auto annotate-toolbar-field annotate-toolbar-field--export">
+          <select id="annotExportFormat" class="custom-select custom-select-sm mr-1 annot-export-format-select" disabled
+                  style="width:auto;min-width:100px" aria-label="Export format">
+            <option value="coco">COCO/JSON</option>
+            <option value="simple" data-en="Simple JSON" data-zh="简单 JSON">简单 JSON</option>
+            <option value="voc" data-en="VOC (ZIP)" data-zh="VOC（ZIP）">VOC（ZIP）</option>
+            <option value="yolo_bbox" data-en="YOLO bbox" data-zh="YOLO 框">YOLO 框</option>
+            <option value="mask_png" data-en="Mask PNG" data-zh="掩码 PNG">掩码 PNG</option>
+          </select>
+          <button type="button" id="btnExportAnnotation" class="btn btn-outline-info btn-sm" disabled
+                  data-en="Export" data-zh="导出">导出</button>
+        </div>
+      </div>
+      {# ── Row 2: 点/框 | 运行 · 保存 | 撤销 · 清除 · 重置 ── #}
+      <div class="annotate-toolbar-row d-flex flex-wrap align-items-center">
+        <div class="btn-group btn-group-sm mr-2" id="annotPointBoxModeGroup" role="group" aria-label="Prompt mode">
+          <button type="button" class="btn btn-outline-secondary active" id="modePointBtn"
+                  title="P" data-en="Point" data-zh="点">点</button>
+          <button type="button" class="btn btn-outline-secondary" id="modeBoxBtn"
+                  title="X" data-en="Box" data-zh="框">框</button>
+        </div>
+        <button id="btnRunSAM" class="btn btn-primary btn-sm mr-1" title="Space" data-en="Run" data-zh="运行">运行</button>
+        <button id="btnSave" class="btn btn-success btn-sm mr-1" title="S" data-en="Save" data-zh="保存">保存</button>
+        <button id="btnUndo" class="btn btn-secondary btn-sm mr-1" title="Ctrl+Z" data-en="Undo" data-zh="撤销">撤销</button>
+        <button id="btnClear" class="btn btn-outline-secondary btn-sm mr-1" title="C" data-en="Clear" data-zh="清除">清除</button>
+        <button id="btnReset" class="btn btn-outline-danger btn-sm" title="R" data-en="Reset" data-zh="重置">重置</button>
+      </div>
+    </div>
+    <div id="annotateSaveFeedback" class="annotate-save-feedback d-none px-3 pb-3 pt-2 mb-0 border-top" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
   {{ annotate_bootstrap|json_script:"annotate-bootstrap" }}
 
   <div class="row annotate-row">
-    <div class="col-lg-4 annotate-sidebar order-1 order-lg-2">
-      <div class="card card-sidebar annotate-sidebar-card mb-3">
+    <div class="col-lg-3 annotate-sidebar order-1 order-lg-2">
+      <div class="card card-sidebar annotate-sidebar-card mb-3 mb-lg-0">
         <div class="card-header py-2">
           <h6 class="mb-0 font-weight-bold" data-en="Project &amp; tasks" data-zh="项目与任务目录">项目与任务目录</h6>
         </div>
@@ -140,82 +217,64 @@
                    data-en="Select a project first."
                    data-zh="请先选择项目。">请先选择项目。</p>
               </div>
-        </div>
-      </div>
-
-      <div class="card card-sidebar annotate-labels-card mb-3">
-        <div class="card-header py-2">
-          <h6 class="mb-0 font-weight-bold" data-en="Labels (save)" data-zh="保存用标签">保存用标签</h6>
-        </div>
-        <div class="card-body py-3">
-              <p class="small text-muted mb-2">
-                <span data-en="Pick a label before saving. Details:" data-zh="保存前选择标签；说明见">保存前选择标签；说明见</span>
-                <a href="{% url 'support' %}#annotate-labels-save" data-en="documentation" data-zh="帮助文档">帮助文档</a>。
-              </p>
-              <div id="labelsPanel" class="labels-panel">
-                <div class="label-row" data-label="foreground"><span class="label-swatch" style="background:#1abc9c"></span> <span data-en="Foreground" data-zh="前景">前景</span></div>
-                <div class="label-row" data-label="background"><span class="label-swatch" style="background:#e74c3c"></span> <span data-en="Background" data-zh="背景">背景</span></div>
-                <div class="label-row" data-label="other"><span class="label-swatch" style="background:#f1c40f"></span> <span data-en="Other" data-zh="其他">其他</span></div>
-              </div>
+              <div id="annotateTaskPagination" class="annotate-task-pagination d-none" aria-label="Task list pagination"></div>
         </div>
       </div>
     </div>
 
-    <div class="col-lg-8 annotate-main order-2 order-lg-1">
-      <div class="card">
-        <div class="card-header py-2">
-          <div>
-            <h4 class="card-title mb-0" data-en="SAM segmentation" data-zh="SAM 分割标注">SAM 分割标注</h4>
-            <small class="text-muted"
-                   data-en="Toolbar: point/box prompts, Run, Save. Full guide:"
-                   data-zh="工具栏：点/框提示、运行、保存等完整说明见">工具栏：点/框提示、运行、保存等完整说明见</small>
-            <small class="text-muted"> <a href="{% url 'support' %}#annotate-workflow-help" data-en="documentation" data-zh="使用说明">使用说明</a>。</small>
-          </div>
-        </div>
-        <div class="card-body" id="annotation-area">
-          <div class="annotation-toolbar row align-items-center">
-            <div class="col-12 col-xl-auto d-flex align-items-center flex-wrap mb-2 mb-xl-0">
-              <div class="btn-group btn-group-sm mr-2 mb-1" role="group">
-                <button type="button" class="btn btn-outline-secondary active" id="modePointBtn"
-                        data-en="Point" data-zh="点">点</button>
-                <button type="button" class="btn btn-outline-secondary" id="modeBoxBtn"
-                        data-en="Box" data-zh="框">框</button>
+    <div class="col-lg-9 annotate-main order-2 order-lg-1">
+      <div class="card annotate-board-card mb-3 mb-lg-0">
+        <div class="card-body annotate-board-area p-2 p-md-3 d-flex flex-column" id="annotation-area">
+          <h6 class="annotate-board-canvas-title small font-weight-bold text-muted mb-2" data-en="Canvas" data-zh="画布">画布</h6>
+          <div class="annotate-canvas-actions border-bottom pb-2 mb-2">
+            <div class="annotate-canvas-actions-inner d-flex flex-wrap align-items-center">
+              <div class="btn-group btn-group-sm mr-2" role="group" aria-label="Draw mode">
+                <button type="button" class="btn btn-outline-secondary" id="modeBrushBtn"
+                        title="B" data-en="Brush" data-zh="画笔">画笔</button>
+                <button type="button" class="btn btn-outline-secondary" id="modeEraserBtn"
+                        title="E" data-en="Eraser" data-zh="橡皮">橡皮</button>
               </div>
-              <button id="btnRunSAM" class="btn btn-primary btn-sm mr-1 mb-1" title="Space" data-en="Run SAM" data-zh="运行">运行</button>
-              <button id="btnSave" class="btn btn-success btn-sm mr-1 mb-1" title="S" data-en="Save" data-zh="保存">保存</button>
-              <button id="btnUndo" class="btn btn-secondary btn-sm mr-1 mb-1" title="Ctrl+Z" data-en="Undo" data-zh="撤销">撤销</button>
-              <button id="btnClear" class="btn btn-danger btn-sm mr-1 mb-1" title="C" data-en="Clear prompts" data-zh="清除提示">清除提示</button>
-            </div>
-            <div class="col text-center mb-2 mb-xl-0">
-              <div class="zoom-controls">
-                <button type="button" id="zoomOut" class="btn btn-light btn-sm">−</button>
-                <span id="zoomLevel">100%</span>
-                <button type="button" id="zoomIn" class="btn btn-light btn-sm">+</button>
-                <button type="button" id="zoomReset" class="btn btn-light btn-sm" data-en="Reset zoom" data-zh="重置缩放">重置</button>
+              <div class="zoom-controls d-inline-flex align-items-center mr-2">
+                <button type="button" id="zoomOut" class="btn btn-light btn-sm px-2">−</button>
+                <span id="zoomLevel" class="mx-1 small font-weight-bold annotate-canvas-zoom-level" style="min-width:2.5em;text-align:center">100%</span>
+                <button type="button" id="zoomIn" class="btn btn-light btn-sm px-2">+</button>
+                <button type="button" id="zoomReset" class="btn btn-light btn-sm px-2 ml-1" data-en="Fit" data-zh="适应">适应</button>
+              </div>
+              <div class="d-inline-flex align-items-center mr-2 annotate-canvas-mask-opacity">
+                <label class="mb-0 small text-nowrap mr-1" for="maskOpacity" data-en="Opacity" data-zh="透明度">透明度</label>
+                <input id="maskOpacity" type="range" min="0" max="1" step="0.05" value="0.6" class="annotate-canvas-opacity-slider" />
+              </div>
+              <div class="d-inline-flex align-items-center annotate-canvas-brush-size d-none" id="brushSizeGroup">
+                <label class="mb-0 small text-nowrap mr-1" for="brushSizeSlider" data-en="Size" data-zh="笔刷">笔刷</label>
+                <input id="brushSizeSlider" type="range" min="2" max="100" step="1" value="15" class="annotate-canvas-brush-slider" />
+                <span id="brushSizeLabel" class="ml-1 small font-weight-bold" style="min-width:2em">15</span>
               </div>
             </div>
-            <div class="col-12 col-xl-auto d-flex align-items-center mb-2 mb-xl-0">
-              <label class="mr-2 mb-0 small" data-en="Mask opacity" data-zh="遮罩透明度">遮罩透明度</label>
-              <input id="maskOpacity" type="range" min="0" max="1" step="0.05" value="0.6" />
-            </div>
           </div>
-
-          <div class="annotation-canvas-card">
+          <div class="annotation-canvas-card annotate-board-canvas flex-grow-1 d-flex flex-column">
             <div class="annotation-canvas-wrapper">
+              <div class="annotation-canvas-scroll">
+                <img id="annot-image" src="" alt="" draggable="false" />
+                <canvas id="annot-overlay"></canvas>
+              </div>
+              <div id="annot-loading" class="annot-loading-overlay d-none">
+                <div class="annot-loading-spinner"></div>
+                <p class="mb-0 small mt-2" data-en="Running model inference…" data-zh="模型推理中…">模型推理中…</p>
+              </div>
               <div id="annot-placeholder" class="annot-placeholder">
                 <div class="annot-placeholder-icon">
                   <i class="tim-icons icon-image-02"></i>
                 </div>
                 <p class="mb-0 annot-placeholder-title" data-en="No task image loaded" data-zh="未加载任务图片">未加载任务图片</p>
               </div>
-              <img id="annot-image" src="" alt="" draggable="false" />
-              <canvas id="annot-overlay"></canvas>
             </div>
           </div>
 
           <div class="annotation-bottom d-flex flex-wrap justify-content-between align-items-start mt-2">
             <div class="prompts pr-md-2 mb-2 mb-md-0" style="min-width: 200px; flex: 1;">
-              <h6 class="mb-1" data-en="Prompts" data-zh="提示点/框">提示点/框</h6>
+              <h6 class="mb-1" data-en="Confirmed runs (1 row = 1 mask)" data-zh="已运行的分割（一行对应一屏遮罩）">已运行的分割（一行对应一屏遮罩）</h6>
+              <div id="runsListPanel" class="annotate-runs-panel small mb-3"></div>
+              <h6 class="mb-1" id="annotPromptHeading" data-en="Current prompts" data-zh="当前提示（点/框）">当前提示（点/框）</h6>
               <div id="promptList" class="prompt-list small"></div>
             </div>
             <div class="task-info text-md-right">
@@ -231,23 +290,22 @@
 </div>
 
 <!-- 新建任务：从可加入的图片中选一张，写入 Task 表 -->
-<div class="modal fade" id="annotateNewTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" data-en="New task for this project" data-zh="为本项目新建任务">为本项目新建任务</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div class="modal fade annotate-new-task-modal" id="annotateNewTaskModal" tabindex="-1" role="dialog" aria-labelledby="annotateNewTaskModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered" role="document">
+    <div class="modal-content annotate-new-task-modal__panel">
+      <div class="modal-header annotate-new-task-modal__header">
+        <h5 class="modal-title annotate-new-task-modal__title" id="annotateNewTaskModalTitle" data-en="New task for this project" data-zh="为本项目新建任务">为本项目新建任务</h5>
+        <button type="button" class="close annotate-new-task-modal__close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <div class="modal-body">
-        <p class="small text-muted" id="annotateNewTaskExplain">
-          <span data-en="Each row is an image without a task in this project yet. Details:" data-zh="每行一幅尚未在本项目建任务的图片；规则见">每行一幅尚未在本项目建任务的图片；规则见</span>
-          <a href="{% url 'support' %}#annotate-new-task" data-en="documentation" data-zh="使用说明">使用说明</a>。
+      <div class="modal-body annotate-new-task-modal__body">
+        <p class="annotate-new-task-modal__intro" id="annotateNewTaskExplain">
+          <span data-en="Each tile is one image that does not yet have a task in this project. Full rules:" data-zh="每格一幅尚未在本项目建任务的图片；完整规则见">每格一幅尚未在本项目建任务的图片；完整规则见</span>
+          <a href="{% url 'support' %}#annotate-new-task" class="annotate-new-task-modal__link" data-en="documentation" data-zh="使用说明">使用说明</a>。
         </p>
-        <div id="annotateNewTaskEmpty" class="alert alert-info small d-none"></div>
-        <div id="annotateNewTaskGrid" class="annotate-pick-grid"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-en="Close" data-zh="关闭">关闭</button>
+        <div id="annotateNewTaskEmpty" class="annotate-new-task-modal__empty d-none" role="status"></div>
+        <div id="annotateNewTaskGrid" class="annotate-pick-grid annotate-new-task-modal__grid"></div>
       </div>
     </div>
   </div>

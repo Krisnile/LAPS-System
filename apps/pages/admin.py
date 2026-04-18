@@ -316,24 +316,24 @@ class TaskAdmin(AddLinkMixin, ModelAdmin):
 @admin.register(models.Annotation)
 class AnnotationAdmin(AddLinkMixin, ModelAdmin):
     """标注：列表展示、搜索、筛选；task 下拉仅显示当前用户可访问的任务；每行有修改/删除按钮"""
-    list_display = ('id', 'task', 'owner', 'user', 'label', 'created_at', '_actions')
+    list_display = ('id', 'task', 'owner', 'user', 'label', 'segment_role', 'created_at', '_actions')
     list_display_links = ('id', 'task')
 
     def _actions(self, obj):
         return _admin_actions(obj, self.request)
     _actions.short_description = '操作'
-    list_filter = ('created_at',)
+    list_filter = ('created_at', 'segment_role')
     search_fields = ('task__id', 'owner__username', 'user__username', 'label')
     date_hierarchy = 'created_at'
-    readonly_fields = ('created_at',)
+    readonly_fields = ('created_at', 'coco_json')
     autocomplete_fields = ('task', 'owner', 'user')
 
     fieldsets = (
         (None, {
-            'fields': ('task', 'owner', 'user', 'label'),
+            'fields': ('task', 'owner', 'user', 'label', 'segment_role'),
         }),
-        ('遮罩数据', {
-            'fields': ('mask_file', 'mask_rle'),
+        ('COCO / 遮罩', {
+            'fields': ('coco_json', 'mask_file', 'mask_rle'),
             'classes': ('collapse',),
         }),
         ('时间', {

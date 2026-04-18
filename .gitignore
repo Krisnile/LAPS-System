@@ -23,5 +23,13 @@ env
 node_modules
 yarn.lock
 
-# Ignore sam model weights
-sam/
+# 分割模型权重（目录结构纳入仓库，权重文件忽略；根目录 sam/ 为旧路径，仍兼容）
+/model/sam/*
+!/model/sam/.gitkeep
+/model/yolo/*
+!/model/yolo/.gitkeep
+/sam/
+
+# 毕业论文正文与制图源（本地维护，不上传远程）
+/docs/毕业论文范文_提示驱动分割标注系统.md
+/docs/diagrams/

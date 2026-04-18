@@ -15,7 +15,7 @@
 
 - **后端**：Django 4.x、`psycopg2-binary`、可选 REST（`apps.dyn_api`）
 - **前端**：React + Vite（登录、Dashboard、Projects / Datasets / Tasks），主题 `laps-theme.css`
-- **推理**：`apps/pages/sam_inference.py`（权重见仓库说明，默认忽略 `sam/`）
+- **推理**：`apps/pages/sam_inference.py`；权重目录 **`model/sam/`**（SAM）、**`model/yolo/`**（YOLO，需 `pip install ultralytics`）；旧路径根目录 **`sam/`** 仍兼容
 
 ## 环境要求
 
@@ -65,6 +65,12 @@ python manage.py runserver
 ## 媒体与数据路径
 
 上传文件写入 **`MEDIA_ROOT`**（默认项目下 `media/`）。数据集图片路径形如 **`datasets/user_<owner_id>/年/月/日/`**；删除数据集会级联删除库记录并清理磁盘文件（见 `apps/pages/signals.py`）。
+
+## 模型文件（分割）
+
+- **SAM**：检查点放在 **`model/sam/`**（旧版根目录 **`sam/`** 仍会自动兼容）。
+- **YOLO**：分割权重（如 `yolov8n-seg.pt`）放在 **`model/yolo/`**，并执行 **`pip install ultralytics`**（默认 `requirements.txt` 未包含，按需安装）。
+- 标注页「分割模型」下拉与接口 POST 参数 **`model=sam|yolo`** 与上述目录对应。
 
 ## 文档
 

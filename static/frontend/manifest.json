@@ -1,13 +1,13 @@
 {
-  "_datasetsShared-rFIaClkY.js": {
-    "file": "assets/datasetsShared-rFIaClkY.js",
+  "_datasetsShared-E9lgScgJ.js": {
+    "file": "assets/datasetsShared-E9lgScgJ.js",
     "name": "datasetsShared",
     "imports": [
       "src/main.jsx"
     ]
   },
   "src/DashboardApp.jsx": {
-    "file": "assets/DashboardApp-D6GSvt3o.js",
+    "file": "assets/DashboardApp-DUYBIliq.js",
     "name": "DashboardApp",
     "src": "src/DashboardApp.jsx",
     "isDynamicEntry": true,
@@ -16,27 +16,27 @@
     ]
   },
   "src/DatasetDetailApp.jsx": {
-    "file": "assets/DatasetDetailApp-DXYtXheR.js",
+    "file": "assets/DatasetDetailApp-CIKG6bDC.js",
     "name": "DatasetDetailApp",
     "src": "src/DatasetDetailApp.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_datasetsShared-rFIaClkY.js"
+      "_datasetsShared-E9lgScgJ.js"
     ]
   },
   "src/DatasetsApp.jsx": {
-    "file": "assets/DatasetsApp-2kaF4tOW.js",
+    "file": "assets/DatasetsApp-2Ebhl66R.js",
     "name": "DatasetsApp",
     "src": "src/DatasetsApp.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_datasetsShared-rFIaClkY.js"
+      "_datasetsShared-E9lgScgJ.js"
     ]
   },
   "src/LoginApp.jsx": {
-    "file": "assets/LoginApp-C4RuAeqx.js",
+    "file": "assets/LoginApp-CU25Uw50.js",
     "name": "LoginApp",
     "src": "src/LoginApp.jsx",
     "isDynamicEntry": true,
@@ -45,7 +45,7 @@
     ]
   },
   "src/ProjectsApp.jsx": {
-    "file": "assets/ProjectsApp-D165tIJy.js",
+    "file": "assets/ProjectsApp-BVczn-yY.js",
     "name": "ProjectsApp",
     "src": "src/ProjectsApp.jsx",
     "isDynamicEntry": true,
@@ -54,7 +54,7 @@
     ]
   },
   "src/SignupApp.jsx": {
-    "file": "assets/SignupApp-CNlkZAW1.js",
+    "file": "assets/SignupApp-Cgbxb_4E.js",
     "name": "SignupApp",
     "src": "src/SignupApp.jsx",
     "isDynamicEntry": true,
@@ -63,7 +63,7 @@
     ]
   },
   "src/TasksApp.jsx": {
-    "file": "assets/TasksApp-BmxNslG1.js",
+    "file": "assets/TasksApp-HoJ9u7V1.js",
     "name": "TasksApp",
     "src": "src/TasksApp.jsx",
     "isDynamicEntry": true,
@@ -72,7 +72,7 @@
     ]
   },
   "src/main.jsx": {
-    "file": "assets/main-CkxUurjF.js",
+    "file": "assets/main-eqtmktCY.js",
     "name": "main",
     "src": "src/main.jsx",
     "isEntry": true,

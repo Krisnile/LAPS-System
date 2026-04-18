@@ -1,6 +1,3 @@
-.annotation-canvas-wrapper{ position:relative; width:100%; background:#f8f9fb; display:flex; align-items:flex-start; justify-content:flex-start; min-height:420px; }
-.annotation-canvas-wrapper img{ max-width:100%; height:auto; display:block; user-select:none; }
-.annotation-canvas-wrapper canvas{ position:absolute; left:0; top:0; pointer-events:auto; }
 /* 画布区固定浅色底，占位文案必须用深色，禁止继承 body 在深色模式下的浅色字 */
 .annot-placeholder{
   position:absolute;
@@ -33,7 +30,6 @@
   border: 1px dashed rgba(0, 0, 0, 0.14);
   color: var(--laps-accent);
 }
-.annotation-toolbar{ display:flex; gap:8px; margin-bottom:12px; align-items:center; }
 .card-sidebar{
   /* 让标注右侧面板随页面一起滚动，避免卡顿感 */
   position: static;
@@ -113,15 +109,78 @@ body.white-content .content.content-annotation .annotation-bottom .prompts h6 {
 .annotate-row {
   gap: 12px;
 }
+/* 画布 + 任务目录整行下方多留空，避免贴底（大屏卡片 mb-lg-0 时尤其需要） */
+.content.content-annotation .annotate-row {
+  margin-bottom: 2.25rem;
+}
 .annotate-left { padding-right: 6px; }
 .annotate-right { padding-left: 6px; }
 .annotation-canvas-card{ background:#fff; border:1px solid #eee; padding:12px; border-radius:6px; }
-.annotation-canvas-wrapper{ position:relative; width:100%; background:#ffffff; display:flex; align-items:flex-start; justify-content:flex-start; min-height:520px; }
+.annotation-canvas-wrapper{
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+.annotation-canvas-scroll{
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 280px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.annotation-canvas-scroll img{
+  display: block;
+  max-width: 100%;
+  height: auto;
+  user-select: none;
+}
+.annotation-canvas-scroll canvas{
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+}
 .labels-panel .label-row{ display:flex; align-items:center; gap:8px; padding:8px; border-radius:4px; cursor:pointer; }
 .labels-panel .label-row:hover{ background:#f6f8fa; }
 .label-swatch{ width:18px; height:14px; display:inline-block; border-radius:3px; border:1px solid rgba(0,0,0,0.08); }
 .labels-panel .label-row.active{ outline:2px solid rgba(0,123,255,0.15); background:#eaf4ff; }
+.labels-panel.labels-panel--horizontal {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+.labels-panel.labels-panel--horizontal .label-row {
+  flex: 1 1 0;
+  min-width: 5.5rem;
+  justify-content: center;
+  padding: 8px 10px;
+}
+body:not(.white-content) .labels-panel.labels-panel--horizontal .label-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+body:not(.white-content) .labels-panel.labels-panel--horizontal .label-row.active {
+  background: rgba(29, 140, 248, 0.18);
+  outline-color: rgba(29, 140, 248, 0.35);
+}
 .zoom-controls{ display:inline-flex; align-items:center; gap:6px; }
+/* 画布操作条按钮 */
+.content.content-annotation .annotate-board-card .annotate-canvas-actions .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+.content.content-annotation .annotate-board-card .annotate-canvas-actions .btn-group > .btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+}
 .card-sidebar .btn-block{ width:100%; }
 .content.content-annotation .task-info {
   font-size: 13px;
@@ -165,6 +224,25 @@ body.white-content .content.content-annotation .task-info strong {
 }
 .annotate-workflow-toggle[aria-expanded='false'] .annotate-workflow-caret-icon {
   transform: rotate(-90deg);
+}
+.annotate-toolbar-toggle {
+  text-decoration: none !important;
+  line-height: 1;
+}
+.annotate-toolbar-toggle:focus {
+  box-shadow: none;
+}
+.annotate-toolbar-caret-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  vertical-align: middle;
+}
+.annotate-toolbar-toggle[aria-expanded='false'] .annotate-toolbar-caret-icon {
+  transform: rotate(-90deg);
+}
+.annotate-toolbar-header {
+  background: transparent;
 }
 .annotate-steps .annotate-step {
   border: 1px solid #eee;
@@ -221,6 +299,37 @@ body.white-content .content.content-annotation .task-info strong {
   overflow-y: auto;
   border-radius: 6px;
 }
+.annotate-task-pagination {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.annotate-task-pagination__info {
+  font-size: 12px;
+  line-height: 1.4;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.annotate-task-pagination__nav {
+  flex-shrink: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+.annotate-task-pagination__page-input {
+  width: 3.25rem;
+  min-width: 0;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  text-align: center;
+}
 .annotate-task-item {
   padding: 8px 10px;
   cursor: pointer;
@@ -246,6 +355,36 @@ body.white-content .content.content-annotation .task-info strong {
 .annotate-task-actions select.form-control-sm {
   max-width: 130px;
   font-size: 12px;
+}
+/* 删除按钮右侧：任务绑定图片缩略图（数据来自目录接口 image_url） */
+.annotate-task-thumb-wrap {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  background: #eceef2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.annotate-task-thumb-wrap.annotate-task-thumb--empty {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.04) 4px,
+    rgba(0, 0, 0, 0.04) 5px
+  );
+}
+.annotate-task-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
 }
 .annotate-pick-grid {
   display: grid;
@@ -275,28 +414,142 @@ body.white-content .content.content-annotation .task-info strong {
   .annotate-row {
     display: flex;
     flex-wrap: nowrap;
+    align-items: stretch;
     /* 去掉与 col 左右 padding 叠加的额外缝，避免右侧「项目与任务」离画布过远 */
     gap: 0;
+  }
+  .content.content-annotation .annotate-row {
+    margin-bottom: 2.5rem;
+  }
+  /* 项目与任务卡片、标注看板卡片同高（列 flex + 卡片 flex 填满） */
+  .content.content-annotation .annotate-row > .annotate-sidebar,
+  .content.content-annotation .annotate-row > .annotate-main {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+  }
+  .content.content-annotation .annotate-row > .annotate-sidebar .annotate-sidebar-card,
+  .content.content-annotation .annotate-row > .annotate-main .annotate-board-card {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* 与 Bootstrap mb-* 同优先级时保证大屏底边与画布齐平 */
+    margin-bottom: 0 !important;
+  }
+  .content.content-annotation .annotate-row > .annotate-sidebar .annotate-sidebar-card > .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .content.content-annotation .annotate-row > .annotate-sidebar .annotate-task-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+  .content.content-annotation .annotate-row > .annotate-main .annotate-board-card > #annotation-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* 画板区须保留最小高度：勿对整块 card/wrapper 用 min-height:0，否则会覆盖全局 min-height:320px，与侧栏同高时被压扁 */
+  .content.content-annotation .annotate-row > .annotate-main .annotation-canvas-card {
+    flex: 1 1 auto;
+    min-height: 512px;
+    display: flex;
+    flex-direction: column;
+  }
+  .content.content-annotation .annotate-row > .annotate-main .annotation-canvas-wrapper {
+    flex: 1 1 auto;
+    min-height: 320px;
+  }
+  .content.content-annotation .annotate-row > .annotate-main .annotation-canvas-scroll {
+    min-height: 0;
+    flex: 1 1 auto;
   }
   .annotate-sidebar .card-sidebar {
     width: 100%;
   }
   /* 仅收紧两列相邻一侧的 gutter，外侧仍保留 Bootstrap 默认 padding 贴齐内容区 */
-  .content.content-annotation .annotate-row > .annotate-main.col-lg-8 {
+  .content.content-annotation .annotate-row > .annotate-main.col-lg-9 {
     padding-right: 8px;
   }
-  .content.content-annotation .annotate-row > .annotate-sidebar.col-lg-4 {
+  .content.content-annotation .annotate-row > .annotate-sidebar.col-lg-3 {
     padding-left: 8px;
   }
 }
 
-/* 侧栏上下两张卡片（项目与任务 / 保存用标签） */
+/* 侧栏：项目与任务；页顶为标注工具栏卡片（annotate-toolbar-card，常与 annotate-labels-card 同节点） */
 .annotate-sidebar-card,
-.annotate-labels-card {
+.annotate-labels-card,
+.annotate-toolbar-card {
   border: 1px solid #eee;
   border-radius: 8px;
 }
-
+.annotate-toolbar-opacity {
+  width: 100%;
+  max-width: 12rem;
+  min-width: 6rem;
+  vertical-align: middle;
+}
+/* 画布操作条滑块 */
+.annotate-canvas-opacity-slider {
+  width: 5rem;
+  min-width: 4rem;
+  max-width: 8rem;
+  vertical-align: middle;
+}
+@media (min-width: 992px) {
+  .annotate-canvas-opacity-slider {
+    width: 6rem;
+  }
+}
+/* ── 工具栏行：两行布局 ── */
+.annotate-toolbar-row {
+  row-gap: 5px;
+  column-gap: 10px;
+}
+.annotate-toolbar-row--top {
+  column-gap: 18px;
+}
+.annotate-toolbar-row .btn-sm,
+.annotate-toolbar-row .btn-group-sm > .btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.875rem;
+}
+.annotate-toolbar-field--roles .labels-panel.labels-panel--horizontal {
+  gap: 4px;
+}
+.annotate-toolbar-field--roles .labels-panel.labels-panel--horizontal .label-row {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 0.8125rem;
+}
+.annotate-toolbar-field--roles .label-swatch {
+  width: 16px;
+  height: 12px;
+}
+.annotate-toolbar-field--export .annot-export-format-select {
+  font-size: 0.875rem;
+  min-width: 7rem;
+  max-width: 11rem;
+}
+/* 画布操作行 */
+.annotate-canvas-actions-inner {
+  flex-wrap: wrap;
+  row-gap: 2px;
+  column-gap: 6px;
+}
+@media (min-width: 992px) {
+  .annotate-canvas-actions-inner {
+    flex-wrap: nowrap;
+  }
+}
 /* 项目下拉：占满侧栏宽度，避免闭合状态下文字被裁切；option 仅纯文本（见模板 data-en/data-zh） */
 #annotateProjectSelect.annotate-project-select,
 select.annotate-project-select {
@@ -306,9 +559,137 @@ select.annotate-project-select {
   box-sizing: border-box;
 }
 .content.content-annotation .annotate-sidebar .annotate-sidebar-card .card-body,
-.content.content-annotation .annotate-sidebar .annotate-labels-card .card-body {
+.content.content-annotation .annotate-labels-card .card-body {
   overflow-x: visible;
   overflow-y: visible;
 }
 
+.annotate-runs-panel {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.annotate-segment-row {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  padding: 8px 8px 8px 0;
+}
+body.white-content .annotate-segment-row,
+html.laps-initial-light body .annotate-segment-row {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.annot-export-format-select {
+  width: auto;
+  max-width: 11rem;
+  min-width: 7rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+.annot-segment-model-select {
+  width: auto;
+  min-width: 8rem;
+  max-width: 14rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+.annotate-toolbar-card label[for="annotSegmentModel"] {
+  white-space: nowrap;
+}
+
+.annotate-save-feedback {
+  border-radius: 8px;
+  border: 1px solid rgba(45, 206, 137, 0.45);
+  background: rgba(45, 206, 137, 0.1);
+  padding: 12px 14px;
+}
+body.white-content .annotate-save-feedback,
+html.laps-initial-light body .annotate-save-feedback {
+  background: rgba(45, 206, 137, 0.12);
+  border-color: rgba(34, 160, 107, 0.4);
+}
+.annotate-save-feedback ul {
+  line-height: 1.45;
+}
+.annotate-preflight-hint {
+  border-radius: 8px;
+}
+
+/* ── Loading overlay ── */
+.annot-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
+  z-index: 20;
+  pointer-events: none;
+  color: #32325d;
+  backdrop-filter: blur(2px);
+}
+.annot-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid rgba(0, 123, 255, 0.18);
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: annot-spin 0.7s linear infinite;
+}
+@keyframes annot-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Brush / eraser cursor ── */
+.annotation-canvas-scroll.cursor-brush canvas {
+  cursor: crosshair;
+}
+.annotation-canvas-scroll.cursor-eraser canvas {
+  cursor: crosshair;
+}
+
+/* ── Brush size slider ── */
+.annotate-canvas-brush-slider {
+  width: 5rem;
+  min-width: 4rem;
+  max-width: 8rem;
+  vertical-align: middle;
+}
+@media (min-width: 992px) {
+  .annotate-canvas-brush-slider {
+    width: 6rem;
+  }
+}
+
+/* ── Editing indicator in runs panel ── */
+.annotate-segment-row.is-editing {
+  outline: 2px solid rgba(0, 123, 255, 0.55);
+  outline-offset: -1px;
+}
+.annotate-segment-row .annotate-seg-edit-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(0, 123, 255, 0.12);
+  color: #007bff;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.annotate-segment-row .btn-edit-seg {
+  font-size: 12px;
+  padding: 1px 8px;
+}
+
+/* ── Active mode button highlight (brush/eraser get colored) ── */
+.btn.active-brush {
+  background-color: #17a2b8 !important;
+  border-color: #17a2b8 !important;
+  color: #fff !important;
+}
+.btn.active-eraser {
+  background-color: #e74c3c !important;
+  border-color: #e74c3c !important;
+  color: #fff !important;
+}
 

@@ -23,6 +23,7 @@ urlpatterns = [
     ),
     path('projects/', views.projects, name='projects'),
     path('datasets/<int:pk>/', views.dataset_detail, name='dataset_detail'),
+    path('api/datasets/<int:pk>/images/', views.dataset_images_api, name='dataset_images_api'),
     path('datasets/', views.datasets, name='datasets'),
     path('tasks/', views.tasks, name='tasks'),
     path('tasks/sample-demo/', views.tasks_sample_demo, name='tasks_sample_demo'),
@@ -35,7 +36,19 @@ urlpatterns = [
     path('api/annotate/available-images/', views.annotate_available_images, name='annotate_available_images'),
     path('api/annotate/tasks/', views.annotate_task_create, name='annotate_task_create'),
     path('api/annotate/tasks/<int:pk>/', views.annotate_task_detail, name='annotate_task_detail'),
+    path(
+        'api/annotate/tasks/<int:pk>/annotations/',
+        views.annotate_task_annotations,
+        name='annotate_task_annotations',
+    ),
+    path(
+        'api/annotate/projects/<int:pk>/export/',
+        views.export_project_annotations,
+        name='annotate_project_export',
+    ),
     path('save-image/', views.save_processed_image, name='save_processed_image'),
     path('segment-image/', views.segment_image, name='segment_image'),
     path('api/annotations/', views.save_annotation, name='save_annotation'),
+    path('api/annotations/<int:pk>/export/', views.export_annotation, name='annotation_export'),
+    path('api/annotations/<int:pk>/', views.delete_annotation, name='delete_annotation'),
 ]

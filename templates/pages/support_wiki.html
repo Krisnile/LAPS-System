@@ -23,19 +23,19 @@
             <h2 class="laps-support-card-title" data-en="Structure and dependencies" data-zh="结构与依赖关系">Structure and dependencies</h2>
           </div>
           <div class="card-body laps-support-card-body laps-md">
-            <p data-en="Datasets can be created first; projects then declare task type and optional dataset links; tasks and annotation consume those entities."
-               data-zh="可先建数据集；再建项目并声明任务类型与可选的数据集关联；任务与标注基于这些实体执行。">
-              Datasets can be created first; projects then declare task type and optional dataset links; tasks and annotation consume those entities.
+            <p data-en="Recommended data flow: create datasets, then projects (with optional dataset links), then tasks, then label on /annotate/. The list below is the single place where cross-entity rules are spelled out."
+               data-zh="推荐顺序：先数据集，再项目（可选关联数据集），再任务，最后在 /annotate/ 标注。下列条目是跨实体规则的唯一详细说明处。">
+              Recommended data flow: create datasets, then projects (with optional dataset links), then tasks, then label on /annotate/. The list below is the single place where cross-entity rules are spelled out.
             </p>
             <ol class="laps-md-ol">
-              <li><span data-en="Dataset — upload and manage images freely; no project is required on the Datasets page." data-zh="数据集 — 可自由上传与管理图像，数据集页不强制绑定项目。">Dataset — upload and manage images freely; no project is required on the Datasets page.</span></li>
-              <li><span data-en="Project — top-level container: pick an annotation task type (e.g. SAM segmentation) and optionally link one or more datasets." data-zh="项目 — 顶层容器：选择标注任务类型（如 SAM 分割），并可多选关联数据集。">Project — top-level container: pick an annotation task type (e.g. SAM segmentation) and optionally link one or more datasets.</span></li>
-              <li><span data-en="Task — binds one project, one image, and a simple state (pending annotation vs done). Annotation operates on this binding." data-zh="任务 — 关联一个项目、一幅图像及简单状态（待标注 / 已完成）；标注针对该关联执行。">Task — binds one project, one image, and a simple state (pending annotation vs done). Annotation operates on this binding.</span></li>
-              <li><span data-en="Annotate — interactive segmentation workspace (SAM). Opened from the Dashboard or Task list via the Annotate action for a selected task." data-zh="标注 — 交互式分割工作区（SAM）。在仪表盘或任务列表中对选定任务执行「标注」进入。">Annotate — interactive segmentation workspace (SAM). Opened from the Dashboard or Task list via the Annotate action for a selected task.</span></li>
+              <li><span data-en="Dataset — stores images; managed on the Datasets page without requiring a project." data-zh="数据集 — 存放图像；在数据集页管理，不强制绑定项目。">Dataset — stores images; managed on the Datasets page without requiring a project.</span></li>
+              <li><span data-en="Project — annotation task type plus optional links to one or more datasets. If linked, batch task creation (Tasks page and similar) only lists those datasets; if not linked, you may still choose any of your datasets when creating tasks." data-zh="项目 — 含标注任务类型与可选的多个数据集关联。已关联时，任务页等处批量建任务仅列出这些数据集；未关联时，建任务仍可选用您账号下任意数据集。">Project — annotation task type plus optional links to one or more datasets. If linked, batch task creation (Tasks page and similar) only lists those datasets; if not linked, you may still choose any of your datasets when creating tasks.</span></li>
+              <li><span data-en="Task — binds one project and one image; the same image cannot appear in two tasks under the same project." data-zh="任务 — 绑定一个项目与一幅图；同一项目下同一图像不能对应两条任务。">Task — binds one project and one image; the same image cannot appear in two tasks under the same project.</span></li>
+              <li><span data-en="Annotate — workspace at /annotate/ for choosing project and task, running segmentation, saving, and exporting. Entry points: sidebar, Dashboard recent tasks, or Tasks list." data-zh="标注 — /annotate/ 工作区：选择项目与任务、运行分割、保存与导出。入口：侧栏、仪表盘最近任务、任务列表。">Annotate — workspace at /annotate/ for choosing project and task, running segmentation, saving, and exporting. Entry points: sidebar, Dashboard recent tasks, or Tasks list.</span> <a href="#annotate-workflow-help" data-en="Screen layout and operations" data-zh="界面与操作见下文">界面与操作见下文</a>。</li>
             </ol>
-            <p data-en="Dashboard (home) provides aggregate metrics, quick links to Projects, Datasets, and Tasks, and a recent-task list with direct entry to Annotate per task."
-               data-zh="仪表盘（首页）提供汇总指标、至项目/数据集/任务的快捷入口，以及含逐条标注入口的最近任务列表。">
-              Dashboard (home) provides aggregate metrics, quick links to Projects, Datasets, and Tasks, and a recent-task list with direct entry to Annotate per task.
+            <p data-en="The Dashboard shows recent tasks with links into Annotate; it does not replace the project/task picker on /annotate/."
+               data-zh="仪表盘「最近任务」可链入标注页，但不能替代 /annotate/ 内的项目与任务选择。">
+              The Dashboard shows recent tasks with links into Annotate; it does not replace the project/task picker on /annotate/.
             </p>
           </div>
         </div>
@@ -46,11 +46,10 @@
           </div>
           <div class="card-body laps-support-card-body laps-md">
             <ol class="laps-md-ol">
-              <li><span data-en="Datasets — list at /datasets/ (basic info + new import); open each dataset’s detail URL (e.g. /datasets/123/) to append files, preview images, edit captions, and edit metadata. Link projects on Projects or Tasks." data-zh="数据集 — /datasets/ 列表展示基本信息并新建导入；进入各数据集的详情页（如 /datasets/123/）继续导入、预览图片、编辑备注与元数据。与项目关联在「项目」或「任务」页完成。">Datasets — list at /datasets/ (basic info + new import); open each dataset’s detail URL (e.g. /datasets/123/) to append files, preview images, edit captions, and edit metadata. Link projects on Projects or Tasks.</span> <a href="{% url 'datasets' %}">/datasets/</a></li>
-              <li><span data-en="Projects — create or edit a project (name, description, annotation task type, linked datasets, optional label configuration). Deleting a project removes its tasks." data-zh="项目 — 新建或编辑（名称、说明、标注任务类型、关联数据集、可选标签配置）。删除项目将级联删除其下任务。">Projects — create or edit a project (name, description, annotation task type, linked datasets, optional label configuration). Deleting a project removes its tasks.</span> <a href="{% url 'projects' %}">/projects/</a></li>
-              <li><span data-en="Tasks — see task-type samples and quick-create a project; batch-generate tasks by choosing a project and dataset (if the project has linked datasets, only those appear)." data-zh="任务 — 查看任务类型示意并快速创建项目；批量生成时选择项目与数据集（若项目已关联数据集，则仅显示已关联项）。">Tasks — see task-type samples and quick-create a project; batch-generate tasks by choosing a project and dataset (if the project has linked datasets, only those appear).</span> <a href="{% url 'tasks' %}">/tasks/</a></li>
-              <li><span data-en="From the Dashboard or Task list, open Annotate for a task. The URL may include task_id to bind the image context." data-zh="在仪表盘或任务列表中对任务执行「标注」。URL 可含 task_id 以绑定图像上下文。">From the Dashboard or Task list, open Annotate for a task. The URL may include task_id to bind the image context.</span></li>
-              <li><span data-en="Annotate — Run / Save / Undo / Clear per toolbar; Prev / Next when a task queue is available." data-zh="标注 — 按工具栏执行运行/保存/撤销/清除；有队列时可用上一张/下一张。">Annotate — Run / Save / Undo / Clear per toolbar; Prev / Next when a task queue is available.</span> <a href="{% url 'annotation' %}">/annotate/</a> — <a href="#annotate-workflow-help" data-en="detailed guide below" data-zh="详见下文「标注页」">详见下文「标注页」</a></li>
+              <li><a href="{% url 'datasets' %}">/datasets/</a> — <span data-en="Create datasets, upload images, edit captions and metadata on each dataset’s detail page." data-zh="建立数据集、上传图像，在各数据集详情页编辑备注与元数据。">Create datasets, upload images, edit captions and metadata on each dataset’s detail page.</span></li>
+              <li><a href="{% url 'projects' %}">/projects/</a> — <span data-en="Create or edit projects (annotation type, optional dataset links, label defaults). Deleting a project removes its tasks." data-zh="新建或编辑项目（标注类型、可选数据集关联、标签默认值等）。删除项目会删除其下任务。">Create or edit projects (annotation type, optional dataset links, label defaults). Deleting a project removes its tasks.</span></li>
+              <li><a href="{% url 'tasks' %}">/tasks/</a> — <span data-en="Batch-generate tasks by project and dataset, respecting linked-dataset rules above." data-zh="按项目与数据集批量生成任务，并遵守上文「已关联数据集」规则。">Batch-generate tasks by project and dataset, respecting linked-dataset rules above.</span> <span data-en="Alternatively, on" data-zh="亦可在">Alternatively, on</span> <a href="{% url 'annotation' %}">/annotate/</a> <span data-en="use New task after selecting a project." data-zh="选中项目后使用「新建任务」。">use New task after selecting a project.</span></li>
+              <li><a href="{% url 'annotation' %}">/annotate/</a> — <span data-en="Label; details in" data-zh="进行标注；说明见">Label; details in</span> <a href="#annotate-workflow-help" data-en="Annotate page — workflow and user guide" data-zh="「标注页 — 工作流与操作说明」">「标注页 — 工作流与操作说明」</a>。</li>
             </ol>
           </div>
         </div>
@@ -60,60 +59,96 @@
             <h2 class="laps-support-card-title" data-en="Annotate page — workflow and user guide" data-zh="标注页 — 工作流与操作说明">Annotate page — workflow and user guide</h2>
           </div>
           <div class="card-body laps-support-card-body laps-md">
-            <p data-en="This section replaces the former on-page help modal: all rules, layout notes, and troubleshooting for the annotation workspace are kept here."
-               data-zh="本节承接原标注页「遇到问题」弹窗中的说明：业务规则、界面布局与用户操作补充均集中在此，便于维护与检索。">
-              This section replaces the former on-page help modal: all rules, layout notes, and troubleshooting for the annotation workspace are kept here.
+            <p data-en="This section covers /annotate/ only: layout, controls, persistence, export, and troubleshooting. Dataset / project / task relationships are defined under Structure and dependencies; they are not repeated here."
+               data-zh="本节仅说明 /annotate/：布局、控件、持久化、导出与排查。数据集 / 项目 / 任务关系见上文「结构与依赖关系」，此处不重复。">
+              This section covers /annotate/ only: layout, controls, persistence, export, and troubleshooting. Dataset / project / task relationships are defined under Structure and dependencies; they are not repeated here.
             </p>
 
-            <h3 id="annotate-rules" class="laps-support-h3" data-en="Data model and business rules" data-zh="数据与业务规则">Data model and business rules</h3>
-            <ul>
-              <li><span data-en="You must have at least one project. Projects may link zero or more datasets; if linked, batch task creation elsewhere only offers those datasets (same rule as the Tasks page)." data-zh="至少需要一个项目。项目可关联零个或多个数据集；若已关联，在任务页等处批量建任务时仅能从已关联数据集中选择。">You must have at least one project. Projects may link zero or more datasets; if linked, batch task creation elsewhere only offers those datasets (same rule as the Tasks page).</span></li>
-              <li><span data-en="After linking, you can create tasks for images (one task per image per project). The same image cannot have two tasks under the same project." data-zh="关联后可基于图片创建任务：同一项目下，一张图片只对应一条任务。">After linking, you can create tasks for images (one task per image per project). The same image cannot have two tasks under the same project.</span></li>
-              <li><span data-en="If the project has no linked datasets, the system may still let you pick any of your datasets when creating tasks, consistent with the Tasks page." data-zh="若项目未关联任何数据集，建任务时仍可能允许使用您账号下的任意数据集（与任务页逻辑一致）。">If the project has no linked datasets, the system may still let you pick any of your datasets when creating tasks, consistent with the Tasks page.</span></li>
-              <li><span data-en="On large screens the canvas is on the left and the project/task panel on the right; on small screens the panel stacks above the canvas so you can pick a task first." data-zh="大屏下画布在左、项目与任务目录在右；小屏下列表在上、画布在下，便于先选任务再标注。">On large screens the canvas is on the left and the project/task panel on the right; on small screens the panel stacks above the canvas so you can pick a task first.</span></li>
-            </ul>
-
-            <h3 class="laps-support-h3" data-en="Recommended steps on /annotate/" data-zh="在标注页的推荐操作顺序">Recommended steps on /annotate/</h3>
+            <h3 id="annotate-layout" class="laps-support-h3" data-en="Page layout (top to bottom)" data-zh="页面布局（自上而下）">页面布局（自上而下）</h3>
             <ol class="laps-md-ol">
-              <li><span data-en="Expand the workflow strip at the top if needed; use the quick links (Datasets / Projects / Tasks) to fix missing data." data-zh="需要时可展开顶部「标注工作流」；用「数据集 / 项目 / 任务」快捷按钮补齐数据。">Expand the workflow strip at the top if needed; use the quick links (Datasets / Projects / Tasks) to fix missing data.</span></li>
-              <li><span data-en="In the right panel tab &quot;Project &amp; tasks&quot;, choose a project, then click a task row to load its image into the canvas." data-zh="在右侧「项目与任务目录」标签页中选择项目，再点击一条任务，将对应图片加载到左侧画布。">In the right panel tab "Project & tasks", choose a project, then click a task row to load its image into the canvas.</span></li>
-              <li><span data-en="Switch to the &quot;Labels (save)&quot; tab if you need to pick foreground / background / other before saving the mask." data-zh="若要在保存前指定语义，切换到「保存用标签」标签页，选择前景 / 背景 / 其他。">Switch to the "Labels (save)" tab if you need to pick foreground / background / other before saving the mask.</span></li>
-              <li><span data-en="Use point or box mode, add prompts on the image, press Run (SAM), then Save to store the mask for the current task." data-zh="选择「点」或「框」模式，在图上添加提示，点击「运行」执行 SAM，再「保存」将遮罩写入当前任务。">Use point or box mode, add prompts on the image, press Run (SAM), then Save to store the mask for the current task.</span></li>
+              <li><span data-en="Annotation workflow card — collapsible checklist with links to Datasets, Projects, and Tasks." data-zh="标注工作流卡片 — 可折叠，内含数据准备步骤与链向数据集 / 项目 / 任务。">Annotation workflow card — collapsible checklist with links to Datasets, Projects, and Tasks.</span></li>
+              <li><span data-en="Annotation toolbar card — header (title and doc links) and a body that lists: category name (for the next Run), segment roles, segmentation model, export format, Export, and mask opacity (display only)." data-zh="标注工具栏卡片 — 标题行（标题与文档链接）与正文：类别名（作用于下一次「运行」）、分割角色、分割模型、导出格式、「导出」按钮、遮罩透明度（仅显示效果）。">Annotation toolbar card — header (title and doc links) and a body that lists: category name (for the next Run), segment roles, segmentation model, export format, Export, and mask opacity (display only).</span></li>
+              <li><span data-en="Main row — wide screens: canvas card on the left, project/task sidebar on the right; narrow screens: sidebar stacks above the canvas." data-zh="主栏 — 宽屏左画布卡片、右项目与任务侧栏；窄屏侧栏叠在画布上方。">Main row — wide screens: canvas card on the left, project/task sidebar on the right; narrow screens: sidebar stacks above the canvas.</span></li>
+              <li><span data-en="Canvas card — image and overlay; under the image: Point/Box/Brush/Eraser, Run, Save, Undo, Clear all prompts, zoom and reset, mask opacity, brush size (visible in Brush/Eraser mode); below that: Completed runs, Current prompts, and current task summary." data-zh="画布卡片 — 图像与叠加层；图下方：点/框/画笔/橡皮、运行、保存、撤销、清除所有提示、缩放与重置、遮罩透明度、笔刷大小（画笔/橡皮模式时显示）；再下为「已运行的分割」「当前提示」与当前任务摘要。">Canvas card — image and overlay; under the image: Point/Box/Brush/Eraser, Run, Save, Undo, Clear all prompts, zoom and reset, mask opacity, brush size (visible in Brush/Eraser mode); below that: Completed runs, Current prompts, and current task summary.</span></li>
             </ol>
 
-            <h3 class="laps-support-h3" data-en="Toolbar, zoom, and keyboard shortcuts" data-zh="工具栏、缩放与快捷键">Toolbar, zoom, and keyboard shortcuts</h3>
+            <h3 id="annotate-rules" class="laps-support-h3" data-en="Rules specific to this page" data-zh="仅本页生效的约定">仅本页生效的约定</h3>
             <ul>
-              <li><span data-en="Point / Box — toggle prompt type; Run — call segmentation; Save — upload mask; Undo — step back; Clear — remove prompts (not the saved mask file until you overwrite)." data-zh="点 / 框 — 切换提示类型；运行 — 请求分割；保存 — 上传遮罩；撤销 — 回退一步；清除提示 — 清空当前提示（与已保存文件不同，保存会覆盖）。">Point / Box — toggle prompt type; Run — call segmentation; Save — upload mask; Undo — step back; Clear — remove prompts (not the saved mask file until you overwrite).</span></li>
-              <li><span data-en="Keyboard: Space = Run, S = Save, Ctrl+Z (or Cmd+Z) = Undo, C = Clear prompts. Buttons show hints in their title attributes." data-zh="快捷键：空格 = 运行，S = 保存，Ctrl+Z（Mac 为 Cmd+Z）= 撤销，C = 清除提示。按钮的 title 上也有提示。">Keyboard: Space = Run, S = Save, Ctrl+Z (or Cmd+Z) = Undo, C = Clear prompts. Buttons show hints in their title attributes.</span></li>
-              <li><span data-en="Zoom controls and mask opacity slider affect display only (opacity of the overlay preview)." data-zh="缩放与「遮罩透明度」仅影响显示（叠加预览的透明度）。">Zoom controls and mask opacity slider affect display only (opacity of the overlay preview).</span></li>
-              <li><span data-en="The prompts list under the canvas summarizes current points/boxes." data-zh="画布下方的「提示点/框」列表汇总当前提示。">The prompts list under the canvas summarizes current points/boxes.</span></li>
+              <li><span data-en="Select a project in the sidebar before the task list and New task unlock." data-zh="须先在侧栏选择项目，任务列表与「新建任务」才可用。">Select a project in the sidebar before the task list and New task unlock.</span></li>
+              <li><span data-en="A yellow notice may appear when the project has no linked datasets; task creation options still follow the global rules in Structure and dependencies." data-zh="项目未关联数据集时可能出现黄色提示；建任务可选范围仍遵循上文「结构与依赖关系」中的全局规则。">A yellow notice may appear when the project has no linked datasets; task creation options still follow the global rules in Structure and dependencies.</span></li>
+              <li><span data-en="Model choice: SAM returns a segmentation mask via prompt-driven interaction. YOLO11-seg performs automatic instance segmentation on the full image; you can optionally add foreground/background points or a box to filter which detected instances to keep. Both models return a grayscale mask PNG. Weights go under model/sam/ and model/yolo/ respectively." data-zh="模型选择：SAM 通过点/框提示驱动交互式分割。YOLO11-seg 对全图自动做实例分割，也可通过添加前景/背景点或框来筛选保留的实例。两种模型均返回灰度掩码 PNG。权重分别放在 model/sam/ 和 model/yolo/ 下。">Model choice: SAM returns a segmentation mask via prompt-driven interaction. YOLO11-seg performs automatic instance segmentation on the full image; you can optionally add foreground/background points or a box to filter which detected instances to keep. Both models return a grayscale mask PNG. Weights go under model/sam/ and model/yolo/ respectively.sk PNG; YOLO runs derive it from the union of detected boxes.</span></li>
             </ul>
 
-            <h3 id="annotate-labels-save" class="laps-support-h3" data-en="Labels before save" data-zh="保存用标签（说明）">Labels before save</h3>
-            <p data-en="Select a label row (foreground / background / other) before saving so the server can store the intended class with the mask. If unsure, keep the default and still save."
-               data-zh="保存前在「保存用标签」中点选一行（前景 / 背景 / 其他），写入数据库时会带上该语义。若暂不区分，可保持默认后仍可直接保存。">
-              Select a label row (foreground / background / other) before saving so the server can store the intended class with the mask. If unsure, keep the default and still save.
-            </p>
+            <h3 class="laps-support-h3" data-en="Typical labeling flow" data-zh="典型标注流程">典型标注流程</h3>
+            <ol class="laps-md-ol">
+              <li><span data-en="Sidebar: select project, then a task to load the image." data-zh="侧栏：选项目，再点任务以加载图像。">Sidebar: select project, then a task to load the image.</span></li>
+              <li><span data-en="Toolbar card: set segment role and optional category for the next Run; choose the segmentation model." data-zh="工具栏卡片：为下一次「运行」设分割角色与可选类别名；选择分割模型。">Toolbar card: set segment role and optional category for the next Run; choose the segmentation model.</span> <span data-en="Semantics:" data-zh="语义见">Semantics:</span> <a href="#annotate-role-category" data-en="Role and category" data-zh="「角色与类别名」">「角色与类别名」</a>。</li>
+              <li><span data-en="Canvas area: choose Point or Box, place prompts, Run. Both SAM and YOLO11-seg runs add a colored mask overlay—each adds one row in Completed runs. Repeat as needed with new role, category, model, or prompts. After running, switch to Brush or Eraser mode (B / E key) to manually refine the mask — paint to add regions, erase to remove. Scroll wheel zooms the canvas; Shift+scroll or [ ] adjusts brush size." data-zh="画布区：选点或框模式、放置提示后「运行」。SAM 和 YOLO11-seg 每次运行均叠加彩色掩码；在「已运行的分割」增一行。可更换角色、类别、模型或提示后重复。运行后可切换到画笔或橡皮模式（B / E 键）手动微调掩码 — 画笔添加区域、橡皮擦除。滚轮缩放画布；Shift+滚轮或 [ ] 调节笔刷大小。">Canvas area: choose Point or Box, place prompts, Run. Both SAM and YOLO11-seg runs add a colored mask overlay—each adds one row in Completed runs. Repeat as needed with new role, category, model, or prompts. After running, switch to Brush or Eraser mode (B / E key) to manually refine the mask — paint to add regions, erase to remove. Scroll wheel zooms the canvas; Shift+scroll or [ ] adjusts brush size.</span></li>
+              <li><span data-en="Save writes only runs that are not yet in the database (see next heading). Export packages every saved annotation in the current project; format details are under Export formats." data-zh="「保存」只上传尚未入库的运行（见下节）。「导出」打包当前项目中全部已保存标注；格式见「导出格式」。">Save writes only runs that are not yet in the database (see next heading). Export packages every saved annotation in the current project; format details are under Export formats.</span></li>
+            </ol>
 
-            <h3 id="annotate-new-task" class="laps-support-h3" data-en="New task modal" data-zh="「新建任务」弹窗">New task modal</h3>
-            <p data-en="Opens from the right panel when a project is selected. Each tile is an image that does not yet have a task in this project; picking one creates a single task. The same image cannot be added twice to the same project."
-               data-zh="在已选项目的前提下，从右侧打开「新建任务」。列表中每格为一幅尚未在本项目下建任务的图片；点选后创建一条任务。同一项目下同一张图只能建一条任务。">
-              Opens from the right panel when a project is selected. Each tile is an image that does not yet have a task in this project; picking one creates a single task. The same image cannot be added twice to the same project.
-            </p>
-
-            <h3 id="annotate-faq" class="laps-support-h3" data-en="Troubleshooting" data-zh="常见问题与排查">Troubleshooting</h3>
+            <h3 id="annotate-save-persist" class="laps-support-h3" data-en="Save, reload, rows, and delete" data-zh="保存、重载、列表行与删除">保存、重载、列表行与删除</h3>
             <ul>
-              <li><strong data-en="No projects" data-zh="没有项目">No projects</strong> —
-                <a href="{% url 'projects' %}" data-en="Create a project" data-zh="去项目页创建">去项目页创建</a>。</li>
-              <li><strong data-en="Project has no linked datasets" data-zh="项目未关联数据集">Project has no linked datasets</strong> —
-                <a href="{% url 'projects' %}" data-en="Edit project" data-zh="编辑项目并勾选数据集">编辑项目并勾选数据集</a>；<span data-en="if none are linked, you may still use any of your datasets when creating tasks (same as Tasks page)." data-zh="未关联时仍可能允许使用账号下任意数据集建任务（与任务页一致）。">if none are linked, you may still use any of your datasets when creating tasks (same as Tasks page).</span></li>
-              <li><strong data-en="No images" data-zh="没有图片">No images</strong> —
-                <a href="{% url 'datasets' %}" data-en="Upload on Datasets" data-zh="数据集页上传">数据集页上传</a>。</li>
-              <li><strong data-en="Task list empty" data-zh="任务列表为空">Task list empty</strong> —
-                <span data-en="Use New task in the right panel or batch-create on" data-zh="使用右侧「新建任务」，或在">使用右侧「新建任务」，或在</span>
-                <a href="{% url 'tasks' %}" data-en="Tasks" data-zh="任务页">任务页</a><span data-en="." data-zh="批量生成。">批量生成。</span></li>
-              <li><strong data-en="Cannot save" data-zh="无法保存">Cannot save</strong> —
-                <span data-en="Ensure a task is selected on the right, the image is loaded, and you have run segmentation at least once; check that you are logged in." data-zh="请确认右侧已选中任务、画布已加载图片且已执行过「运行」分割；并确认登录未过期。">Ensure a task is selected on the right, the image is loaded, and you have run segmentation at least once; check that you are logged in.</span></li>
+              <li><span data-en="Save creates one database annotation per unsaved run on the current task and sets the task to Done. If all runs are already saved, the UI reports nothing new to upload." data-zh="保存为当前任务下每条「尚未入库」的运行各写入一条标注，并将任务标为已完成。若均已保存，界面会提示没有新的可上传内容。">Save creates one database annotation per unsaved run on the current task and sets the task to Done. If all runs are already saved, the UI reports nothing new to upload.</span></li>
+              <li><span data-en="Switching tasks and returning reloads masks and rows from the server for that task." data-zh="切换任务后再回到该任务时，会从服务器恢复该任务的遮罩与列表。">Switching tasks and returning reloads masks and rows from the server for that task.</span></li>
+              <li><span data-en="Delete on an unsaved row removes only that overlay locally. Delete on a saved row removes the annotation in the database; if it was the last annotation on the task, the task may return to Pending." data-zh="删除未保存行仅去掉本地遮罩。删除已保存行会删除库中对应标注；若该任务下已无标注，任务可能回到待标注。">Delete on an unsaved row removes only that overlay locally. Delete on a saved row removes the annotation in the database; if it was the last annotation on the task, the task may return to Pending.</span></li>
+            </ul>
+
+            <h3 class="laps-support-h3" data-en="Keyboard and display-only controls" data-zh="快捷键与仅影响显示的控件">快捷键与仅影响显示的控件</h3>
+            <ul>
+              <li><span data-en="Space = Run, S = Save, Ctrl+Z or Cmd+Z = Undo (last prompt step), C = Clear all prompts, P = Point mode, X = Box mode, B = Brush mode, E = Eraser mode, [ = shrink brush, ] = grow brush. Button titles carry the same hints. Scroll wheel zooms; Shift+scroll adjusts brush size." data-zh="空格 = 运行，S = 保存，Ctrl+Z（Mac 为 Cmd+Z）= 撤销（上一步提示），C = 清除所有提示，P = 点模式，X = 框模式，B = 画笔模式，E = 橡皮模式，[ = 缩小笔刷，] = 放大笔刷。按钮 title 含相同说明。滚轮缩放画布；Shift+滚轮调节笔刷大小。">Space = Run, S = Save, Ctrl+Z or Cmd+Z = Undo (last prompt step), C = Clear all prompts, P = Point mode, X = Box mode, B = Brush mode, E = Eraser mode, [ = shrink brush, ] = grow brush. Button titles carry the same hints. Scroll wheel zooms; Shift+scroll adjusts brush size.</span></li>
+              <li><span data-en="Clear all prompts clears pending points/boxes before the next Run only; it does not remove saved overlays." data-zh="「清除所有提示」只清空尚未随「运行」提交的点/框，不删除已保存遮罩。">Clear all prompts clears pending points/boxes before the next Run only; it does not remove saved overlays.</span></li>
+              <li><span data-en="Zoom and mask opacity adjust on-screen preview only, not stored mask files." data-zh="缩放与遮罩透明度只改变屏幕预览，不改变已存储的掩码文件。">Zoom and mask opacity adjust on-screen preview only, not stored mask files.</span></li>
+            </ul>
+
+            <h3 class="laps-support-h3" data-en="Panels under the canvas" data-zh="画布下方的列表">画布下方的列表</h3>
+            <ul>
+              <li><span data-en="Completed runs — one line per Run (or per saved annotation after reload); category, role, and prompt summary; row delete behavior is described under Save, reload…" data-zh="已运行的分割 — 每次运行一行（重载后与已保存标注对应）；含类别、角色、提示摘要；删除行为见上文「保存、重载…」。">Completed runs — one line per Run (or per saved annotation after reload); category, role, and prompt summary; row delete behavior is described under Save, reload…</span></li>
+              <li><span data-en="Current prompts — points/boxes waiting for the next Run only." data-zh="当前提示 — 仅列出等待下一次「运行」的点/框。">Current prompts — points/boxes waiting for the next Run only.</span></li>
+            </ul>
+
+            <h3 id="annotate-role-category" class="laps-support-h3" data-en="Role and category name (meaning in exports)" data-zh="角色与类别名（导出中的含义）">角色与类别名（导出中的含义）</h3>
+            <p data-en="Segment role (foreground / background / other) is chosen before each Run and stored as metadata on the saved annotation. Category name applies to the next Run; if empty, the stored label is default. Roles are not three separate COCO class names—they annotate intent and may appear as sidecar fields (e.g. segment_role) in merged exports." data-zh="分割角色（前景 / 背景 / 其他）在每次「运行」前选择，并作为元数据写入已保存的标注。类别名作用于下一次「运行」；若留空，入库标签为 default。角色不是三个并列的 COCO 类名，而是语义标记，在合并导出中可能以扩展字段（如 segment_role）出现。">
+              Segment role (foreground / background / other) is chosen before each Run and stored as metadata on the saved annotation. Category name applies to the next Run; if empty, the stored label is default. Roles are not three separate COCO class names—they annotate intent and may appear as sidecar fields (e.g. segment_role) in merged exports.
+            </p>
+            <p data-en="For multiple instances on one image with distinct class names in downstream tools, use a different category name before each Run; roles can still record UI intent separately." data-zh="若同图多实例且下游需要不同类名，可在每次运行前填写不同类别名；分割角色仍可单独记录界面语义。">
+              For multiple instances on one image with distinct class names in downstream tools, use a different category name before each Run; roles can still record UI intent separately.
+            </p>
+
+            <h3 id="annotate-labels-save" class="laps-support-h3" data-en="Export formats (project scope)" data-zh="导出格式（项目范围）">导出格式（项目范围）</h3>
+            <p data-en="Requires a selected project. The download includes every annotation already saved in that project; unsaved overlays on the canvas are not included." data-zh="须已选择项目。下载内容为该项目内已保存的全部标注；画布上尚未保存的叠加层不包含在内。">
+              Requires a selected project. The download includes every annotation already saved in that project; unsaved overlays on the canvas are not included.
+            </p>
+            <ul>
+              <li><span data-en="COCO JSON — one merged file with multiple images and instances; categories reflect stored names (and roles where the format carries them)." data-zh="COCO JSON — 单个合并文件，多图多实例；类别反映已存名称（及格式所携带的角色信息）。">COCO JSON — one merged file with multiple images and instances; categories reflect stored names (and roles where the format carries them).</span></li>
+              <li><span data-en="Simple JSON (LAPS) — one file listing per-annotation records (paths, RLE, etc.)." data-zh="简单 JSON（LAPS）— 单文件，按条列出标注记录（路径、RLE 等）。">Simple JSON (LAPS) — one file listing per-annotation records (paths, RLE, etc.).</span></li>
+              <li><span data-en="Pascal VOC — ZIP; one XML per source image, multiple object nodes when an image has several instances." data-zh="Pascal VOC — ZIP；每源图一个 XML，一图多实例时同一文件内多个 object。">Pascal VOC — ZIP; one XML per source image, multiple object nodes when an image has several instances.</span></li>
+              <li><span data-en="YOLO bbox — ZIP; one txt per image, one line per instance (boxes derived from masks)." data-zh="YOLO 框 — ZIP；每图一个 txt，每实例一行（框由掩码推导）。">YOLO bbox — ZIP; one txt per image, one line per instance (boxes derived from masks).</span></li>
+              <li><span data-en="Mask PNG — ZIP of raster files named by task and annotation id." data-zh="掩码 PNG — ZIP，文件按任务与标注 id 命名。">Mask PNG — ZIP of raster files named by task and annotation id.</span></li>
+            </ul>
+            <p data-en="The category field starts empty on each visit to the annotate page; it is not saved in the browser when you leave or refresh." data-zh="类别名输入框每次进入标注页默认为空；离开或刷新页面后不会在浏览器中记住上次填写内容。">
+              The category field starts empty on each visit to the annotate page; it is not saved in the browser when you leave or refresh.
+            </p>
+
+            <h3 id="annotate-new-task" class="laps-support-h3" data-en="New task modal" data-zh="「新建任务」弹窗">「新建任务」弹窗</h3>
+            <p data-en="Shown when a project is selected. Tiles are images that have no task in this project yet; one click creates one task. Images already tied to a task in this project never appear in the grid." data-zh="在已选项目下打开。每格为尚未在本项目建任务的图像；点选创建一条任务。已在本项目有任务的图像不会出现在网格中。">
+              Shown when a project is selected. Tiles are images that have no task in this project yet; one click creates one task. Images already tied to a task in this project never appear in the grid.
+            </p>
+
+            <h3 id="annotate-faq" class="laps-support-h3" data-en="Troubleshooting" data-zh="常见问题与排查">常见问题与排查</h3>
+            <ul>
+              <li><strong data-en="Missing prerequisites" data-zh="前置条件不足">Missing prerequisites</strong> —
+                <span data-en="Create projects, datasets, or tasks via" data-zh="通过">Create projects, datasets, or tasks via</span>
+                <a href="{% url 'projects' %}" data-en="Projects" data-zh="项目">项目</a>、
+                <a href="{% url 'datasets' %}" data-en="Datasets" data-zh="数据集">数据集</a>、
+                <a href="{% url 'tasks' %}" data-en="Tasks" data-zh="任务">任务</a>；
+                <span data-en="or use New task on Annotate after picking a project." data-zh="或在标注页选中项目后使用「新建任务」。">or use New task on Annotate after picking a project.</span></li>
+              <li><strong data-en="Linked-dataset notice" data-zh="未关联数据集提示">Linked-dataset notice</strong> —
+                <span data-en="Optional: attach datasets on the project edit form. Behavior without links is defined under Structure and dependencies, not duplicated here." data-zh="可选：在项目编辑页关联数据集。未关联时的行为见上文「结构与依赖关系」，此处不重复。">Optional: attach datasets on the project edit form. Behavior without links is defined under Structure and dependencies, not duplicated here.</span></li>
+              <li><strong data-en="Save reports nothing to save" data-zh="保存提示无可保存内容">Save reports nothing to save</strong> —
+                <span data-en="You need a selected task, at least one new Run after the last save, and a segment role chosen before each Run. See Save, reload…" data-zh="需已选任务、在上次保存后至少有一次新「运行」，且每次运行前已选分割角色。详见上文「保存、重载…」。">You need a selected task, at least one new Run after the last save, and a segment role chosen before each Run. See Save, reload…</span></li>
+              <li><strong data-en="Export unavailable or empty" data-zh="导出不可用或几乎为空">Export unavailable or empty</strong> —
+                <span data-en="Choose a project first. If nothing has been saved yet, archives may contain only a readme or minimal JSON." data-zh="请先选择项目。若尚未保存任何标注，压缩包或 JSON 可能仅含说明或空结构。">Choose a project first. If nothing has been saved yet, archives may contain only a readme or minimal JSON.</span></li>
             </ul>
 
             <p class="mb-0">
@@ -124,39 +159,38 @@
 
         <div class="card laps-support-card mb-3">
           <div class="card-header laps-support-card-header">
-            <h2 class="laps-support-card-title" data-en="Alignment with Label Studio–style flow" data-zh="与 Label Studio 类流程的对照">Alignment with Label Studio–style flow</h2>
+            <h2 class="laps-support-card-title" data-en="Comparison to Label Studio–style products" data-zh="与 Label Studio 类产品对照">与 Label Studio 类产品对照</h2>
           </div>
           <div class="card-body laps-support-card-body laps-md">
-            <p class="mb-0" data-en="Label Studio centers on a Project, Data Manager, and per-task labeling. Here, Projects carry an annotation type and optional many-to-many linked datasets; Datasets are managed freely; batch task creation restricts dataset choice when the project has linked datasets."
-               data-zh="Label Studio 以项目、数据管理与逐任务标注为核心。本系统中项目包含标注类型与可选的多数据集关联；数据集独立管理；批量生成任务时，若项目已关联数据集则仅能从中选择。">
-              Label Studio centers on a Project, Data Manager, and per-task labeling. Here, Projects carry an annotation type and optional many-to-many linked datasets; Datasets are managed freely; batch task creation restricts dataset choice when the project has linked datasets.
+            <p class="mb-0" data-en="Those products usually pair a project with a data manager and per-task UIs. LAPS separates free-form dataset storage from projects that declare an annotation type and optional dataset links; the exact linking and batch rules are only in Structure and dependencies above."
+               data-zh="同类产品常将项目与数据管理、逐任务界面绑定。LAPS 将数据集独立存放，由项目声明标注类型与可选数据集关联；关联与批量规则仅见上文「结构与依赖关系」。">
+              Those products usually pair a project with a data manager and per-task UIs. LAPS separates free-form dataset storage from projects that declare an annotation type and optional dataset links; the exact linking and batch rules are only in Structure and dependencies above.
             </p>
           </div>
         </div>
 
         <div class="card laps-support-card mb-3">
           <div class="card-header laps-support-card-header">
-            <h2 class="laps-support-card-title" data-en="Sidebar — module reference" data-zh="侧栏 — 模块说明">Sidebar — module reference</h2>
+            <h2 class="laps-support-card-title" data-en="Sidebar — where each module lives" data-zh="侧栏 — 各模块入口">侧栏 — 各模块入口</h2>
           </div>
           <div class="card-body laps-support-card-body laps-md">
             <ul class="mb-0">
-              <li><span data-en="Dashboard — summary metrics, shortcuts, recent tasks with per-task Annotate links." data-zh="仪表盘 — 汇总指标、快捷入口、带逐条标注链接的最近任务。">Dashboard — summary metrics, shortcuts, recent tasks with per-task Annotate links.</span></li>
-              <li><span data-en="Projects — project CRUD with annotation type and linked datasets." data-zh="项目 — 含标注类型与关联数据集的项目增删改查。">Projects — project CRUD with annotation type and linked datasets.</span></li>
-              <li><span data-en="Datasets — full lifecycle for datasets and images without mandatory project binding." data-zh="数据集 — 数据集与图像的全生命周期（无需强制绑定项目）。">Datasets — full lifecycle for datasets and images without mandatory project binding.</span></li>
-              <li><span data-en="Tasks — task CRUD (project, image, status). Annotate resolves the active task from the selected row." data-zh="任务 — 任务的增删改查（项目、图像、状态）。标注页根据所选任务行解析当前任务。">Tasks — task CRUD (project, image, status). Annotate resolves the active task from the selected row.</span></li>
-              <li><span data-en="Annotate — opens the workspace. If no valid task context is loaded, return to Tasks or the Dashboard, select a task, then use Annotate." data-zh="标注 — 打开工作区。若未加载有效任务上下文，请返回任务或仪表盘选择任务后再进入标注。">Annotate — opens the workspace. If no valid task context is loaded, return to Tasks or the Dashboard, select a task, then use Annotate.</span></li>
+              <li><span data-en="Dashboard — / ; metrics, shortcuts, recent tasks (Annotate links)." data-zh="仪表盘 — / ；指标、快捷入口、最近任务（含标注链接）。">Dashboard — / ; metrics, shortcuts, recent tasks (Annotate links).</span></li>
+              <li><span data-en="Projects — /projects/ ; project settings and linked datasets." data-zh="项目 — /projects/ ；项目设置与关联数据集。">Projects — /projects/ ; project settings and linked datasets.</span></li>
+              <li><span data-en="Datasets — /datasets/ ; images and metadata." data-zh="数据集 — /datasets/ ；图像与元数据。">Datasets — /datasets/ ; images and metadata.</span></li>
+              <li><span data-en="Tasks — /tasks/ ; list and batch operations." data-zh="任务 — /tasks/ ；列表与批量操作。">Tasks — /tasks/ ; list and batch operations.</span></li>
+              <li><span data-en="Annotate — /annotate/ ; in-page project and task selection (see Annotate page section)." data-zh="标注 — /annotate/ ；在页内选择项目与任务（见「标注页」一节）。">Annotate — /annotate/ ; in-page project and task selection (see Annotate page section).</span></li>
             </ul>
           </div>
         </div>
 
         <div class="card laps-support-card mb-3">
           <div class="card-header laps-support-card-header">
-            <h2 class="laps-support-card-title" data-en="Top bar — account and preferences" data-zh="顶栏 — 账户与偏好">Top bar — account and preferences</h2>
+            <h2 class="laps-support-card-title" data-en="Top bar — account and preferences" data-zh="顶栏 — 账户与偏好">顶栏 — 账户与偏好</h2>
           </div>
           <div class="card-body laps-support-card-body laps-md">
-            <p class="mb-0" data-en="Independent of the labeling workflow: the account menu provides profile settings and Logout. Theme accent, light/dark mode, and UI language are configured on the top bar."
-               data-zh="独立于标注流程：账户菜单提供个人资料与登出；主题色、浅色/深色模式及界面语言在顶栏配置。">
-              Independent of the labeling workflow: the account menu provides profile settings and Logout. Theme accent, light/dark mode, and UI language are configured on the top bar.
+            <p class="mb-0" data-en="Account menu: profile and logout. Theme accent, light/dark mode, and UI language are controlled from the top bar and do not affect labeling data." data-zh="账户菜单：个人资料与登出。主题色、浅色/深色模式与界面语言在顶栏设置，与标注数据无关。">
+              Account menu: profile and logout. Theme accent, light/dark mode, and UI language are controlled from the top bar and do not affect labeling data.
             </p>
           </div>
         </div>

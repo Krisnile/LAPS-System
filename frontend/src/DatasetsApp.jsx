@@ -7,6 +7,8 @@ import {
   ZipPickZone,
 } from './datasetsShared.jsx'
 
+const IMPORT_PREVIEW_PAGE_SIZE = 48
+
 function DatasetsApp({ datasets = [], createdImages = [], urls = {} }) {
   const csrfToken = getCsrfFromCookie()
   const [createMode, setCreateMode] = useState('images')
@@ -14,11 +16,29 @@ function DatasetsApp({ datasets = [], createdImages = [], urls = {} }) {
   const [zipFile, setZipFile] = useState(null)
   const [urlDraft, setUrlDraft] = useState('')
   const [createBusy, setCreateBusy] = useState(false)
+  const [importPreviewPage, setImportPreviewPage] = useState(1)
+  const [createdPreviewPage, setCreatedPreviewPage] = useState(1)
 
   const previewUrls = useMemo(() => pendingFiles.map((f) => URL.createObjectURL(f)), [pendingFiles])
   useEffect(() => {
     return () => previewUrls.forEach((u) => URL.revokeObjectURL(u))
   }, [previewUrls])
+
+  const importPreviewTotalPages = Math.max(1, Math.ceil(pendingFiles.length / IMPORT_PREVIEW_PAGE_SIZE) || 1)
+  useEffect(() => {
+    setImportPreviewPage((p) => Math.min(p, importPreviewTotalPages))
+  }, [pendingFiles.length, importPreviewTotalPages])
+
+  const importPreviewStart = (importPreviewPage - 1) * IMPORT_PREVIEW_PAGE_SIZE
+  const importPreviewSlice = pendingFiles.slice(importPreviewStart, importPreviewStart + IMPORT_PREVIEW_PAGE_SIZE)
+
+  const createdTotalPages = Math.max(1, Math.ceil(createdImages.length / IMPORT_PREVIEW_PAGE_SIZE) || 1)
+  useEffect(() => {
+    setCreatedPreviewPage((p) => Math.min(p, createdTotalPages))
+  }, [createdImages.length, createdTotalPages])
+
+  const createdStart = (createdPreviewPage - 1) * IMPORT_PREVIEW_PAGE_SIZE
+  const createdSlice = createdImages.slice(createdStart, createdStart + IMPORT_PREVIEW_PAGE_SIZE)
 
   const removePending = useCallback((index) => {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index))
@@ -112,26 +132,62 @@ function DatasetsApp({ datasets = [], createdImages = [], urls = {} }) {
                         <p className="small text-muted mb-1" data-en="Preview (click × to remove before import)" data-zh="导入前预览（× 移除不需要的文件）">
                           导入前预览（× 移除不需要的文件）
                         </p>
+                        <p className="small text-muted mb-2 laps-import-preview-summary">
+                          <span data-en="Selected" data-zh="已选">已选</span> {pendingFiles.length}{' '}
+                          <span data-en="files" data-zh="个文件">个文件</span>
+                          {importPreviewTotalPages > 1 ? (
+                            <>
+                              {' · '}
+                              <span data-en="Page" data-zh="第">第</span> {importPreviewPage} / {importPreviewTotalPages}{' '}
+                              <span data-en="pages" data-zh="页">页</span>
+                            </>
+                          ) : null}
+                        </p>
+                        {importPreviewTotalPages > 1 ? (
+                          <div className="d-flex flex-wrap align-items-center mb-2">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-secondary mr-2"
+                              disabled={importPreviewPage <= 1}
+                              onClick={() => setImportPreviewPage((p) => Math.max(1, p - 1))}
+                              data-en="Previous page" data-zh="上一页"
+                            >
+                              上一页
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-secondary"
+                              disabled={importPreviewPage >= importPreviewTotalPages}
+                              onClick={() => setImportPreviewPage((p) => Math.min(importPreviewTotalPages, p + 1))}
+                              data-en="Next page" data-zh="下一页"
+                            >
+                              下一页
+                            </button>
+                          </div>
+                        ) : null}
                         <div className="row">
-                          {pendingFiles.map((f, i) => (
-                            <div key={`${f.name}-${i}`} className="col-4 col-sm-3 col-md-2 mb-2">
-                              <div className="position-relative border rounded p-1">
-                                <img src={previewUrls[i]} alt="" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 4 }} />
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-danger position-absolute"
-                                  style={{ top: 2, right: 2, padding: '0 6px', lineHeight: 1.2 }}
-                                  onClick={() => removePending(i)}
-                                  aria-label="remove"
-                                >
-                                  ×
-                                </button>
-                                <div className="small text-truncate" title={f.name}>
-                                  {f.name}
+                          {importPreviewSlice.map((f, localIdx) => {
+                            const i = importPreviewStart + localIdx
+                            return (
+                              <div key={`${f.name}-${i}`} className="col-4 col-sm-3 col-md-2 mb-2">
+                                <div className="position-relative border rounded p-1">
+                                  <img src={previewUrls[i]} alt="" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 4 }} />
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-danger position-absolute"
+                                    style={{ top: 2, right: 2, padding: '0 6px', lineHeight: 1.2 }}
+                                    onClick={() => removePending(i)}
+                                    aria-label="remove"
+                                  >
+                                    ×
+                                  </button>
+                                  <div className="small text-truncate" title={f.name}>
+                                    {f.name}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     ) : null}
@@ -230,9 +286,42 @@ function DatasetsApp({ datasets = [], createdImages = [], urls = {} }) {
                 <>
                   <hr />
                   <h6 data-en="Last uploaded" data-zh="本次上传">本次上传</h6>
+                  <p className="small text-muted mb-2">
+                    <span data-en="Total" data-zh="共">共</span> {createdImages.length}{' '}
+                    <span data-en="images" data-zh="张">张</span>
+                    {createdTotalPages > 1 ? (
+                      <>
+                        {' · '}
+                        <span data-en="Page" data-zh="第">第</span> {createdPreviewPage} / {createdTotalPages}{' '}
+                        <span data-en="pages" data-zh="页">页</span>
+                      </>
+                    ) : null}
+                  </p>
+                  {createdTotalPages > 1 ? (
+                    <div className="d-flex flex-wrap align-items-center mb-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary mr-2"
+                        disabled={createdPreviewPage <= 1}
+                        onClick={() => setCreatedPreviewPage((p) => Math.max(1, p - 1))}
+                        data-en="Previous page" data-zh="上一页"
+                      >
+                        上一页
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={createdPreviewPage >= createdTotalPages}
+                        onClick={() => setCreatedPreviewPage((p) => Math.min(createdTotalPages, p + 1))}
+                        data-en="Next page" data-zh="下一页"
+                      >
+                        下一页
+                      </button>
+                    </div>
+                  ) : null}
                   <div className="row">
-                    {createdImages.map((img) => (
-                      <div className="col-md-2" key={img.id}>
+                    {createdSlice.map((img) => (
+                      <div className="col-md-2 mb-2" key={img.id}>
                         <img src={img.url} style={{ maxWidth: '100%' }} alt="" />
                       </div>
                     ))}

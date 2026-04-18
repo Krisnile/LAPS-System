@@ -10,6 +10,8 @@ import os, random, string
 from pathlib import Path
 from dotenv import load_dotenv
 from str2bool import str2bool
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()  # take environment variables from .env.
 
@@ -176,6 +178,10 @@ STATICFILES_DIRS = (
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# 多图上传（创建数据集 / 追加图片）单次请求可含大量 file 字段；Django 默认 100 会触发
+# TooManyFilesSent，甚至在 CsrfViewMiddleware 解析 POST 时即 400。
+DATA_UPLOAD_MAX_NUMBER_FILES = int(os.environ.get("DATA_UPLOAD_MAX_NUMBER_FILES", "2000"))
+
 # WhiteNoise 静态资源缓存，减少页面切换时重复请求（生产/collectstatic 后生效）
 WHITENOISE_MAX_AGE = 60 * 60 * 24 * 30  # 30 天
 # 生产环境可启用带 hash 的存储以长期缓存：STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -206,8 +212,72 @@ REST_FRAMEWORK = {
 # ---------------------------------------------------------------------------
 # SITE_TITLE / SITE_HEADER: 后台页面标题
 # SHOW_LANGUAGES: False 表示顶栏不显示语言切换，仅保留左下栏用户面板中的切换
+# SIDEBAR: 自定义 django-unfold 左侧目录（不展示主站 /annotate/；不含 Annotation 模型入口；
+#           顺序为数据集 → 图片 → 项目 → 任务，使「项目」在「任务」上方）
 UNFOLD = {
     "SITE_TITLE": "LAPS系统管理",
     "SITE_HEADER": "LAPS系统管理",
     "SHOW_LANGUAGES": False,
+    "SITE_URL": "/",
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": _("总览"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("后台首页"),
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                ],
+            },
+            {
+                "title": _("LAPS 数据"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("数据集"),
+                        "icon": "photo_library",
+                        "link": reverse_lazy("admin:pages_dataset_changelist"),
+                    },
+                    {
+                        "title": _("图片"),
+                        "icon": "image",
+                        "link": reverse_lazy("admin:pages_image_changelist"),
+                    },
+                    {
+                        "title": _("项目"),
+                        "icon": "folder",
+                        "link": reverse_lazy("admin:pages_project_changelist"),
+                    },
+                    {
+                        "title": _("任务"),
+                        "icon": "assignment",
+                        "link": reverse_lazy("admin:pages_task_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("系统"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("全站通知"),
+                        "icon": "campaign",
+                        "link": reverse_lazy("admin:pages_sitebroadcast_changelist"),
+                    },
+                    {
+                        "title": _("用户"),
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
 }

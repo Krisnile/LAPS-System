@@ -54,10 +54,10 @@ class Project(models.Model):
     """标注项目：可选关联多个数据集（M2M）；标注任务类型决定工作流与模型（如 SAM 分割）。"""
 
     ANNOTATION_SEGMENTATION_SAM = "segmentation_sam"
-    ANNOTATION_DETECTION_YOLO = "detection_yolo"
+    ANNOTATION_SEGMENTATION_YOLO = "segmentation_yolo"
     ANNOTATION_TYPE_CHOICES = [
         (ANNOTATION_SEGMENTATION_SAM, _("Image segmentation (SAM)")),
-        (ANNOTATION_DETECTION_YOLO, _("Object detection (YOLO) — coming soon")),
+        (ANNOTATION_SEGMENTATION_YOLO, _("Instance segmentation (YOLO11-seg)")),
     ]
 
     name = models.CharField(max_length=200)
@@ -162,7 +162,20 @@ class Annotation(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='owned_annotations')
     mask_file = models.FileField(upload_to='annotations/%Y/%m/%d', null=True, blank=True)
     mask_rle = models.TextField(null=True, blank=True)
-    label = models.CharField(max_length=200, blank=True)
+    label = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Category name"),
+        help_text=_("Custom COCO category name chosen when saving."),
+    )
+    segment_role = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        verbose_name=_("Segment role"),
+        help_text=_("foreground / background / other — UI role when saving."),
+    )
+    coco_json = models.JSONField(null=True, blank=True, verbose_name=_("COCO JSON snapshot"))
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

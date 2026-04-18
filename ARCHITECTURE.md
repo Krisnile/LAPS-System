@@ -170,7 +170,9 @@ LAPS-System/
 ├── templates/          # Django 模板、unfold 覆盖
 ├── locale/             # 后台 i18n (zh_Hans, en)
 ├── media/              # MEDIA_ROOT（运行时生成，见 .gitignore）；数据集图片在 media/datasets/user_<owner_id>/%Y/%m/%d/
-├── sam/                # SAM 模型权重（.gitignore）
+├── model/
+│   ├── sam/            # SAM 权重（.gitignore，仅保留 .gitkeep）
+│   └── yolo/           # YOLO 分割权重 .pt（.gitignore，仅保留 .gitkeep）
 ```
 
 ---

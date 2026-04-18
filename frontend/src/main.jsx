@@ -133,8 +133,8 @@ function mountDatasetDetail() {
   if (!el) return Promise.resolve()
   const dataAttr = el.getAttribute('data-dataset-detail-props')
   const defaults = {
-    image_preview_limit: 120,
-    urls: { datasets: '', datasets_list: '' },
+    pagination: { page: 1, page_size: 48, total: 0, total_pages: 0 },
+    urls: { datasets: '', datasets_list: '', dataset_images: '' },
     dataset: { id: 0, name: '', description: '', created_at: '', image_count: 0, images: [] },
     createdImages: [],
   }
@@ -146,6 +146,7 @@ function mountDatasetDetail() {
         ...defaults,
         ...raw,
         urls: { ...defaults.urls, ...(raw.urls || {}) },
+        pagination: { ...defaults.pagination, ...(raw.pagination || {}) },
         dataset: { ...defaults.dataset, ...(raw.dataset || {}) },
         createdImages: raw.createdImages ?? defaults.createdImages,
       }

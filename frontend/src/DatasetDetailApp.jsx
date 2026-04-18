@@ -20,7 +20,7 @@ function imageFileLabel(img) {
 function DatasetDetailApp({
   dataset = {},
   urls = {},
-  image_preview_limit: previewLimit = 120,
+  pagination: propPagination = { page: 1, page_size: 48, total: 0, total_pages: 0 },
   createdImages = [],
 }) {
   const csrfToken = getCsrfFromCookie()
@@ -33,12 +33,41 @@ function DatasetDetailApp({
   const [lightbox, setLightbox] = useState(null)
   const [lightboxCaption, setLightboxCaption] = useState('')
   const [localImages, setLocalImages] = useState(dataset.images || [])
+  const [pagination, setPagination] = useState(propPagination)
+  const [imagesLoading, setImagesLoading] = useState(false)
 
   useEffect(() => {
     setLocalImages(dataset.images || [])
-  }, [dataset.id, dataset.images])
+    setPagination(propPagination)
+  }, [dataset.id])
 
-  const overLimit = (dataset.image_count || 0) > previewLimit
+  const loadImagePage = async (targetPage) => {
+    const api = urls.dataset_images
+    if (!api || targetPage < 1) return
+    const ps = pagination.page_size || 48
+    setImagesLoading(true)
+    try {
+      const u = `${api}?page=${encodeURIComponent(String(targetPage))}&page_size=${encodeURIComponent(String(ps))}`
+      const r = await fetch(u, { credentials: 'same-origin' })
+      const j = await r.json()
+      if (!j.ok) {
+        window.alert(j.error || '加载失败')
+        return
+      }
+      setPagination({
+        page: j.page,
+        page_size: j.page_size,
+        total: j.total,
+        total_pages: j.total_pages,
+      })
+      setLocalImages(j.images || [])
+    } catch (e) {
+      console.error(e)
+      window.alert('加载失败')
+    } finally {
+      setImagesLoading(false)
+    }
+  }
 
   const handleAppend = async () => {
     if (appendMode === 'images' && pendingFiles.length === 0) {
@@ -305,10 +334,45 @@ function DatasetDetailApp({
               </p>
             </div>
             <div className="card-body">
-              {overLimit ? (
-                <p className="small text-warning mb-2" data-en="Preview limited" data-zh={`以下仅列出前 ${previewLimit} 张，共 ${dataset.image_count} 张。`}>
-                  以下仅列出前 {previewLimit} 张，共 {dataset.image_count} 张。
+              {pagination.total > 0 ? (
+                <p className="small text-muted mb-2 laps-dataset-image-pager-summary">
+                  <span data-en="Total images" data-zh="共">共</span> {pagination.total}{' '}
+                  <span data-en="images" data-zh="张">张</span>
+                  {pagination.total_pages > 1 ? (
+                    <>
+                      {' · '}
+                      <span data-en="Page" data-zh="第">第</span> {pagination.page} / {pagination.total_pages}{' '}
+                      <span data-en="pages" data-zh="页">页</span>
+                      {imagesLoading ? (
+                        <span className="ml-2 text-primary" data-en="Loading…" data-zh="加载中…">
+                          加载中…
+                        </span>
+                      ) : null}
+                    </>
+                  ) : null}
                 </p>
+              ) : null}
+              {pagination.total_pages > 1 ? (
+                <div className="d-flex flex-wrap align-items-center mb-3 laps-dataset-image-pager">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary mr-2"
+                    disabled={imagesLoading || pagination.page <= 1}
+                    onClick={() => loadImagePage(pagination.page - 1)}
+                    data-en="Previous page" data-zh="上一页"
+                  >
+                    上一页
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    disabled={imagesLoading || pagination.page >= pagination.total_pages}
+                    onClick={() => loadImagePage(pagination.page + 1)}
+                    data-en="Next page" data-zh="下一页"
+                  >
+                    下一页
+                  </button>
+                </div>
               ) : null}
               {localImages.length > 0 ? (
                 <div className="table-responsive laps-dataset-image-table">
