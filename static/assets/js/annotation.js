@@ -141,6 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var brushSizeSlider = document.getElementById('brushSizeSlider');
   var brushSizeLabel = document.getElementById('brushSizeLabel');
   var brushSizeGroup = document.getElementById('brushSizeGroup');
+  var btnPrevTaskImage = document.getElementById('btnPrevTaskImage');
+  var btnNextTaskImage = document.getElementById('btnNextTaskImage');
   var loadingOverlay = document.getElementById('annot-loading');
   var projectSelect = document.getElementById('annotateProjectSelect');
   var taskListEl = document.getElementById('annotateTaskList');
@@ -442,11 +444,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (taskCountEl) taskCountEl.textContent = (!projectSelect || !projectSelect.value) ? '0' : String(catalogTotal);
     if (!projectSelect || !projectSelect.value) {
       taskListEl.innerHTML = '<p class="small text-muted p-2 mb-0">' + getLangText('pp', '请先选择项目。', 'Select a project first.') + '</p>';
-      renderTaskPagination(); return;
+      renderTaskPagination(); updateCanvasTaskNavButtons(); return;
     }
     if (!catalogTasks.length) {
       taskListEl.innerHTML = '<p class="small text-muted p-2 mb-0">' + getLangText('nt', '该项目下尚无任务。点击「新建任务」或前往任务页批量生成。', 'No tasks for this project. Use "New task" or the Tasks page.') + '</p>';
-      renderTaskPagination(); return;
+      renderTaskPagination(); updateCanvasTaskNavButtons(); return;
     }
     catalogTasks.forEach(function (t) {
       var div = document.createElement('div');
@@ -496,6 +498,76 @@ document.addEventListener('DOMContentLoaded', function () {
       taskListEl.appendChild(div);
     });
     renderTaskPagination();
+    updateCanvasTaskNavButtons();
+  }
+
+  function findCurrentTaskIndex() {
+    if (currentTaskId == null || !catalogTasks.length) return -1;
+    var i;
+    for (i = 0; i < catalogTasks.length; i++) {
+      if (catalogTasks[i].id === currentTaskId) return i;
+    }
+    return -1;
+  }
+
+  function updateCanvasTaskNavButtons() {
+    if (!btnPrevTaskImage || !btnNextTaskImage) return;
+    btnPrevTaskImage.textContent = getLangText('cv_p', '上一张', 'Previous');
+    btnNextTaskImage.textContent = getLangText('cv_n', '下一张', 'Next');
+    btnPrevTaskImage.setAttribute('title', getLangText('cv_pt', '上一张任务', 'Previous task'));
+    btnNextTaskImage.setAttribute('title', getLangText('cv_nt', '下一张任务', 'Next task'));
+    var pid = projectSelect && projectSelect.value;
+    if (!pid || !catalogTasks.length) {
+      btnPrevTaskImage.disabled = true;
+      btnNextTaskImage.disabled = true;
+      return;
+    }
+    var idx = findCurrentTaskIndex();
+    var canPrev;
+    var canNext;
+    if (idx < 0) {
+      canPrev = false;
+      canNext = true;
+    } else {
+      canPrev = idx > 0 || catalogPage > 1;
+      canNext = idx < catalogTasks.length - 1 || catalogPage < catalogTotalPages;
+    }
+    btnPrevTaskImage.disabled = !canPrev;
+    btnNextTaskImage.disabled = !canNext;
+  }
+
+  function navigateAdjacentTask(delta) {
+    var pid = projectSelect && projectSelect.value;
+    if (!pid || !catalogTasks.length) return;
+    var idx = findCurrentTaskIndex();
+    if (delta === 1 && idx < 0) {
+      loadTaskFromRow(catalogTasks[0]);
+      return;
+    }
+    if (idx < 0) return;
+    if (delta === -1) {
+      if (idx > 0) {
+        loadTaskFromRow(catalogTasks[idx - 1]);
+        return;
+      }
+      if (catalogPage > 1) {
+        fetchCatalog({ page: catalogPage - 1 }).then(function () {
+          if (catalogTasks.length) loadTaskFromRow(catalogTasks[catalogTasks.length - 1]);
+        });
+      }
+      return;
+    }
+    if (delta === 1) {
+      if (idx < catalogTasks.length - 1) {
+        loadTaskFromRow(catalogTasks[idx + 1]);
+        return;
+      }
+      if (catalogPage < catalogTotalPages) {
+        fetchCatalog({ page: catalogPage + 1 }).then(function () {
+          if (catalogTasks.length) loadTaskFromRow(catalogTasks[0]);
+        });
+      }
+    }
   }
 
   /* ── Hydrate saved annotations from server ── */
@@ -684,6 +756,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   if (btnRefreshList) btnRefreshList.addEventListener('click', function () { fetchCatalog(); });
+  if (btnPrevTaskImage) btnPrevTaskImage.addEventListener('click', function () { navigateAdjacentTask(-1); });
+  if (btnNextTaskImage) btnNextTaskImage.addEventListener('click', function () { navigateAdjacentTask(1); });
   if (newTaskModal) newTaskModal.addEventListener('show.bs.modal', loadAvailableImagesForModal);
 
   if (deleteConfirmBtn) {

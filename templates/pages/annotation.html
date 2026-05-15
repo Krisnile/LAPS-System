@@ -249,6 +249,14 @@
                 <input id="brushSizeSlider" type="range" min="2" max="100" step="1" value="15" class="annotate-canvas-brush-slider" />
                 <span id="brushSizeLabel" class="ml-1 small font-weight-bold" style="min-width:2em">15</span>
               </div>
+              <div class="d-inline-flex align-items-center annotate-canvas-task-nav ml-2" id="canvasTaskNavGroup" aria-label="Adjacent tasks">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnPrevTaskImage" disabled
+                        data-en="Previous image" data-zh="上一张"
+                        title="上一张任务">上一张</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary ml-1" id="btnNextTaskImage" disabled
+                        data-en="Next image" data-zh="下一张"
+                        title="下一张任务">下一张</button>
+              </div>
             </div>
           </div>
           <div class="annotation-canvas-card annotate-board-canvas flex-grow-1 d-flex flex-column">

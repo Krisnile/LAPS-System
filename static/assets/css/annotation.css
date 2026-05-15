@@ -320,8 +320,23 @@ body.white-content .content.content-annotation .task-info strong {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   max-width: 100%;
+}
+/* 页码输入与「跳转」按钮同一行左右排列 */
+.annotate-task-pagination__jump {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+.annotate-task-pagination__jump .annotate-task-pagination__page-input {
+  flex: 0 0 auto;
+}
+.annotate-task-pagination__jump .btn {
+  flex: 0 0 auto;
+  margin-left: 0 !important;
 }
 .annotate-task-pagination__page-input {
   width: 3.25rem;
