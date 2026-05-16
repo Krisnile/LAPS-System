@@ -11,6 +11,7 @@ from . import views
 urlpatterns = [
     path('support/', views.support_wiki, name='support'),
     path('', views.index, name='index'),
+    path('account/ui-preferences/', views.save_ui_preferences, name='account_ui_preferences'),
     path('account/', views.profile, name='profile'),
     path('accounts/auth-signin/', views.LAPSLoginView.as_view(), name='auth_signin'),
     path('accounts/auth-signup/', views.LAPSSignupView.as_view(), name='auth_signup'),

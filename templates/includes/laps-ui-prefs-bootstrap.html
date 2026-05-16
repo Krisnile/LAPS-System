@@ -1,0 +1,25 @@
+{# 登录用户：将服务端保存的界面偏好写回 localStorage，须早于 head 内读取 light_color / sidebar_color 的脚本 #}
+{% if laps_ui_prefs is not None %}
+<script>
+(function () {
+  try {
+    var s = {{ laps_ui_prefs }};
+    if (!s || typeof s !== 'object') return;
+    if (s.sidebar_color && /^(primary|blue|green)$/.test(s.sidebar_color)) {
+      localStorage.setItem('sidebar_color', s.sidebar_color);
+    }
+    if (s.light_color === true || s.light_color === false) {
+      localStorage.setItem('light_color', s.light_color ? 'true' : 'false');
+    } else if (s.light_color === 'true' || s.light_color === 'false') {
+      localStorage.setItem('light_color', s.light_color);
+    }
+    if (s.layout_mode && /^(left|center|right)$/.test(s.layout_mode)) {
+      localStorage.setItem('layout_mode', s.layout_mode);
+    }
+    if (s.site_lang === 'en' || s.site_lang === 'zh') {
+      localStorage.setItem('site_lang', s.site_lang);
+    }
+  } catch (e) {}
+})();
+</script>
+{% endif %}

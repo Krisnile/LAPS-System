@@ -8,8 +8,55 @@
     {% include 'includes/head.html' %}
     <style>
         body.standalone-page { min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; }
+        /* 独立页：不用全局 .content 类名，避免 laps-theme / black-dashboard 为「侧栏 + 主区」写的 margin-left / float / width */
+        body.standalone-page .wrapper {
+            width: 100%;
+            max-width: 100vw;
+        }
+        body.standalone-page .main-panel {
+            width: 100%;
+            max-width: 100vw;
+        }
+        /* 主区域：与 .content 相近的顶栏留白，无 margin-left，整行 flex 居中子列 */
+        body.standalone-page .laps-standalone-main {
+            margin: 0;
+            padding: 80px 24px 32px;
+            width: 100%;
+            max-width: 100vw;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--laps-text, rgba(255, 255, 255, 0.88));
+        }
+        @media (min-width: 992px) {
+            body.standalone-page .laps-standalone-main {
+                padding: 88px 30px 40px;
+            }
+        }
+        body.standalone-page.white-content .laps-standalone-main {
+            color: var(--laps-text, #32325d);
+        }
+        body.standalone-page .laps-standalone-main > .mb-3 {
+            width: min(100%, 460px);
+            max-width: 460px;
+            box-sizing: border-box;
+        }
+        body.standalone-page .laps-standalone-main .standalone-content-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            min-height: calc(100vh - 180px);
+            width: min(100%, 460px);
+            max-width: 460px;
+            box-sizing: border-box;
+        }
+        body.standalone-page .profile-account-card {
+            width: 100%;
+            max-width: 460px;
+        }
         /* 顶栏与主站一致，由 .main-panel + .navbar 与 laps-theme 提供样式；此处仅保留独立页固定插件位置 */
-        .standalone-content-inner { max-width: 560px; margin: 0 auto; }
         body.standalone-page .fixed-plugin { top: 130px; background: rgba(0,0,0,.3); border-radius: 8px 0 0 8px; }
         body.standalone-page .fixed-plugin .laps-fixed-plugin-icon { color: #fff; }
         body.standalone-page.white-content .fixed-plugin { background: rgba(0,0,0,.15); }
@@ -24,7 +71,7 @@
     <div class="wrapper">
         <div class="main-panel">
             {% include 'includes/navigation-standalone.html' %}
-            <div class="content">
+            <div class="laps-standalone-main">
                 {% if messages %}
                 <div class="mb-3">
                     {% for message in messages %}

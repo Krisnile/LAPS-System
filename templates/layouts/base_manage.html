@@ -6,6 +6,10 @@
     <title>{% block title %}{% endblock title %} | 用户管理</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% if request.user.is_authenticated %}
+    <meta name="laps-auth" content="1" />
+    {% endif %}
+    {% include 'includes/laps-ui-prefs-bootstrap.html' %}
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
     <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
     <link href="{% static 'assets/css/black-dashboard.min.css' %}?v=1.0.0" rel="stylesheet" />
@@ -54,6 +58,7 @@
     <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
     <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
     <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/uiPreferencesSync.js' %}"></script>
     <script src="{% static 'assets/js/themeSettings.js' %}"></script>
     <script src="{% static 'assets/js/lang-switcher.js' %}"></script>
     <script>

@@ -11,6 +11,11 @@
 
   function setStoredLang(lang){
     localStorage.setItem('site_lang', lang);
+    try {
+      if (window.lapsSyncUserPreferencesToServerDebounced) {
+        window.lapsSyncUserPreferencesToServerDebounced();
+      }
+    } catch (e) {}
   }
 
   function applyLang(lang){

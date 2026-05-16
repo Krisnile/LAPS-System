@@ -2,6 +2,10 @@
 {# 全站 head：meta、favicon、图标字体（Nucleo）、black-dashboard、laps-theme；被 base / base_auth / base_standalone 引用 #}
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% if request.user.is_authenticated %}
+<meta name="laps-auth" content="1" />
+{% endif %}
+{% include 'includes/laps-ui-prefs-bootstrap.html' %}
 {% vite_react_preload %}
 <style id="laps-critical-first-paint">
   /* 外链 CSS 未到前：html 背景与主题一致；body.white-content 由各布局 body 后内联脚本尽早写入 */

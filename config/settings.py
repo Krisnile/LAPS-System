@@ -89,6 +89,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
                 "apps.pages.context_processors.site_broadcast",
+                "apps.pages.context_processors.user_ui_preferences",
             ],
         },
     },

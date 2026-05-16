@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404, JsonResponse, HttpResponse, FileResponse
 from django.core.files.storage import default_storage
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -42,7 +42,7 @@ from .annotation_export import (
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.contrib.auth.views import LoginView
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Prefetch
 from django.urls import reverse
 
@@ -297,25 +297,103 @@ def index(request):
     return render(request, 'pages/dashboard.html', context)
 
 
+def _merge_validated_ui_preferences(base_prefs, incoming):
+    """将界面偏好合并进 base_prefs（仅接受白名单字段）。"""
+    out = dict(base_prefs or {})
+    if not incoming:
+        return out
+    sc = incoming.get('sidebar_color')
+    if sc and str(sc) in ('primary', 'blue', 'green'):
+        out['sidebar_color'] = str(sc)
+    lc = incoming.get('light_color')
+    if lc is not None and lc != '':
+        if lc is True or lc is False:
+            out['light_color'] = bool(lc)
+        else:
+            s = str(lc).lower()
+            if s in ('true', '1', 'yes'):
+                out['light_color'] = True
+            elif s in ('false', '0', 'no'):
+                out['light_color'] = False
+    lm = incoming.get('layout_mode')
+    if lm and str(lm) in ('left', 'center', 'right'):
+        out['layout_mode'] = str(lm)
+    sl = incoming.get('site_lang')
+    if sl in ('en', 'zh'):
+        out['site_lang'] = sl
+    return out
+
+
+@login_required
+@require_POST
+def save_ui_preferences(request):
+    """将当前界面偏好写入 UserProfile.preferences（供顶栏/齿轮变更后异步同步）。"""
+    user = request.user
+    try:
+        if request.content_type and 'application/json' in (request.content_type or ''):
+            body = json.loads(request.body.decode('utf-8') or '{}')
+        else:
+            body = request.POST.dict()
+    except json.JSONDecodeError:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    try:
+        profile_obj, _ = models.UserProfile.objects.get_or_create(user=user, defaults={})
+        merged = _merge_validated_ui_preferences(profile_obj.preferences, body)
+        profile_obj.preferences = merged
+        profile_obj.save(update_fields=['preferences'])
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    return JsonResponse({'ok': True, 'preferences': merged})
+
+
 @login_required
 def profile(request):
-    """个人信息与设置页：头像、邮箱、昵称"""
+    """个人信息与设置页：头像、邮箱、昵称；保存时同步界面偏好到数据库。"""
     user = request.user
     try:
         profile_obj, _ = models.UserProfile.objects.get_or_create(user=user, defaults={})
     except Exception:
         class _DummyProfile:
             avatar = None
+            preferences = {}
+
+            def save(self, *args, **kwargs):
+                pass
+
         profile_obj = _DummyProfile()
     if request.method == 'POST' and hasattr(profile_obj, 'save'):
         try:
-            user.email = (request.POST.get('email') or user.email or '').strip() or user.email
-            user.first_name = (request.POST.get('nickname') or user.first_name or '').strip()
-            user.save()
-            if request.FILES.get('avatar'):
-                profile_obj.avatar = request.FILES['avatar']
-                profile_obj.save()
-            messages.success(request, '保存成功。邮箱与昵称已更新。')
+            with transaction.atomic():
+                user.email = (request.POST.get('email') or user.email or '').strip() or user.email
+                user.first_name = (request.POST.get('nickname') or '').strip()
+                user.save()
+                profile_changed = False
+                if request.FILES.get('avatar'):
+                    profile_obj.avatar = request.FILES['avatar']
+                    profile_changed = True
+                incoming = {}
+                ps = request.POST.get('pref_sidebar_color')
+                if ps:
+                    incoming['sidebar_color'] = ps
+                pl = request.POST.get('pref_light_color')
+                if pl in ('true', 'false'):
+                    incoming['light_color'] = pl == 'true'
+                pm = request.POST.get('pref_layout_mode')
+                if pm:
+                    incoming['layout_mode'] = pm
+                pz = request.POST.get('pref_site_lang')
+                if pz:
+                    incoming['site_lang'] = pz
+                if incoming:
+                    profile_obj.preferences = _merge_validated_ui_preferences(
+                        profile_obj.preferences, incoming
+                    )
+                    profile_changed = True
+                if profile_changed:
+                    profile_obj.save()
+            messages.success(request, '保存成功。账户信息与界面偏好已更新。')
         except Exception:
             messages.error(request, '保存失败，请重试。')
         return redirect('profile')

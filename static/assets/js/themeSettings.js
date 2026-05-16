@@ -4,6 +4,14 @@ $(document).ready(function() {
         $navbar = $('.navbar');
         $main_panel = $('.main-panel');
 
+        function lapsMaybeSyncUiPrefs() {
+            try {
+                if (window.lapsSyncUserPreferencesToServerDebounced) {
+                    window.lapsSyncUserPreferencesToServerDebounced();
+                }
+            } catch (e) {}
+        }
+
         $full_page = $('.full-page');
 
         $sidebar_responsive = $('body > .navbar-collapse');
@@ -56,6 +64,7 @@ $(document).ready(function() {
             if (!new_color) return;
             localStorage.setItem('sidebar_color', new_color);
             applySidebarColor(new_color);
+            lapsMaybeSyncUiPrefs();
         });
 
         // 允许点击整行主题项（不仅仅是圆点）
@@ -72,6 +81,7 @@ $(document).ready(function() {
             if (new_color === 'blue') $root.addClass('theme-blue');
             else if (new_color === 'green') $root.addClass('theme-green');
             else $root.addClass('theme-primary');
+            lapsMaybeSyncUiPrefs();
         });
 
         // Layout mode (left / center / right)，主要用于登录页布局；其他页面可忽略
@@ -92,6 +102,7 @@ $(document).ready(function() {
             if (!mode) return;
             localStorage.setItem('layout_mode', mode);
             applyLayoutMode(mode);
+            lapsMaybeSyncUiPrefs();
         });
 
         $('.switch-sidebar-mini input').on("switchChange.bootstrapSwitch", function() {
@@ -141,6 +152,7 @@ $(document).ready(function() {
             $('html').addClass('laps-initial-light');
             localStorage.setItem("light_color", "true");
             $('.switch input').prop("checked", false);
+            lapsMaybeSyncUiPrefs();
         });
 
         $('.dark-badge').click(function() {
@@ -148,6 +160,7 @@ $(document).ready(function() {
             $('html').removeClass('laps-initial-light');
             localStorage.setItem("light_color", "false");
             $('.switch input').prop("checked", true);
+            lapsMaybeSyncUiPrefs();
         });
     });
 });
@@ -176,6 +189,11 @@ $(document).ready(function () {
                 $('body').removeClass('change-background');
                 $('body').removeClass('white-content');
             }, 400);
+            try {
+                if (window.lapsSyncUserPreferencesToServerDebounced) {
+                    window.lapsSyncUserPreferencesToServerDebounced();
+                }
+            } catch (e) {}
 
         } else {
             localStorage.setItem("light_color", "true");
@@ -186,6 +204,11 @@ $(document).ready(function () {
                 $('body').removeClass('change-background');
                 $('body').addClass('white-content');
             }, 400);
+            try {
+                if (window.lapsSyncUserPreferencesToServerDebounced) {
+                    window.lapsSyncUserPreferencesToServerDebounced();
+                }
+            } catch (e) {}
         }
     });
 });

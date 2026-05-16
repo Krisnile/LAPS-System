@@ -4,14 +4,18 @@
 {% block title %}Account & Settings{% endblock title %}
 
 {% block content %}
-<div class="card">
-  <div class="card-header">
+<div class="card profile-account-card">
+  <div class="card-header text-center">
     <h4 class="card-title" data-en="Account & Settings" data-zh="账户与设置">账户与设置</h4>
     <p class="card-category" data-en="Manage your avatar, email and display name" data-zh="管理头像、邮箱与昵称">管理头像、邮箱与昵称</p>
   </div>
   <div class="card-body">
     <form method="post" enctype="multipart/form-data" class="profile-form">
       {% csrf_token %}
+      <input type="hidden" name="pref_sidebar_color" id="id_pref_sidebar_color" value="">
+      <input type="hidden" name="pref_light_color" id="id_pref_light_color" value="">
+      <input type="hidden" name="pref_layout_mode" id="id_pref_layout_mode" value="">
+      <input type="hidden" name="pref_site_lang" id="id_pref_site_lang" value="">
       <div class="form-group text-center mb-4">
         <label class="d-block" data-en="Avatar" data-zh="头像">头像</label>
         <div class="profile-avatar-wrap mb-2">
@@ -33,11 +37,12 @@
         <input type="text" name="nickname" id="id_nickname" class="form-control" value="{{ request.user.first_name }}" placeholder="" maxlength="150">
         <small class="text-muted" data-en="Shown in dashboard and profile." data-zh="将显示在仪表盘与个人页。">将显示在仪表盘与个人页。</small>
       </div>
-      <div class="form-group mb-0 dashboard-actions">
+      <div class="form-group mb-0 dashboard-actions text-center">
         <button type="submit" class="btn btn-primary" data-en="Save" data-zh="保存">保存</button>
         <a href="{% url 'index' %}" class="btn btn-secondary" data-en="Back to Dashboard" data-zh="返回仪表盘">返回仪表盘</a>
       </div>
     </form>
+    <p class="text-muted small text-center mt-3 mb-0" data-en="Saving also stores your current theme, light/dark mode and UI language to your account (for new devices)." data-zh="保存时会将当前主题色、深浅模式与界面语言一并写入账号，换设备登录后自动恢复。">保存时会将当前主题色、深浅模式与界面语言一并写入账号，换设备登录后自动恢复。</p>
   </div>
 </div>
 {% endblock content %}
@@ -55,6 +60,17 @@
         r.onload = function(){ preview.src = r.result; };
         r.readAsDataURL(f);
       }
+    });
+  }
+  var form = document.querySelector('.profile-form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      try {
+        document.getElementById('id_pref_sidebar_color').value = localStorage.getItem('sidebar_color') || 'primary';
+        document.getElementById('id_pref_light_color').value = localStorage.getItem('light_color') === 'true' ? 'true' : 'false';
+        document.getElementById('id_pref_layout_mode').value = localStorage.getItem('layout_mode') || 'left';
+        document.getElementById('id_pref_site_lang').value = localStorage.getItem('site_lang') || 'zh';
+      } catch (e) {}
     });
   }
 })();

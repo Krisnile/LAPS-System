@@ -34,6 +34,8 @@ class UserProfile(models.Model):
     """用户扩展信息：头像等（与 Django User 一对一）"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='laps_profile')
     avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True)
+    # 界面偏好持久化：主题色、深浅、布局、语言等（与顶栏/齿轮 localStorage 同步）
+    preferences = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"Profile of {self.user.username}"
